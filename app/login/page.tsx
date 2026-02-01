@@ -45,6 +45,8 @@ function LoginContent() {
     }
   };
 
+  const { toggleTheme } = useTheme();
+
   return (
     <div
       className={cn(
@@ -52,6 +54,18 @@ function LoginContent() {
         isDark ? "bg-[#020617]" : "bg-[#F8FAFC]",
       )}
     >
+      {/* Theme Toggle */}
+      <button
+        onClick={toggleTheme}
+        className="absolute top-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 dark:bg-slate-800/50 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-slate-700/50 transition-colors"
+      >
+        {isDark ? (
+          <Icons.Sun size={20} className="text-amber-400" />
+        ) : (
+          <Icons.Moon size={20} className="text-slate-600" />
+        )}
+      </button>
+
       {/* Background Decorative Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[120px]" />
