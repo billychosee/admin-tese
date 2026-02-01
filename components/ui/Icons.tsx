@@ -221,6 +221,7 @@ import {
   CircleDot,
   HashIcon,
   GripHorizontal,
+  Loader2,
 } from "lucide-react";
 
 interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -312,6 +313,7 @@ export const Icons = {
   Lock: (props: IconProps) => <Lock {...props} />,
   Unlock: (props: IconProps) => <Unlock {...props} />,
   DragHandle: (props: IconProps) => <GripHorizontal {...props} />,
+  Loader2: (props: IconProps) => <Loader2 {...props} />,
   Key: (props: IconProps) => <Key {...props} />,
   BadgeCheck: (props: IconProps) => <BadgeCheck {...props} />,
   Heart: (props: IconProps) => <Heart {...props} />,
