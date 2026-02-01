@@ -53,11 +53,15 @@ export function TopBar({ title }: TopBarProps) {
     router.push("/login");
   };
 
+  // CSS Variables
+  const hoverBg = "hover:bg-[hsl(var(--surface-hover))]";
+  const hoverBgDanger = "hover:bg-[hsl(var(--danger)/0.1)]";
+
   return (
     <header
       className="sticky top-0 z-20 flex h-16 items-center justify-between px-8 backdrop-blur-md transition-all duration-300"
       style={{
-        backgroundColor: "hsl(var(--surface) / 0.85)", // Slightly more transparent for glass effect
+        backgroundColor: "hsl(var(--surface) / 0.85)",
         borderBottom: "1px solid hsl(var(--surface-border) / 0.5)",
       }}
     >
@@ -76,7 +80,7 @@ export function TopBar({ title }: TopBarProps) {
           style={{
             border: "1px solid hsl(var(--surface-border))",
             backgroundColor: "hsl(var(--surface-muted) / 0.3)",
-            color: "hsl(var(--surface-foreground))",
+            color: "hsl(var(--text-primary))",
           }}
         />
       </div>
@@ -85,8 +89,11 @@ export function TopBar({ title }: TopBarProps) {
       <div className="flex items-center gap-5">
         <button
           onClick={toggleTheme}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 transition-colors"
-          style={{ color: "hsl(var(--surface-muted-foreground))" }}
+          className="flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+          style={{
+            backgroundColor: "hsl(var(--surface-muted))",
+            color: "hsl(var(--text-secondary))",
+          }}
         >
           {theme === "dark" ? (
             <Icons.Sun size={20} />
@@ -99,39 +106,61 @@ export function TopBar({ title }: TopBarProps) {
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            style={{ color: "hsl(var(--surface-muted-foreground))" }}
+            className={cn(
+              "relative flex h-10 w-10 items-center justify-center rounded-xl transition-colors",
+              hoverBg,
+            )}
+            style={{ color: "hsl(var(--text-secondary))" }}
           >
             <Icons.Bell size={20} />
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-[hsl(var(--surface))] bg-red-500" />
+            <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-[hsl(var(--surface))] bg-[hsl(var(--danger))]" />
           </button>
 
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-[hsl(var(--surface-border))] bg-[hsl(var(--surface))] shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-[hsl(var(--surface-border))] bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-widest">
+              <div
+                className="px-4 py-3 border-b border-[hsl(var(--surface-border))] flex items-center justify-between"
+                style={{ backgroundColor: "hsl(var(--surface-muted) / 0.5)" }}
+              >
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[hsl(var(--text-primary))]">
                   Notifications
                 </h3>
-                <button className="text-[10px] text-emerald-500 font-medium hover:text-emerald-600">
+                <button
+                  className="text-[10px] font-medium hover:opacity-80"
+                  style={{ color: "hsl(var(--primary))" }}
+                >
                   Mark all read
                 </button>
               </div>
               <div className="max-h-72 overflow-y-auto">
                 <NotificationItem
-                  icon={<Icons.Users size={16} className="text-emerald-500" />}
+                  icon={
+                    <Icons.Users
+                      size={16}
+                      className="text-[hsl(var(--primary))]"
+                    />
+                  }
                   title="New creator registered"
                   description="John Doe has joined as a new creator"
                   time="2m ago"
                 />
                 <NotificationItem
-                  icon={<Icons.Shield size={16} className="text-amber-500" />}
+                  icon={
+                    <Icons.Shield
+                      size={16}
+                      className="text-[hsl(var(--warning))]"
+                    />
+                  }
                   title="Security Alert"
                   description="Unusual login detected from new device"
                   time="1h ago"
                 />
                 <NotificationItem
                   icon={
-                    <Icons.DollarSign size={16} className="text-blue-500" />
+                    <Icons.DollarSign
+                      size={16}
+                      className="text-[hsl(var(--info))]"
+                    />
                   }
                   title="Payment received"
                   description="You received $250.00 from video revenue"
@@ -146,7 +175,12 @@ export function TopBar({ title }: TopBarProps) {
               </div>
               <Link
                 href="/notifications"
-                className="block w-full py-3 text-xs font-semibold text-center text-emerald-500 hover:bg-slate-50 dark:hover:bg-slate-800 border-t border-[hsl(var(--surface-border))] transition-colors"
+                className="block w-full py-3 text-xs font-semibold text-center transition-colors hover:opacity-80"
+                style={{
+                  color: "hsl(var(--primary))",
+                  backgroundColor: "hsl(var(--surface-muted) / 0.3)",
+                  borderTop: "1px solid hsl(var(--surface-border))",
+                }}
               >
                 View All
               </Link>
@@ -160,14 +194,29 @@ export function TopBar({ title }: TopBarProps) {
         <div className="relative" ref={profileRef}>
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center gap-3 rounded-2xl py-1.5 pl-1.5 pr-4 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            className={cn(
+              "flex items-center gap-3 rounded-2xl py-1.5 pl-1.5 pr-4 transition-all",
+              hoverBg,
+            )}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md shadow-emerald-500/20">
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-xl text-white shadow-md"
+              style={{
+                background:
+                  "linear-gradient(to bottom right, hsl(var(--primary)), hsl(var(--primary) / 0.8))",
+                boxShadow: "0 4px 6px -1px hsl(var(--primary) / 0.2)",
+              }}
+            >
               <span className="text-[11px] font-bold">TA</span>
             </div>
             <div className="hidden md:block text-left">
-              <p className="text-xs font-bold leading-none">TESE Admin</p>
-              <p className="mt-1 text-[10px] text-slate-400 font-medium">
+              <p className="text-xs font-bold leading-none text-[hsl(var(--text-primary))]">
+                TESE Admin
+              </p>
+              <p
+                className="mt-1 text-[10px] font-medium"
+                style={{ color: "hsl(var(--text-muted))" }}
+              >
                 admin@tese.com
               </p>
             </div>
@@ -177,13 +226,20 @@ export function TopBar({ title }: TopBarProps) {
                 "transition-transform opacity-50",
                 showProfileMenu && "rotate-180",
               )}
+              style={{ color: "hsl(var(--text-secondary))" }}
             />
           </button>
 
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[hsl(var(--surface-border))] bg-[hsl(var(--surface))] shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-[hsl(var(--surface-border))] bg-slate-50/50 dark:bg-slate-800/50">
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+              <div
+                className="px-4 py-3 border-b border-[hsl(var(--surface-border))]"
+                style={{ backgroundColor: "hsl(var(--surface-muted) / 0.5)" }}
+              >
+                <p
+                  className="text-[10px] uppercase tracking-widest font-bold"
+                  style={{ color: "hsl(var(--text-muted))" }}
+                >
                   Account
                 </p>
               </div>
@@ -201,7 +257,11 @@ export function TopBar({ title }: TopBarProps) {
               <div className="border-t border-[hsl(var(--surface-border))] py-2">
                 <button
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-3 mx-2 px-4 py-2.5 rounded-xl transition-all duration-200 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10"
+                  className={cn(
+                    "flex w-full items-center gap-3 mx-2 px-4 py-2.5 rounded-xl transition-all duration-200",
+                    hoverBgDanger,
+                  )}
+                  style={{ color: "hsl(var(--danger))" }}
                 >
                   <Icons.LogOut size={18} />
                   <span className="text-xs font-semibold uppercase tracking-wide">
@@ -230,16 +290,31 @@ function NotificationItem({
   time: string;
 }) {
   return (
-    <div className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer border-b border-[hsl(var(--surface-border)) / 0.5]">
+    <div
+      className={cn(
+        "flex items-start gap-3 px-4 py-3 transition-colors cursor-pointer border-b border-[hsl(var(--surface-border) / 0.5)]",
+        "hover:bg-[hsl(var(--surface-hover))]",
+      )}
+    >
       {icon && <div className="flex-shrink-0 mt-0.5">{icon}</div>}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium truncate">{title}</p>
+        <p className="text-xs font-medium truncate text-[hsl(var(--text-primary))]">
+          {title}
+        </p>
         {description && (
-          <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+          <p
+            className="text-[10px] mt-0.5 truncate"
+            style={{ color: "hsl(var(--text-muted))" }}
+          >
             {description}
           </p>
         )}
-        <p className="text-[10px] text-slate-400 mt-1">{time}</p>
+        <p
+          className="text-[10px] mt-1"
+          style={{ color: "hsl(var(--text-muted))" }}
+        >
+          {time}
+        </p>
       </div>
     </div>
   );
@@ -259,7 +334,7 @@ function DropdownLink({
   const content = (
     <>
       {icon}
-      <span className="text-xs font-semibold uppercase tracking-wide">
+      <span className="text-xs font-semibold uppercase tracking-wide text-[hsl(var(--text-primary))]">
         {label}
       </span>
     </>
@@ -271,7 +346,7 @@ function DropdownLink({
         href={href}
         className={cn(
           "flex items-center gap-3 mx-2 px-4 py-2.5 rounded-xl transition-all duration-200",
-          "hover:bg-slate-100 dark:hover:bg-slate-800/50",
+          "hover:bg-[hsl(var(--surface-hover))]",
           extraClass,
         )}
       >
@@ -284,7 +359,7 @@ function DropdownLink({
     <button
       className={cn(
         "flex items-center gap-3 mx-2 px-4 py-2.5 rounded-xl transition-all duration-200 w-[calc(100%-16px)]",
-        "hover:bg-slate-100 dark:hover:bg-slate-800/50",
+        "hover:bg-[hsl(var(--surface-hover))]",
         extraClass,
       )}
     >

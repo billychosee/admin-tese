@@ -27,14 +27,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error && (
-          <p className="mt-1 text-sm" style={{ color: "hsl(0 84.2% 60.2%)" }}>
+          <p className="mt-1 text-sm" style={{ color: "hsl(var(--danger))" }}>
             {error}
           </p>
         )}
         {helperText && !error && (
           <p
             className="mt-1 text-sm"
-            style={{ color: "hsl(var(--surface-muted-foreground))" }}
+            style={{ color: "hsl(var(--text-secondary))" }}
           >
             {helperText}
           </p>

@@ -19,12 +19,17 @@ export function Sidebar() {
   const { addToast } = useToast();
   const isDark = theme === "dark";
 
-  // New Clean Palette
-  const sidebarBg = isDark ? "bg-slate-900" : "bg-white";
-  const activeItemBackground = isDark ? "bg-slate-800" : "bg-slate-100";
-  const activeIconColor = "text-emerald-500";
-  const inactiveTextColor = isDark ? "text-slate-400" : "text-slate-500";
-  const borderColor = isDark ? "border-slate-800" : "border-slate-100";
+  // CSS Variable Palette
+  const sidebarBg = "bg-[hsl(var(--surface-muted))]";
+  const activeItemBackground = isDark
+    ? "bg-[hsl(var(--surface-hover))]"
+    : "bg-[hsl(var(--surface))]";
+  const activeIconColor = "text-[hsl(var(--primary))]";
+  const inactiveTextColor = "text-[hsl(var(--text-secondary))]";
+  const borderColor = "border-[hsl(var(--surface-border))]";
+  const hoverBg = "hover:bg-[hsl(var(--surface-hover))]";
+  const logoutHover =
+    "hover:bg-[hsl(var(--danger)/0.1)] hover:text-[hsl(var(--danger))]";
 
   return (
     <aside
@@ -77,14 +82,12 @@ export function Sidebar() {
                   href={item.href}
                   className={cn(
                     "group relative flex items-center gap-4 py-3 rounded-2xl transition-all duration-200",
-                    isActive
-                      ? cn(activeItemBackground, "shadow-sm")
-                      : "hover:bg-slate-50 dark:hover:bg-slate-800/50",
+                    isActive ? cn(activeItemBackground, "shadow-sm") : hoverBg,
                   )}
                 >
                   {/* Left Accent Bar for Active State */}
                   {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-emerald-500 rounded-r-full" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-[hsl(var(--primary))]" />
                   )}
 
                   <div
@@ -92,7 +95,7 @@ export function Sidebar() {
                       "flex items-center transition-colors",
                       isCollapsed ? "w-full justify-center" : "pl-4",
                       isActive ? activeIconColor : inactiveTextColor,
-                      "group-hover:text-emerald-500",
+                      "group-hover:text-[hsl(var(--primary))]",
                     )}
                   >
                     {Icon && (
@@ -105,11 +108,9 @@ export function Sidebar() {
                       className={cn(
                         "text-xs font-semibold uppercase tracking-widest transition-colors",
                         isActive
-                          ? isDark
-                            ? "text-white"
-                            : "text-slate-900"
+                          ? "text-[hsl(var(--text-primary))]"
                           : inactiveTextColor,
-                        "group-hover:text-emerald-500",
+                        "group-hover:text-[hsl(var(--primary))]",
                       )}
                     >
                       {item.label}
@@ -137,15 +138,14 @@ export function Sidebar() {
           }}
           className={cn(
             "flex items-center gap-4 px-4 py-3 rounded-2xl w-full transition-all group",
-            isDark
-              ? "text-slate-400 hover:bg-rose-500/10 hover:text-rose-400"
-              : "text-slate-500 hover:bg-rose-50 hover:text-rose-600",
+            "text-[hsl(var(--text-secondary))]",
+            logoutHover,
             isCollapsed && "justify-center",
           )}
         >
           <Icons.LogOut size={20} />
           {!isCollapsed && (
-            <span className="text-xs font-black uppercase tracking-widest">
+            <span className="text-xs font-black uppercase tracking-widest text-[hsl(var(--text-secondary))]">
               Logout
             </span>
           )}

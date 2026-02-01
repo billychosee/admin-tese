@@ -9,7 +9,6 @@ import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { Icons } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
-import { useTheme } from "@/components/providers/ThemeProvider";
 import { api } from "@/services/api";
 import { cn } from "@/utils";
 import type { Category } from "@/types";
@@ -18,8 +17,6 @@ type ViewMode = "grid" | "list";
 
 export default function CategoriesPage() {
   const { addToast } = useToast();
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
 
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [categories, setCategories] = useState<Category[]>([]);
@@ -170,24 +167,14 @@ export default function CategoriesPage() {
     );
 
   return (
-    <div
-      className={cn(
-        "space-y-8 min-h-screen",
-        isDark ? "bg-[#020617]" : "bg-white",
-      )}
-    >
+    <div className="space-y-8 min-h-screen">
       {/* HEADER & CONTROLS */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1
-            className={cn(
-              "text-3xl font-black uppercase tracking-tighter",
-              isDark ? "text-white" : "text-slate-800",
-            )}
-          >
+          <h1 className="text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
             Categories
           </h1>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+          <p className="text-xs font-bold uppercase tracking-widest mt-1 text-[hsl(var(--text-muted))]">
             Manage your content library
           </p>
         </div>
@@ -196,35 +183,39 @@ export default function CategoriesPage() {
           {/* SEARCH BAR */}
           <div className="relative group">
             <Icons.Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors"
+              className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors"
+              style={{ color: "hsl(var(--text-muted))" }}
               size={16}
             />
             <Input
               placeholder="Filter..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn(
-                "w-48 md:w-64 pl-10 rounded-xl border-none shadow-sm font-bold text-xs",
-                isDark ? "bg-slate-800 text-white" : "bg-white",
-              )}
+              className="w-48 md:w-64 pl-10 rounded-xl font-bold text-xs"
             />
           </div>
 
           {/* VIEW TOGGLE */}
           <div
-            className={cn(
-              "flex p-1 rounded-xl shadow-sm",
-              isDark ? "bg-slate-800" : "bg-white",
-            )}
+            className="flex p-1 rounded-xl shadow-sm"
+            style={{ backgroundColor: "hsl(var(--surface))" }}
           >
             <button
               onClick={() => setViewMode("grid")}
               className={cn(
                 "p-2 rounded-lg transition-all",
                 viewMode === "grid"
-                  ? "bg-emerald-500 text-white shadow-lg"
-                  : "text-slate-400",
+                  ? "text-white shadow-lg"
+                  : "",
               )}
+              style={{
+                backgroundColor:
+                  viewMode === "grid" ? "hsl(var(--primary))" : "transparent",
+                color:
+                  viewMode === "grid"
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--text-secondary))",
+              }}
             >
               <Icons.Grid size={16} />
             </button>
@@ -232,10 +223,16 @@ export default function CategoriesPage() {
               onClick={() => setViewMode("list")}
               className={cn(
                 "p-2 rounded-lg transition-all",
-                viewMode === "list"
-                  ? "bg-emerald-500 text-white shadow-lg"
-                  : "text-slate-400",
+                viewMode === "list" ? "text-white shadow-lg" : "",
               )}
+              style={{
+                backgroundColor:
+                  viewMode === "list" ? "hsl(var(--primary))" : "transparent",
+                color:
+                  viewMode === "list"
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--text-secondary))",
+              }}
             >
               <Icons.List size={16} />
             </button>
@@ -244,7 +241,7 @@ export default function CategoriesPage() {
           <Button
             onClick={() => setShowAddModal(true)}
             size="lg"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black uppercase text-[10px] shadow-lg shadow-emerald-500/20"
+            className="rounded-xl font-black uppercase text-[10px]"
           >
             <Icons.Plus className="mr-2" size={16} /> Add New
           </Button>
@@ -253,9 +250,15 @@ export default function CategoriesPage() {
 
       {/* LISTING VIEW */}
       {filteredCategories.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-20 bg-white rounded-[3rem] shadow-xl border-none">
-          <Icons.FolderOpen className="w-16 h-16 text-slate-200 mb-4" />
-          <p className="text-slate-400 font-black uppercase text-xs">
+        <div
+          className="flex flex-col items-center justify-center p-20 rounded-[3rem] shadow-xl"
+          style={{ backgroundColor: "hsl(var(--surface))" }}
+        >
+          <Icons.FolderOpen
+            className="w-16 h-16 mb-4"
+            style={{ color: "hsl(var(--text-muted))" }}
+          />
+          <p className="font-black uppercase text-xs" style={{ color: "hsl(var(--text-muted))" }}>
             No Categories Found
           </p>
         </div>
@@ -266,8 +269,7 @@ export default function CategoriesPage() {
             <Card
               key={category.id}
               className={cn(
-                "rounded-[2.5rem] border-none shadow-xl hover:scale-[1.02] transition-all",
-                isDark ? "bg-slate-800" : "bg-white",
+                "rounded-[2.5rem] shadow-xl hover:scale-[1.02] transition-all",
               )}
             >
               <CardContent className="p-8">
@@ -284,32 +286,29 @@ export default function CategoriesPage() {
                   <Badge
                     className={cn(
                       "rounded-lg font-black text-[8px] uppercase px-2 py-1",
-                      category.isActive
-                        ? "bg-emerald-500/10 text-emerald-500"
-                        : "bg-rose-500/10 text-rose-500",
                     )}
+                    variant={category.isActive ? "success" : "danger"}
                   >
                     {category.isActive ? "Active" : "Disabled"}
                   </Badge>
                 </div>
-                <h3
-                  className={cn(
-                    "text-lg font-black",
-                    isDark ? "text-white" : "text-slate-800",
-                  )}
-                >
+                <h3 className="text-lg font-black text-[hsl(var(--text-primary))]">
                   {category.name}
                 </h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-4">
+                <p className="text-[10px] font-bold uppercase mb-4" style={{ color: "hsl(var(--text-muted))" }}>
                   {category.videoCount} Videos
                 </p>
 
-                <div className="flex items-center gap-2 pt-4 border-t border-slate-50">
+                <div
+                  className="flex items-center gap-2 pt-4 border-t"
+                  style={{ borderColor: "hsl(var(--surface-border))" }}
+                >
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleToggleStatus(category)}
-                    className="text-slate-400 hover:text-emerald-500"
+                    className="hover:opacity-80"
+                    style={{ color: "hsl(var(--text-secondary))" }}
                   >
                     <Icons.Plus size={14} />
                   </Button>
@@ -325,7 +324,8 @@ export default function CategoriesPage() {
                       });
                       setShowEditModal(true);
                     }}
-                    className="text-slate-400 hover:text-indigo-500"
+                    className="hover:opacity-80"
+                    style={{ color: "hsl(var(--text-secondary))" }}
                   >
                     <Icons.Edit size={14} />
                   </Button>
@@ -336,7 +336,8 @@ export default function CategoriesPage() {
                       setSelectedCategory(category);
                       setShowDeleteModal(true);
                     }}
-                    className="text-rose-400 hover:bg-rose-50"
+                    className="hover:bg-[hsl(var(--danger)/0.1)]"
+                    style={{ color: "hsl(var(--danger))" }}
                   >
                     <Icons.Trash2 size={14} />
                   </Button>
@@ -347,22 +348,16 @@ export default function CategoriesPage() {
         </div>
       ) : (
         /* LIST VIEW (Table Style) */
-        <Card
-          className={cn(
-            "rounded-[2.5rem] border-none shadow-xl overflow-hidden",
-            isDark ? "bg-slate-800" : "bg-white",
-          )}
-        >
+        <Card className="rounded-[2.5rem] shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr
-                  className={cn(
-                    "text-[9px] font-black uppercase tracking-widest",
-                    isDark
-                      ? "bg-slate-900 text-slate-500"
-                      : "bg-slate-50 text-slate-400",
-                  )}
+                  className="text-[9px] font-black uppercase tracking-widest"
+                  style={{
+                    backgroundColor: "hsl(var(--surface-muted))",
+                    color: "hsl(var(--text-secondary))",
+                  }}
                 >
                   <th className="px-8 py-5 text-left">Category</th>
                   <th className="px-4 py-5 text-left">Description</th>
@@ -371,11 +366,15 @@ export default function CategoriesPage() {
                   <th className="px-8 py-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody
+                className="divide-y"
+                style={{ borderColor: "hsl(var(--surface-border))" }}
+              >
                 {filteredCategories.map((category) => (
                   <tr
                     key={category.id}
-                    className="hover:bg-slate-50/50 transition-colors group"
+                    className="transition-colors group"
+                    style={{ backgroundColor: "hsl(var(--surface-hover))" }}
                   >
                     <td className="px-8 py-4">
                       <div className="flex items-center gap-3">
@@ -383,30 +382,31 @@ export default function CategoriesPage() {
                           className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: category.color }}
                         />
-                        <span
-                          className={cn(
-                            "text-sm font-black",
-                            isDark ? "text-white" : "text-slate-800",
-                          )}
-                        >
+                        <span className="text-sm font-black text-[hsl(var(--text-primary))]">
                           {category.name}
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-xs text-slate-400 max-w-[200px] truncate">
+                    <td
+                      className="px-4 py-4 text-xs max-w-[200px] truncate"
+                      style={{ color: "hsl(var(--text-secondary))" }}
+                    >
                       {category.description}
                     </td>
-                    <td className="px-4 py-4 text-center text-xs font-black">
+                    <td className="px-4 py-4 text-center text-xs font-black text-[hsl(var(--text-primary))]">
                       {category.videoCount}
                     </td>
                     <td className="px-4 py-4 text-center">
                       <span
-                        className={cn(
-                          "text-[8px] font-black uppercase px-3 py-1 rounded-full",
-                          category.isActive
-                            ? "bg-emerald-100 text-emerald-600"
-                            : "bg-rose-100 text-rose-600",
-                        )}
+                        className="text-[8px] font-black uppercase px-3 py-1 rounded-full"
+                        style={{
+                          backgroundColor: category.isActive
+                            ? "hsl(var(--success)/0.2)"
+                            : "hsl(var(--danger)/0.2)",
+                          color: category.isActive
+                            ? "hsl(var(--success))"
+                            : "hsl(var(--danger))",
+                        }}
                       >
                         {category.isActive ? "Active" : "Off"}
                       </span>
@@ -426,8 +426,9 @@ export default function CategoriesPage() {
                             setShowEditModal(true);
                           }}
                           className="h-8 w-8 p-0"
+                          style={{ color: "hsl(var(--text-secondary))" }}
                         >
-                          <Icons.Edit size={14} className="text-slate-400" />
+                          <Icons.Edit size={14} />
                         </Button>
                         <Button
                           variant="ghost"
@@ -436,9 +437,10 @@ export default function CategoriesPage() {
                             setSelectedCategory(category);
                             setShowDeleteModal(true);
                           }}
-                          className="h-8 w-8 p-0 hover:bg-rose-50"
+                          className="h-8 w-8 p-0 hover:bg-[hsl(var(--danger)/0.1)]"
+                          style={{ color: "hsl(var(--danger))" }}
                         >
-                          <Icons.Trash2 size={14} className="text-rose-400" />
+                          <Icons.Trash2 size={14} />
                         </Button>
                       </div>
                     </td>
@@ -463,10 +465,8 @@ export default function CategoriesPage() {
         <div className="space-y-6">
           <div className="space-y-2">
             <label
-              className={cn(
-                "text-[10px] font-black uppercase tracking-wider",
-                isDark ? "text-slate-400" : "text-slate-400",
-              )}
+              className="text-[10px] font-black uppercase tracking-wider"
+              style={{ color: "hsl(var(--text-secondary))" }}
             >
               Category Name
             </label>
@@ -476,20 +476,13 @@ export default function CategoriesPage() {
                 setFormData({ ...formData, name: e.target.value })
               }
               placeholder="Enter category name"
-              className={cn(
-                "rounded-xl font-medium",
-                isDark
-                  ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
-                  : "bg-slate-50 border-slate-200",
-              )}
+              className="rounded-xl font-medium"
             />
           </div>
           <div className="space-y-2">
             <label
-              className={cn(
-                "text-[10px] font-black uppercase tracking-wider",
-                isDark ? "text-slate-400" : "text-slate-400",
-              )}
+              className="text-[10px] font-black uppercase tracking-wider"
+              style={{ color: "hsl(var(--text-secondary))" }}
             >
               Description
             </label>
@@ -498,74 +491,26 @@ export default function CategoriesPage() {
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              placeholder="Enter description"
-              rows={3}
-              className={cn(
-                "w-full rounded-xl p-3 text-sm font-medium resize-none transition-colors",
-                isDark
-                  ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
-                  : "bg-slate-50 border-slate-200",
-              )}
+              placeholder="Enter category description"
+              className="w-full rounded-xl p-4 text-sm outline-none transition-all min-h-[100px]"
+              style={{
+                backgroundColor: "hsl(var(--surface))",
+                border: "1px solid hsl(var(--surface-border))",
+                color: "hsl(var(--text-primary))",
+              }}
             />
           </div>
-          <div className="space-y-2">
-            <label
-              className={cn(
-                "text-[10px] font-black uppercase tracking-wider",
-                isDark ? "text-slate-400" : "text-slate-400",
-              )}
-            >
-              Color
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="color"
-                value={formData.color}
-                onChange={(e) =>
-                  setFormData({ ...formData, color: e.target.value })
-                }
-                className="w-12 h-12 rounded-xl cursor-pointer border-none"
-              />
-              <Input
-                value={formData.color}
-                onChange={(e) =>
-                  setFormData({ ...formData, color: e.target.value })
-                }
-                className={cn(
-                  "w-32 rounded-xl font-mono text-sm",
-                  isDark
-                    ? "bg-slate-700 border-slate-600 text-white"
-                    : "bg-slate-50 border-slate-200",
-                )}
-              />
-            </div>
-          </div>
-          <div className="flex gap-3 pt-4">
+          <div className="flex justify-end gap-3 pt-4">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => {
                 setShowAddModal(false);
                 setFormData({ name: "", description: "", color: "#3B82F6" });
               }}
-              className={cn(
-                "flex-1 rounded-xl font-black uppercase text-[10px]",
-                isDark ? "border-slate-600 hover:bg-slate-700" : "",
-              )}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleAddCategory}
-              disabled={!formData.name.trim()}
-              className={cn(
-                "flex-1 rounded-xl font-black uppercase text-[10px] shadow-lg",
-                !formData.name.trim()
-                  ? "bg-slate-400 cursor-not-allowed"
-                  : "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20",
-              )}
-            >
-              Create Category
-            </Button>
+            <Button onClick={handleAddCategory}>Create Category</Button>
           </div>
         </div>
       </Modal>
@@ -581,179 +526,73 @@ export default function CategoriesPage() {
         title="Edit Category"
         size="md"
       >
-        {selectedCategory && (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label
-                className={cn(
-                  "text-[10px] font-black uppercase tracking-wider",
-                  isDark ? "text-slate-400" : "text-slate-400",
-                )}
-              >
-                Category Name
-              </label>
-              <Input
-                value={formData.name || selectedCategory.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className={cn(
-                  "rounded-xl font-medium",
-                  isDark
-                    ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
-                    : "bg-slate-50 border-slate-200",
-                )}
-              />
-            </div>
-            <div className="space-y-2">
-              <label
-                className={cn(
-                  "text-[10px] font-black uppercase tracking-wider",
-                  isDark ? "text-slate-400" : "text-slate-400",
-                )}
-              >
-                Description
-              </label>
-              <textarea
-                value={formData.description || selectedCategory.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={3}
-                className={cn(
-                  "w-full rounded-xl p-3 text-sm font-medium resize-none transition-colors",
-                  isDark
-                    ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
-                    : "bg-slate-50 border-slate-200",
-                )}
-              />
-            </div>
-            <div className="space-y-2">
-              <label
-                className={cn(
-                  "text-[10px] font-black uppercase tracking-wider",
-                  isDark ? "text-slate-400" : "text-slate-400",
-                )}
-              >
-                Color
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={formData.color || selectedCategory.color}
-                  onChange={(e) =>
-                    setFormData({ ...formData, color: e.target.value })
-                  }
-                  className="w-12 h-12 rounded-xl cursor-pointer border-none"
-                />
-                <Input
-                  value={formData.color || selectedCategory.color}
-                  onChange={(e) =>
-                    setFormData({ ...formData, color: e.target.value })
-                  }
-                  className={cn(
-                    "w-32 rounded-xl font-mono text-sm",
-                    isDark
-                      ? "bg-slate-700 border-slate-600 text-white"
-                      : "bg-slate-50 border-slate-200",
-                  )}
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowEditModal(false);
-                  setSelectedCategory(null);
-                  setFormData({ name: "", description: "", color: "#3B82F6" });
-                }}
-                className={cn(
-                  "flex-1 rounded-xl font-black uppercase text-[10px]",
-                  isDark ? "border-slate-600 hover:bg-slate-700" : "",
-                )}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleUpdateCategory}
-                className={cn(
-                  "flex-1 rounded-xl font-black uppercase text-[10px] shadow-lg bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20",
-                )}
-              >
-                Save Changes
-              </Button>
-            </div>
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label
+              className="text-[10px] font-black uppercase tracking-wider"
+              style={{ color: "hsl(var(--text-secondary))" }}
+            >
+              Category Name
+            </label>
+            <Input
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder="Enter category name"
+              className="rounded-xl font-medium"
+            />
           </div>
-        )}
+          <div className="space-y-2">
+            <label
+              className="text-[10px] font-black uppercase tracking-wider"
+              style={{ color: "hsl(var(--text-secondary))" }}
+            >
+              Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              placeholder="Enter category description"
+              className="w-full rounded-xl p-4 text-sm outline-none transition-all min-h-[100px]"
+              style={{
+                backgroundColor: "hsl(var(--surface))",
+                border: "1px solid hsl(var(--surface-border))",
+                color: "hsl(var(--text-primary))",
+              }}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowEditModal(false);
+                setSelectedCategory(null);
+                setFormData({ name: "", description: "", color: "#3B82F6" });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateCategory}>Save Changes</Button>
+          </div>
+        </div>
       </Modal>
 
-      {/* Delete Category Modal */}
-      <Modal
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => {
           setShowDeleteModal(false);
           setSelectedCategory(null);
         }}
+        onConfirm={handleDeleteCategory}
         title="Delete Category"
-        size="sm"
-      >
-        {selectedCategory && (
-          <div className="space-6">
-            {/* Warning Icon */}
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center">
-                <Icons.AlertTriangle size={32} className="text-rose-500" />
-              </div>
-            </div>
-
-            {/* Message */}
-            <div className="text-center space-y-2">
-              <p
-                className={cn(
-                  "text-lg font-black",
-                  isDark ? "text-white" : "text-slate-800",
-                )}
-              >
-                Are you sure?
-              </p>
-              <p
-                className={cn(
-                  "text-sm",
-                  isDark ? "text-slate-400" : "text-slate-500",
-                )}
-              >
-                You are about to delete <span className="font-bold">{selectedCategory.name}</span>. This action cannot be undone.
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setSelectedCategory(null);
-                }}
-                className={cn(
-                  "flex-1 rounded-xl font-black uppercase text-[10px]",
-                  isDark ? "border-slate-600 hover:bg-slate-700" : "",
-                )}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleDeleteCategory}
-                className={cn(
-                  "flex-1 rounded-xl font-black uppercase text-[10px] shadow-lg bg-rose-500 hover:bg-rose-600 shadow-rose-500/20",
-                )}
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
+        message={`Are you sure you want to delete "${selectedCategory?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+      />
     </div>
   );
 }

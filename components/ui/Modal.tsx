@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import React, { Fragment, useEffect } from 'react';
-import { cn } from '@/utils';
-import { Icons } from './Icons';
+import React, { Fragment, useEffect } from "react";
+import { cn } from "@/utils";
+import { Icons } from "./Icons";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: "sm" | "md" | "lg" | "xl";
   showClose?: boolean;
 }
 
@@ -18,52 +18,56 @@ export function Modal({
   onClose,
   title,
   children,
-  size = 'md',
+  size = "md",
   showClose = true,
 }: ModalProps) {
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
   const sizes = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
+    sm: "max-w-md",
+    md: "max-w-lg",
+    lg: "max-w-2xl",
+    xl: "max-w-4xl",
   };
 
   return (
     <Fragment>
-      <div className="modal-overlay" onClick={onClose} />
+      <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className={cn('modal-content w-full animate-scale-in', sizes[size])}
+          className={cn("modal-content w-full animate-scale-in", sizes[size])}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
+          onClick={(e) => e.stopPropagation()}
         >
           <div
             className="flex items-center justify-between px-6 py-4"
-            style={{ borderBottom: '1px solid hsl(var(--surface-border))' }}
+            style={{ borderBottom: "1px solid hsl(var(--surface-border))" }}
           >
-            <h2 id="modal-title" className="text-lg font-semibold">
+            <h2
+              id="modal-title"
+              className="text-lg font-semibold text-[hsl(var(--text-primary))]"
+            >
               {title}
             </h2>
             {showClose && (
               <button
                 onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[hsl(var(--surface-hover))]"
                 style={{
-                  color: 'hsl(var(--surface-muted-foreground))',
+                  color: "hsl(var(--text-secondary))",
                 }}
                 aria-label="Close modal"
               >
@@ -86,7 +90,7 @@ interface ConfirmModalProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  variant?: 'danger' | 'warning' | 'info';
+  variant?: "danger" | "warning" | "info";
   isLoading?: boolean;
 }
 
@@ -96,17 +100,15 @@ export function ConfirmModal({
   onConfirm,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
-  variant = 'info',
+  confirmText = "Confirm",
+  cancelText = "Cancel",
+  variant = "info",
   isLoading = false,
 }: ConfirmModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
       <div className="space-y-6">
-        <p style={{ color: 'hsl(var(--surface-muted-foreground))' }}>
-          {message}
-        </p>
+        <p style={{ color: "hsl(var(--text-secondary))" }}>{message}</p>
         <div className="flex justify-end gap-3">
           <button
             onClick={onClose}
@@ -119,14 +121,14 @@ export function ConfirmModal({
             onClick={onConfirm}
             disabled={isLoading}
             className={
-              variant === 'danger'
-                ? 'btn-danger'
-                : variant === 'warning'
-                  ? 'btn-outline'
-                  : 'btn-primary'
+              variant === "danger"
+                ? "btn-danger"
+                : variant === "warning"
+                  ? "btn-outline"
+                  : "btn-primary"
             }
           >
-            {isLoading ? 'Loading...' : confirmText}
+            {isLoading ? "Loading..." : confirmText}
           </button>
         </div>
       </div>

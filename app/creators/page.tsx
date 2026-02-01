@@ -141,12 +141,35 @@ export default function CreatorsPage() {
 
   const filteredCreators = creators;
 
+  // Color tokens for consistent theming
+  const colors = {
+    background: "bg-[hsl(var(--background))]",
+    surface: "bg-[hsl(var(--surface))]",
+    surfaceMuted: "bg-[hsl(var(--surface-muted))]",
+    surfaceHover: "bg-[hsl(var(--surface-hover))]",
+    surfaceBorder: "border-[hsl(var(--surface-border))]",
+    textPrimary: "text-[hsl(var(--text-primary))]",
+    textSecondary: "text-[hsl(var(--text-secondary))]",
+    textMuted: "text-[hsl(var(--text-muted))]",
+    primary: "bg-[hsl(var(--primary))]",
+    primaryText: "text-[hsl(var(--primary))]",
+    primaryForeground: "text-[hsl(var(--primary-foreground))]",
+    success: "bg-[hsl(var(--success))]",
+    successText: "text-[hsl(var(--success))]",
+    warning: "bg-[hsl(var(--warning))]",
+    warningText: "text-[hsl(var(--warning))]",
+    danger: "bg-[hsl(var(--danger))]",
+    dangerText: "text-[hsl(var(--danger))]",
+    info: "bg-[hsl(var(--info))]",
+    focusRing: "focus:ring-[hsl(var(--focus-ring))]",
+  };
+
   if (isLoading && page === 1) {
     return (
       <div
         className={cn(
-          "space-y-6 min-h-screen font-sans",
-          isDark ? "bg-[#020617]" : "bg-[#F1F5F9]",
+          "space-y-6 min-h-screen font-sans transition-colors duration-300",
+          colors.background,
         )}
       >
         {viewMode === "list" ? (
@@ -162,28 +185,29 @@ export default function CreatorsPage() {
     <div
       className={cn(
         "space-y-8 min-h-screen font-sans transition-colors duration-300",
-        isDark ? "bg-[#020617]" : "bg-white",
+        colors.background,
       )}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className={cn("relative", isDark ? "bg-slate-800" : "bg-white")}>
+          <div className={cn("relative", colors.surfaceMuted)}>
             <Input
               placeholder="Search creators..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
-                "w-64 pl-10",
-                isDark
-                  ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
-                  : "bg-slate-50 border-slate-200",
+                "w-64 pl-10 transition-colors duration-300",
+                colors.surface,
+                colors.surfaceBorder,
+                colors.textPrimary,
+                "placeholder:text-[hsl(var(--text-muted))]",
               )}
             />
             <Icons.Search
               size={18}
               className={cn(
                 "absolute left-3 top-1/2 -translate-y-1/2",
-                isDark ? "text-slate-400" : "text-slate-400",
+                colors.textMuted,
               )}
             />
           </div>
@@ -191,10 +215,10 @@ export default function CreatorsPage() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className={cn(
-              "input w-40",
-              isDark
-                ? "bg-slate-700 border-slate-600 text-white"
-                : "bg-slate-50 border-slate-200",
+              "input w-40 transition-colors duration-300",
+              colors.surface,
+              colors.surfaceBorder,
+              colors.textPrimary,
             )}
           >
             {CREATOR_STATUSES.map((status) => (
@@ -211,11 +235,11 @@ export default function CreatorsPage() {
               "p-3 rounded-2xl transition-all",
               viewMode === "list"
                 ? isDark
-                  ? "bg-emerald-500/20 text-emerald-400"
-                  : "bg-emerald-100 text-emerald-600"
+                  ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                  : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]"
                 : isDark
-                  ? "bg-slate-800 text-slate-400 hover:text-slate-200"
-                  : "bg-white text-slate-400 hover:text-slate-600",
+                  ? `${colors.surfaceMuted} ${colors.textSecondary} hover:${colors.textPrimary}`
+                  : `${colors.surface} ${colors.textSecondary} hover:${colors.textPrimary}`,
             )}
           >
             <Icons.List size={18} />
@@ -226,11 +250,11 @@ export default function CreatorsPage() {
               "p-3 rounded-2xl transition-all",
               viewMode === "grid"
                 ? isDark
-                  ? "bg-emerald-500/20 text-emerald-400"
-                  : "bg-emerald-100 text-emerald-600"
+                  ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                  : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]"
                 : isDark
-                  ? "bg-slate-800 text-slate-400 hover:text-slate-200"
-                  : "bg-white text-slate-400 hover:text-slate-600",
+                  ? `${colors.surfaceMuted} ${colors.textSecondary} hover:${colors.textPrimary}`
+                  : `${colors.surface} ${colors.textSecondary} hover:${colors.textPrimary}`,
             )}
           >
             <Icons.Grid size={18} />
@@ -242,22 +266,14 @@ export default function CreatorsPage() {
         <Card
           className={cn(
             "p-12 rounded-[3rem] border-none shadow-xl text-center transition-colors duration-300",
-            isDark ? "bg-slate-800" : "bg-white",
+            colors.surface,
           )}
         >
           <CardContent>
             <Icons.Users
-              className={cn(
-                "mx-auto h-16 w-16 mb-4",
-                isDark ? "text-slate-600" : "text-slate-300",
-              )}
+              className={cn("mx-auto h-16 w-16 mb-4", colors.textMuted)}
             />
-            <p
-              className={cn(
-                "text-lg font-medium",
-                isDark ? "text-slate-400" : "text-slate-500",
-              )}
-            >
+            <p className={cn("text-lg font-medium", colors.textSecondary)}>
               No creators found
             </p>
           </CardContent>
@@ -266,7 +282,7 @@ export default function CreatorsPage() {
         <Card
           className={cn(
             "rounded-[3rem] border-none shadow-xl overflow-hidden transition-colors duration-300",
-            isDark ? "bg-slate-800" : "bg-white",
+            colors.surface,
           )}
         >
           <div className="overflow-x-auto">
@@ -275,9 +291,8 @@ export default function CreatorsPage() {
                 <tr
                   className={cn(
                     "border-b text-xs font-black uppercase tracking-widest",
-                    isDark
-                      ? "border-slate-700 text-slate-400"
-                      : "border-slate-100 text-slate-400",
+                    colors.surfaceBorder,
+                    colors.textSecondary,
                   )}
                 >
                   <th className="px-8 py-5 text-left">Creator</th>
@@ -291,8 +306,8 @@ export default function CreatorsPage() {
               </thead>
               <tbody
                 className={cn(
-                  "divide-y",
-                  isDark ? "divide-slate-700" : "divide-slate-50",
+                  "divide-y transition-colors duration-300",
+                  colors.surfaceBorder,
                 )}
               >
                 {filteredCreators.map((creator) => (
@@ -300,7 +315,9 @@ export default function CreatorsPage() {
                     key={creator.id}
                     className={cn(
                       "hover transition-all group",
-                      isDark ? "hover:bg-slate-700/50" : "hover:bg-slate-50",
+                      isDark
+                        ? "hover:bg-[hsl(var(--surface-hover))]/50"
+                        : "hover:bg-[hsl(var(--surface-hover))]",
                     )}
                   >
                     <td className="px-8 py-5">
@@ -309,8 +326,8 @@ export default function CreatorsPage() {
                           className={cn(
                             "avatar avatar-md font-bold",
                             isDark
-                              ? "bg-emerald-500/20 text-emerald-400"
-                              : "bg-emerald-100 text-emerald-600",
+                              ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                              : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
                           )}
                         >
                           {getInitials(creator.name)}
@@ -319,7 +336,7 @@ export default function CreatorsPage() {
                           <p
                             className={cn(
                               "text-sm font-black",
-                              isDark ? "text-white" : "text-slate-800",
+                              colors.textPrimary,
                             )}
                           >
                             {creator.name}
@@ -327,7 +344,7 @@ export default function CreatorsPage() {
                           <p
                             className={cn(
                               "text-xs font-bold uppercase",
-                              isDark ? "text-slate-500" : "text-slate-400",
+                              colors.textMuted,
                             )}
                           >
                             {creator.email}
@@ -336,10 +353,7 @@ export default function CreatorsPage() {
                       </div>
                     </td>
                     <td
-                      className={cn(
-                        "px-4 py-5 text-sm",
-                        isDark ? "text-slate-400" : "text-slate-500",
-                      )}
+                      className={cn("px-4 py-5 text-sm", colors.textSecondary)}
                     >
                       {creator.channelName}
                     </td>
@@ -362,18 +376,16 @@ export default function CreatorsPage() {
                           className={cn(
                             "h-2 w-2 rounded-full",
                             creator.onlineStatus === "online"
-                              ? "bg-emerald-400"
+                              ? "bg-[hsl(var(--success))]"
                               : creator.onlineStatus === "away"
-                                ? "bg-amber-400"
-                                : isDark
-                                  ? "bg-slate-600"
-                                  : "bg-slate-300",
+                                ? "bg-[hsl(var(--warning))]"
+                                : colors.textMuted,
                           )}
                         />
                         <span
                           className={cn(
                             "text-xs font-bold uppercase",
-                            isDark ? "text-slate-500" : "text-slate-400",
+                            colors.textMuted,
                           )}
                         >
                           {formatRelativeTime(creator.lastSeen)}
@@ -383,7 +395,7 @@ export default function CreatorsPage() {
                     <td
                       className={cn(
                         "px-4 py-5 text-sm font-medium",
-                        isDark ? "text-slate-400" : "text-slate-500",
+                        colors.textSecondary,
                       )}
                     >
                       {formatNumber(creator.totalVideos)}
@@ -391,7 +403,7 @@ export default function CreatorsPage() {
                     <td
                       className={cn(
                         "px-4 py-5 text-sm font-bold",
-                        isDark ? "text-emerald-400" : "text-emerald-600",
+                        colors.successText,
                       )}
                     >
                       {formatCurrency(creator.totalEarnings)}
@@ -403,8 +415,8 @@ export default function CreatorsPage() {
                           className={cn(
                             "p-2 rounded-xl transition-all",
                             isDark
-                              ? "hover:bg-slate-700 text-slate-400 hover:text-slate-200"
-                              : "hover:bg-slate-100 text-slate-400 hover:text-slate-600",
+                              ? `${colors.surfaceHover} ${colors.textSecondary} hover:${colors.textPrimary}`
+                              : `${colors.surfaceHover} ${colors.textSecondary} hover:${colors.textPrimary}`,
                           )}
                           title="View profile"
                         >
@@ -417,7 +429,10 @@ export default function CreatorsPage() {
                                 setSelectedCreator(creator);
                                 setShowApproveModal(true);
                               }}
-                              className="p-2 rounded-xl hover:bg-emerald-500/10 text-emerald-400 transition-all"
+                              className={cn(
+                                "p-2 rounded-xl transition-all hover:bg-[hsl(var(--success))]/10",
+                                colors.successText,
+                              )}
                               title="Approve"
                             >
                               <Icons.Check size={16} />
@@ -427,7 +442,10 @@ export default function CreatorsPage() {
                                 setSelectedCreator(creator);
                                 setShowRejectModal(true);
                               }}
-                              className="p-2 rounded-xl hover:bg-red-500/10 text-red-400 transition-all"
+                              className={cn(
+                                "p-2 rounded-xl transition-all hover:bg-[hsl(var(--danger))]/10",
+                                colors.dangerText,
+                              )}
                               title="Reject"
                             >
                               <Icons.XCircle size={16} />
@@ -439,8 +457,8 @@ export default function CreatorsPage() {
                           className={cn(
                             "p-2 rounded-xl transition-all",
                             isDark
-                              ? "hover:bg-slate-700 text-slate-400 hover:text-slate-200"
-                              : "hover:bg-slate-100 text-slate-400 hover:text-slate-600",
+                              ? `${colors.surfaceHover} ${colors.textSecondary} hover:${colors.textPrimary}`
+                              : `${colors.surfaceHover} ${colors.textSecondary} hover:${colors.textPrimary}`,
                           )}
                           title={
                             creator.status === "active"
@@ -470,38 +488,35 @@ export default function CreatorsPage() {
               hover
               className={cn(
                 "rounded-[3rem] border-none shadow-xl transition-all duration-300",
-                isDark ? "bg-slate-800" : "bg-white",
+                colors.surface,
               )}
             >
-              <CardContent className="pt-8 pb-8">
+              <CardContent className="p-5">
                 <div className="flex flex-col items-center text-center">
                   <div
                     className={cn(
-                      "avatar avatar-lg font-bold text-lg",
+                      "avatar font-bold text-sm",
                       isDark
-                        ? "bg-emerald-500/20 text-emerald-400"
-                        : "bg-emerald-100 text-emerald-600",
+                        ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                        : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
                     )}
                   >
                     {getInitials(creator.name)}
                   </div>
                   <h3
-                    className={cn(
-                      "mt-4 text-lg font-black",
-                      isDark ? "text-white" : "text-slate-800",
-                    )}
+                    className={cn("mt-3 text-sm font-bold", colors.textPrimary)}
                   >
                     {creator.name}
                   </h3>
                   <p
                     className={cn(
-                      "text-xs font-bold uppercase tracking-wider mt-1",
-                      isDark ? "text-slate-500" : "text-slate-400",
+                      "text-[10px] font-medium uppercase tracking-wider mt-1",
+                      colors.textMuted,
                     )}
                   >
                     {creator.channelName}
                   </p>
-                  <div className="mt-4 flex items-center gap-2">
+                  <div className="mt-3 flex items-center gap-2">
                     <Badge
                       variant={
                         creator.status === "active"
@@ -517,34 +532,34 @@ export default function CreatorsPage() {
                       className={cn(
                         "h-2.5 w-2.5 rounded-full",
                         creator.onlineStatus === "online"
-                          ? "bg-emerald-400"
+                          ? "bg-[hsl(var(--success))]"
                           : creator.onlineStatus === "away"
-                            ? "bg-amber-400"
-                            : isDark
-                              ? "bg-slate-600"
-                              : "bg-slate-300",
+                            ? "bg-[hsl(var(--warning))]"
+                            : colors.textMuted,
                       )}
                     />
                   </div>
-                  <div className="mt-6 grid grid-cols-2 gap-4 w-full">
+                  <div className="mt-4 grid grid-cols-2 gap-3 w-full">
                     <div
                       className={cn(
-                        "p-4 rounded-2xl",
-                        isDark ? "bg-slate-700/50" : "bg-slate-50",
+                        "p-3 rounded-xl transition-colors duration-300",
+                        isDark
+                          ? "bg-[hsl(var(--surface-hover))]/50"
+                          : "bg-[hsl(var(--surface-hover))]",
                       )}
                     >
                       <p
                         className={cn(
-                          "text-xl font-black",
-                          isDark ? "text-white" : "text-slate-800",
+                          "text-base font-bold",
+                          colors.textPrimary,
                         )}
                       >
                         {formatNumber(creator.totalVideos)}
                       </p>
                       <p
                         className={cn(
-                          "text-[10px] font-bold uppercase tracking-wider",
-                          isDark ? "text-slate-500" : "text-slate-400",
+                          "text-[9px] font-medium uppercase tracking-wider",
+                          colors.textMuted,
                         )}
                       >
                         Videos
@@ -552,35 +567,38 @@ export default function CreatorsPage() {
                     </div>
                     <div
                       className={cn(
-                        "p-4 rounded-2xl",
-                        isDark ? "bg-emerald-900/30" : "bg-emerald-50",
+                        "p-3 rounded-xl transition-colors duration-300",
+                        isDark
+                          ? "bg-[hsl(var(--success))]/10"
+                          : "bg-[hsl(var(--success))]/10",
                       )}
                     >
                       <p
                         className={cn(
-                          "text-xl font-black",
-                          isDark ? "text-emerald-400" : "text-emerald-600",
+                          "text-base font-bold",
+                          colors.successText,
                         )}
                       >
                         {formatCurrency(creator.totalEarnings)}
                       </p>
                       <p
                         className={cn(
-                          "text-[10px] font-bold uppercase tracking-wider",
-                          isDark ? "text-emerald-500" : "text-emerald-500",
+                          "text-[9px] font-medium uppercase tracking-wider",
+                          colors.successText,
                         )}
                       >
                         Earnings
                       </p>
                     </div>
                   </div>
-                  <div className="mt-6 flex gap-2 w-full">
+                  <div className="mt-4 flex gap-2 w-full">
                     <Button
                       variant="outline"
                       size="sm"
                       className={cn(
-                        "flex-1",
-                        isDark ? "border-slate-600 hover:bg-slate-700" : "",
+                        "flex-1 transition-colors duration-300",
+                        colors.surfaceBorder,
+                        isDark ? `hover:${colors.surfaceHover}` : "",
                       )}
                       onClick={() => openProfile(creator)}
                     >
@@ -589,11 +607,12 @@ export default function CreatorsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className={
+                      className={cn(
+                        "transition-colors duration-300",
                         isDark
-                          ? "text-slate-400 hover:text-slate-200 hover:bg-slate-700"
-                          : ""
-                      }
+                          ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
+                          : "",
+                      )}
                       onClick={() => handleToggleStatus(creator)}
                     >
                       {creator.status === "active" ? (
@@ -613,10 +632,9 @@ export default function CreatorsPage() {
       {totalPages > 1 && (
         <div
           className={cn(
-            "flex items-center justify-center gap-4 py-4",
-            isDark
-              ? "bg-slate-800 rounded-3xl"
-              : "bg-white rounded-3xl shadow-xl",
+            "flex items-center justify-center gap-4 py-4 transition-colors duration-300",
+            isDark ? "rounded-3xl" : "rounded-3xl shadow-xl",
+            colors.surface,
           )}
         >
           <Button
@@ -624,14 +642,18 @@ export default function CreatorsPage() {
             size="sm"
             onClick={() => setPage(page - 1)}
             disabled={page === 1}
-            className={isDark ? "border-slate-600 hover:bg-slate-700" : ""}
+            className={cn(
+              "transition-colors duration-300",
+              colors.surfaceBorder,
+              isDark ? `hover:${colors.surfaceHover}` : "",
+            )}
           >
             Previous
           </Button>
           <span
             className={cn(
               "text-sm font-black uppercase tracking-wider px-4",
-              isDark ? "text-slate-400" : "text-slate-500",
+              colors.textSecondary,
             )}
           >
             Page {page} of {totalPages}
@@ -641,7 +663,11 @@ export default function CreatorsPage() {
             size="sm"
             onClick={() => setPage(page + 1)}
             disabled={page === totalPages}
-            className={isDark ? "border-slate-600 hover:bg-slate-700" : ""}
+            className={cn(
+              "transition-colors duration-300",
+              colors.surfaceBorder,
+              isDark ? `hover:${colors.surfaceHover}` : "",
+            )}
           >
             Next
           </Button>
@@ -655,19 +681,19 @@ export default function CreatorsPage() {
         size="lg"
       >
         {selectedCreator && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Creator Header Card */}
             <div
               className={cn(
-                "p-6 rounded-[2.5rem] bg-gradient-to-br from-emerald-400 to-emerald-600 text-white relative overflow-hidden",
+                "p-5 rounded-[2rem] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--primary))] text-white relative overflow-hidden",
               )}
             >
               <div className="relative z-10 flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-black text-xl">
+                <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold text-lg">
                   {getInitials(selectedCreator.name)}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-black">{selectedCreator.name}</h3>
+                  <h3 className="text-lg font-bold">{selectedCreator.name}</h3>
                   <p className="text-xs font-medium opacity-80">
                     {selectedCreator.email}
                   </p>
@@ -681,102 +707,93 @@ export default function CreatorsPage() {
                         : "danger"
                   }
                   className={cn(
-                    "text-[10px] font-black uppercase tracking-wider",
+                    "text-[10px] font-bold uppercase tracking-wider",
                     selectedCreator.status === "active"
-                      ? "bg-white/20 text-white"
+                      ? "bg-white/20 text-white border-white/30"
                       : "",
                   )}
                 >
                   {selectedCreator.status}
                 </Badge>
               </div>
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-3xl" />
+              <div className="absolute -bottom-3 -right-3 w-20 h-20 bg-white/10 rounded-full blur-2xl" />
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div
                 className={cn(
-                  "p-6 rounded-[2rem] transition-colors duration-300",
-                  isDark ? "bg-slate-700/50" : "bg-slate-50",
+                  "p-4 rounded-xl transition-colors duration-300",
+                  isDark
+                    ? "bg-[hsl(var(--surface-hover))]/50"
+                    : "bg-[hsl(var(--surface-hover))]",
                 )}
               >
                 <p
                   className={cn(
-                    "text-[10px] font-black uppercase tracking-wider mb-2",
-                    isDark ? "text-slate-400" : "text-slate-400",
+                    "text-[10px] font-bold uppercase tracking-wider mb-1.5",
+                    colors.textSecondary,
                   )}
                 >
                   Channel
                 </p>
-                <p
-                  className={cn(
-                    "text-lg font-black",
-                    isDark ? "text-white" : "text-slate-800",
-                  )}
-                >
+                <p className={cn("text-base font-bold", colors.textPrimary)}>
                   {selectedCreator.channelName}
                 </p>
               </div>
               <div
                 className={cn(
-                  "p-6 rounded-[2rem] transition-colors duration-300",
-                  isDark ? "bg-slate-700/50" : "bg-slate-50",
+                  "p-4 rounded-xl transition-colors duration-300",
+                  isDark
+                    ? "bg-[hsl(var(--surface-hover))]/50"
+                    : "bg-[hsl(var(--surface-hover))]",
                 )}
               >
                 <p
                   className={cn(
-                    "text-[10px] font-black uppercase tracking-wider mb-2",
-                    isDark ? "text-slate-400" : "text-slate-400",
+                    "text-[10px] font-bold uppercase tracking-wider mb-1.5",
+                    colors.textSecondary,
                   )}
                 >
                   Videos
                 </p>
-                <p
-                  className={cn(
-                    "text-lg font-black",
-                    isDark ? "text-white" : "text-slate-800",
-                  )}
-                >
+                <p className={cn("text-base font-bold", colors.textPrimary)}>
                   {formatNumber(selectedCreator.totalVideos)}
                 </p>
               </div>
               <div
                 className={cn(
-                  "p-6 rounded-[2rem] transition-colors duration-300",
-                  isDark ? "bg-slate-700/50" : "bg-slate-50",
+                  "p-4 rounded-xl transition-colors duration-300",
+                  isDark
+                    ? "bg-[hsl(var(--surface-hover))]/50"
+                    : "bg-[hsl(var(--surface-hover))]",
                 )}
               >
                 <p
                   className={cn(
-                    "text-[10px] font-black uppercase tracking-wider mb-2",
-                    isDark ? "text-slate-400" : "text-slate-400",
+                    "text-[10px] font-bold uppercase tracking-wider mb-1.5",
+                    colors.textSecondary,
                   )}
                 >
                   Total Views
                 </p>
-                <p
-                  className={cn(
-                    "text-lg font-black",
-                    isDark ? "text-white" : "text-slate-800",
-                  )}
-                >
+                <p className={cn("text-base font-bold", colors.textPrimary)}>
                   {formatNumber(selectedCreator.totalViews)}
                 </p>
               </div>
               <div
                 className={cn(
-                  "p-6 rounded-[2rem] bg-gradient-to-br from-amber-400 to-amber-600 text-white",
+                  "p-4 rounded-xl bg-gradient-to-br from-[hsl(var(--warning))] to-[hsl(var(--warning))] text-white",
                 )}
               >
                 <p
                   className={cn(
-                    "text-[10px] font-black uppercase tracking-wider mb-2 opacity-80",
+                    "text-[10px] font-bold uppercase tracking-wider mb-1.5 opacity-80",
                   )}
                 >
                   Total Earnings
                 </p>
-                <p className="text-lg font-black">
+                <p className="text-base font-bold">
                   {formatCurrency(selectedCreator.totalEarnings)}
                 </p>
               </div>
@@ -786,25 +803,22 @@ export default function CreatorsPage() {
             {selectedCreator.smatPayMerchantId && (
               <div
                 className={cn(
-                  "p-6 rounded-[2rem] transition-colors duration-300",
-                  isDark ? "bg-slate-800" : "bg-white",
+                  "p-4 rounded-xl transition-colors duration-300",
+                  colors.surface,
                 )}
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <p
                       className={cn(
-                        "text-[10px] font-black uppercase tracking-wider mb-1",
-                        isDark ? "text-slate-400" : "text-slate-400",
+                        "text-[10px] font-bold uppercase tracking-wider mb-1",
+                        colors.textSecondary,
                       )}
                     >
                       SmatPay Merchant
                     </p>
                     <p
-                      className={cn(
-                        "text-sm font-bold",
-                        isDark ? "text-white" : "text-slate-800",
-                      )}
+                      className={cn("text-sm font-medium", colors.textPrimary)}
                     >
                       {selectedCreator.smatPayMerchantId}
                     </p>
@@ -817,7 +831,7 @@ export default function CreatorsPage() {
                           ? "warning"
                           : "danger"
                     }
-                    className="text-[10px] font-black uppercase tracking-wider"
+                    className="text-[10px] font-bold uppercase tracking-wider"
                   >
                     {selectedCreator.smatPayStatus}
                   </Badge>
@@ -828,26 +842,26 @@ export default function CreatorsPage() {
             {/* Online Status */}
             <div
               className={cn(
-                "p-4 rounded-[2rem] flex items-center gap-4 transition-colors duration-300",
-                isDark ? "bg-slate-700/30" : "bg-slate-50",
+                "p-3 rounded-xl flex items-center gap-3 transition-colors duration-300",
+                isDark
+                  ? "bg-[hsl(var(--surface-hover))]/30"
+                  : "bg-[hsl(var(--surface-hover))]",
               )}
             >
               <span
                 className={cn(
-                  "h-3 w-3 rounded-full",
+                  "h-2.5 w-2.5 rounded-full",
                   selectedCreator.onlineStatus === "online"
-                    ? "bg-emerald-400"
+                    ? "bg-[hsl(var(--success))]"
                     : selectedCreator.onlineStatus === "away"
-                      ? "bg-amber-400"
-                      : isDark
-                        ? "bg-slate-600"
-                        : "bg-slate-300",
+                      ? "bg-[hsl(var(--warning))]"
+                      : colors.textMuted,
                 )}
               />
               <span
                 className={cn(
-                  "text-xs font-black uppercase tracking-wider",
-                  isDark ? "text-slate-400" : "text-slate-400",
+                  "text-xs font-bold uppercase tracking-wider",
+                  colors.textSecondary,
                 )}
               >
                 Last seen {formatRelativeTime(selectedCreator.lastSeen)}
