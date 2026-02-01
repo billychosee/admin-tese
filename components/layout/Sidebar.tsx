@@ -3,17 +3,20 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/utils";
 import { useSidebar } from "@/components/providers/SidebarProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { Icons } from "@/components/ui/Icons";
-import { SIDEBAR_ITEMS } from "@/constants";
+import { useToast } from "@/components/ui/Toast";
+import { SIDEBAR_ITEMS, AUTH_TOKEN_KEY } from "@/constants";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isCollapsed } = useSidebar();
   const { theme } = useTheme();
+  const { addToast } = useToast();
   const isDark = theme === "dark";
 
   // New Clean Palette
@@ -122,6 +125,16 @@ export function Sidebar() {
       {/* Footer: Logout */}
       <div className={cn("p-4 mt-auto border-t", borderColor)}>
         <button
+          onClick={() => {
+            document.cookie = `${AUTH_TOKEN_KEY}=; path=/; max-age=0`;
+            localStorage.removeItem(AUTH_TOKEN_KEY);
+            addToast({
+              type: "info",
+              title: "Signed Out",
+              message: "You have been securely logged out",
+            });
+            router.push("/login");
+          }}
           className={cn(
             "flex items-center gap-4 px-4 py-3 rounded-2xl w-full transition-all group",
             isDark

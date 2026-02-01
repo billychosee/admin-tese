@@ -2,16 +2,21 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/utils";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { Icons } from "@/components/ui/Icons";
+import { useToast } from "@/components/ui/Toast";
+import { AUTH_TOKEN_KEY } from "@/constants";
 
 interface TopBarProps {
   title: string;
 }
 
 export function TopBar({ title }: TopBarProps) {
+  const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const { addToast } = useToast();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +41,17 @@ export function TopBar({ title }: TopBarProps) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = () => {
+    document.cookie = `${AUTH_TOKEN_KEY}=; path=/; max-age=0`;
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    addToast({
+      type: "info",
+      title: "Signed Out",
+      message: "You have been securely logged out",
+    });
+    router.push("/login");
+  };
 
   return (
     <header
@@ -69,7 +85,7 @@ export function TopBar({ title }: TopBarProps) {
       <div className="flex items-center gap-5">
         <button
           onClick={toggleTheme}
-          className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 transition-colors"
           style={{ color: "hsl(var(--surface-muted-foreground))" }}
         >
           {theme === "dark" ? (
@@ -93,7 +109,9 @@ export function TopBar({ title }: TopBarProps) {
           {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-[hsl(var(--surface-border))] bg-[hsl(var(--surface))] shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="px-4 py-3 border-b border-[hsl(var(--surface-border))] bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-widest">Notifications</h3>
+                <h3 className="text-xs font-bold uppercase tracking-widest">
+                  Notifications
+                </h3>
                 <button className="text-[10px] text-emerald-500 font-medium hover:text-emerald-600">
                   Mark all read
                 </button>
@@ -112,7 +130,9 @@ export function TopBar({ title }: TopBarProps) {
                   time="1h ago"
                 />
                 <NotificationItem
-                  icon={<Icons.DollarSign size={16} className="text-blue-500" />}
+                  icon={
+                    <Icons.DollarSign size={16} className="text-blue-500" />
+                  }
                   title="Payment received"
                   description="You received $250.00 from video revenue"
                   time="3h ago"
@@ -179,11 +199,15 @@ export function TopBar({ title }: TopBarProps) {
                 />
               </div>
               <div className="border-t border-[hsl(var(--surface-border))] py-2">
-                <DropdownLink
-                  icon={<Icons.LogOut size={18} />}
-                  label="Sign out"
-                  extraClass="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10"
-                />
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 mx-2 px-4 py-2.5 rounded-xl transition-all duration-200 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10"
+                >
+                  <Icons.LogOut size={18} />
+                  <span className="text-xs font-semibold uppercase tracking-wide">
+                    Sign out
+                  </span>
+                </button>
               </div>
             </div>
           )}
@@ -207,15 +231,13 @@ function NotificationItem({
 }) {
   return (
     <div className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer border-b border-[hsl(var(--surface-border)) / 0.5]">
-      {icon && (
-        <div className="flex-shrink-0 mt-0.5">
-          {icon}
-        </div>
-      )}
+      {icon && <div className="flex-shrink-0 mt-0.5">{icon}</div>}
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium truncate">{title}</p>
         {description && (
-          <p className="text-[10px] text-slate-400 mt-0.5 truncate">{description}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+            {description}
+          </p>
         )}
         <p className="text-[10px] text-slate-400 mt-1">{time}</p>
       </div>

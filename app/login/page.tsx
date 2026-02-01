@@ -57,7 +57,7 @@ function LoginContent() {
       {/* Theme Toggle */}
       <button
         onClick={toggleTheme}
-        className="absolute top-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 dark:bg-slate-800/50 backdrop-blur-sm hover:bg-white/20 dark:hover:bg-slate-700/50 transition-colors"
+        className="absolute top-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 transition-colors"
       >
         {isDark ? (
           <Icons.Sun size={20} className="text-amber-400" />
