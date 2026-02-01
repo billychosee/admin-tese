@@ -208,7 +208,7 @@ function LoginContent() {
 
           <footer className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-center text-[9px] font-black text-slate-400 uppercase tracking-widest">
-              <span>© {new Date().getFullYear()} TESE CORP</span>
+              <span>© {new Date().getFullYear()} TESE</span>
               <div className="flex gap-4">
                 <span className="hover:text-slate-600 cursor-pointer">
                   Security
