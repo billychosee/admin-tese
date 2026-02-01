@@ -40,15 +40,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.classList.toggle("dark", value === "dark");
   }, []);
 
-  if (!mounted) {
-    return <div className="min-h-screen bg-white">{children}</div>;
-  }
-
   return (
     <ThemeContext.Provider
       value={{ theme, toggleTheme, setTheme: setThemeValue }}
     >
-      {children}
+      <div className={mounted ? "" : "min-h-screen bg-white"}>{children}</div>
     </ThemeContext.Provider>
   );
 }
