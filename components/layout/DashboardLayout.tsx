@@ -22,22 +22,41 @@ const pageTitles: Record<string, string> = {
   "/featured": "Featured Creators",
   "/transactions": "Transactions",
   "/devices": "Devices & Sessions",
+  "/notifications": "Notifications",
 };
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const { isCollapsed, toggleSidebar } = useSidebar();
   const [mounted, setMounted] = useState(false);
-  const currentYear = new Date().getFullYear();
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    setCurrentYear(new Date().getFullYear());
   }, []);
 
   const title = "Dashboard";
 
+  // Use fixed year during SSR to avoid hydration mismatch
+  const serverYear = 2025;
+  const displayYear = currentYear || serverYear;
+
   if (!mounted) {
-    return null;
+    return (
+      <div className="min-h-screen flex">
+        <div className="w-[260px] h-screen bg-white dark:bg-slate-900 border-r" />
+        <div className="flex-1 ml-[260px]">
+          <div className="h-16" />
+          <div className="p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-1/4" />
+              <div className="h-32 bg-slate-200 dark:bg-slate-800 rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -75,7 +94,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             color: "hsl(var(--surface-muted-foreground))",
           }}
         >
-          TESE {currentYear} © Copyright of TESE
+          TESE {displayYear} © Copyright of TESE
         </footer>
       </div>
     </div>

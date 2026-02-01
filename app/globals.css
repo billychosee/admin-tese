@@ -182,6 +182,21 @@
     box-shadow: 0 0 0 2px hsl(var(--surface-muted-foreground) / 0.5);
   }
 
+  .btn-sm {
+    @apply btn;
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .btn-md {
+    @apply btn;
+    @apply px-4 py-2 text-sm;
+  }
+
+  .btn-lg {
+    @apply btn;
+    @apply px-6 py-3 text-base;
+  }
+
   .card {
     @apply rounded-xl shadow-soft;
     background-color: hsl(var(--surface));

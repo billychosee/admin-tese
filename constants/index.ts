@@ -80,6 +80,12 @@ export const SIDEBAR_ITEMS = [
     href: "/devices",
     icon: "Smartphone",
   },
+  {
+    id: "notifications",
+    label: "Notifications",
+    href: "/notifications",
+    icon: "Bell",
+  },
 ];
 
 export const STAT_CARDS = [

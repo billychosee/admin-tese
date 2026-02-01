@@ -83,7 +83,7 @@ export function TopBar({ title }: TopBarProps) {
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             style={{ color: "hsl(var(--surface-muted-foreground))" }}
           >
             <Icons.Bell size={20} />
@@ -91,20 +91,45 @@ export function TopBar({ title }: TopBarProps) {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[hsl(var(--surface-border))] bg-[hsl(var(--surface))] shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-[hsl(var(--surface-border))]">
-                <h3 className="text-sm font-bold">Notifications</h3>
+            <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-[hsl(var(--surface-border))] bg-[hsl(var(--surface))] shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="px-4 py-3 border-b border-[hsl(var(--surface-border))] bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-widest">Notifications</h3>
+                <button className="text-[10px] text-emerald-500 font-medium hover:text-emerald-600">
+                  Mark all read
+                </button>
               </div>
-              <div className="max-h-64 overflow-y-auto">
+              <div className="max-h-72 overflow-y-auto">
                 <NotificationItem
+                  icon={<Icons.Users size={16} className="text-emerald-500" />}
                   title="New creator registered"
+                  description="John Doe has joined as a new creator"
                   time="2m ago"
                 />
-                <NotificationItem title="Security Alert" time="1h ago" />
+                <NotificationItem
+                  icon={<Icons.Shield size={16} className="text-amber-500" />}
+                  title="Security Alert"
+                  description="Unusual login detected from new device"
+                  time="1h ago"
+                />
+                <NotificationItem
+                  icon={<Icons.DollarSign size={16} className="text-blue-500" />}
+                  title="Payment received"
+                  description="You received $250.00 from video revenue"
+                  time="3h ago"
+                />
+                <NotificationItem
+                  icon={<Icons.Star size={16} className="text-purple-500" />}
+                  title="Featured video"
+                  description="Your video is now trending #5"
+                  time="5h ago"
+                />
               </div>
-              <button className="w-full py-2 text-xs font-semibold text-primary-500 hover:bg-slate-50 dark:hover:bg-slate-900 border-t border-[hsl(var(--surface-border))]">
+              <Link
+                href="/notifications"
+                className="block w-full py-3 text-xs font-semibold text-center text-emerald-500 hover:bg-slate-50 dark:hover:bg-slate-800 border-t border-[hsl(var(--surface-border))] transition-colors"
+              >
                 View All
-              </button>
+              </Link>
             </div>
           )}
         </div>
@@ -115,14 +140,14 @@ export function TopBar({ title }: TopBarProps) {
         <div className="relative" ref={profileRef}>
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="flex items-center gap-3 rounded-full py-1 pl-1 pr-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            className="flex items-center gap-3 rounded-2xl py-1.5 pl-1.5 pr-4 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md shadow-primary/20">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md shadow-emerald-500/20">
               <span className="text-[11px] font-bold">TA</span>
             </div>
             <div className="hidden md:block text-left">
               <p className="text-xs font-bold leading-none">TESE Admin</p>
-              <p className="mt-1 text-[10px] text-slate-500 font-medium">
+              <p className="mt-1 text-[10px] text-slate-400 font-medium">
                 admin@tese.com
               </p>
             </div>
@@ -136,27 +161,30 @@ export function TopBar({ title }: TopBarProps) {
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-56 rounded-xl border border-[hsl(var(--surface-border))] bg-[hsl(var(--surface))] shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-4 py-2 border-b border-[hsl(var(--surface-border))] mb-1">
-                <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+            <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[hsl(var(--surface-border))] bg-[hsl(var(--surface))] shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="px-4 py-3 border-b border-[hsl(var(--surface-border))] bg-slate-50/50 dark:bg-slate-800/50">
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
                   Account
                 </p>
               </div>
-              <DropdownLink
-                icon={<Icons.User size={15} />}
-                label="Profile"
-                href="/profile"
-              />
-              <DropdownLink
-                icon={<Icons.Settings size={15} />}
-                label="Settings"
-              />
-              <div className="my-1 border-t border-[hsl(var(--surface-border))]" />
-              <DropdownLink
-                icon={<Icons.LogOut size={15} />}
-                label="Sign out"
-                extraClass="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10"
-              />
+              <div className="py-2">
+                <DropdownLink
+                  icon={<Icons.User size={18} />}
+                  label="Profile"
+                  href="/profile"
+                />
+                <DropdownLink
+                  icon={<Icons.Settings size={18} />}
+                  label="Settings"
+                />
+              </div>
+              <div className="border-t border-[hsl(var(--surface-border))] py-2">
+                <DropdownLink
+                  icon={<Icons.LogOut size={18} />}
+                  label="Sign out"
+                  extraClass="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10"
+                />
+              </div>
             </div>
           )}
         </div>
@@ -166,11 +194,31 @@ export function TopBar({ title }: TopBarProps) {
 }
 
 // Helper components for cleaner code
-function NotificationItem({ title, time }: { title: string; time: string }) {
+function NotificationItem({
+  icon,
+  title,
+  description,
+  time,
+}: {
+  icon?: React.ReactNode;
+  title: string;
+  description?: string;
+  time: string;
+}) {
   return (
-    <div className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer border-b border-[hsl(var(--surface-border)) / 0.5]">
-      <p className="text-xs font-medium">{title}</p>
-      <p className="text-[10px] text-slate-500 mt-0.5">{time}</p>
+    <div className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer border-b border-[hsl(var(--surface-border)) / 0.5]">
+      {icon && (
+        <div className="flex-shrink-0 mt-0.5">
+          {icon}
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium truncate">{title}</p>
+        {description && (
+          <p className="text-[10px] text-slate-400 mt-0.5 truncate">{description}</p>
+        )}
+        <p className="text-[10px] text-slate-400 mt-1">{time}</p>
+      </div>
     </div>
   );
 }
@@ -189,7 +237,9 @@ function DropdownLink({
   const content = (
     <>
       {icon}
-      <span>{label}</span>
+      <span className="text-xs font-semibold uppercase tracking-wide">
+        {label}
+      </span>
     </>
   );
 
@@ -198,7 +248,8 @@ function DropdownLink({
       <Link
         href={href}
         className={cn(
-          "flex w-full items-center gap-3 px-4 py-2 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors",
+          "flex items-center gap-3 mx-2 px-4 py-2.5 rounded-xl transition-all duration-200",
+          "hover:bg-slate-100 dark:hover:bg-slate-800/50",
           extraClass,
         )}
       >
@@ -210,7 +261,8 @@ function DropdownLink({
   return (
     <button
       className={cn(
-        "flex w-full items-center gap-3 px-4 py-2 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors",
+        "flex items-center gap-3 mx-2 px-4 py-2.5 rounded-xl transition-all duration-200 w-[calc(100%-16px)]",
+        "hover:bg-slate-100 dark:hover:bg-slate-800/50",
         extraClass,
       )}
     >

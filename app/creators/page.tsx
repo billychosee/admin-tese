@@ -656,91 +656,156 @@ export default function CreatorsPage() {
       >
         {selectedCreator && (
           <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="avatar avatar-lg bg-primary-600 text-white font-medium text-lg">
-                {getInitials(selectedCreator.name)}
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold">
-                  {selectedCreator.name}
-                </h3>
-                <p
-                  className="text-sm"
-                  style={{ color: "hsl(var(--surface-muted-foreground))" }}
+            {/* Creator Header Card */}
+            <div
+              className={cn(
+                "p-6 rounded-[2.5rem] bg-gradient-to-br from-emerald-400 to-emerald-600 text-white relative overflow-hidden",
+              )}
+            >
+              <div className="relative z-10 flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-black text-xl">
+                  {getInitials(selectedCreator.name)}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-black">{selectedCreator.name}</h3>
+                  <p className="text-xs font-medium opacity-80">
+                    {selectedCreator.email}
+                  </p>
+                </div>
+                <Badge
+                  variant={
+                    selectedCreator.status === "active"
+                      ? "success"
+                      : selectedCreator.status === "pending"
+                        ? "warning"
+                        : "danger"
+                  }
+                  className={cn(
+                    "text-[10px] font-black uppercase tracking-wider",
+                    selectedCreator.status === "active"
+                      ? "bg-white/20 text-white"
+                      : "",
+                  )}
                 >
-                  {selectedCreator.email}
-                </p>
+                  {selectedCreator.status}
+                </Badge>
               </div>
-              <Badge
-                variant={
-                  selectedCreator.status === "active"
-                    ? "success"
-                    : selectedCreator.status === "pending"
-                      ? "warning"
-                      : "danger"
-                }
-                className="ml-auto"
-              >
-                {selectedCreator.status}
-              </Badge>
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-3xl" />
             </div>
 
+            {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="card p-4">
+              <div
+                className={cn(
+                  "p-6 rounded-[2rem] transition-colors duration-300",
+                  isDark ? "bg-slate-700/50" : "bg-slate-50",
+                )}
+              >
                 <p
-                  className="text-sm"
-                  style={{ color: "hsl(var(--surface-muted-foreground))" }}
+                  className={cn(
+                    "text-[10px] font-black uppercase tracking-wider mb-2",
+                    isDark ? "text-slate-400" : "text-slate-400",
+                  )}
                 >
                   Channel
                 </p>
-                <p className="font-medium">{selectedCreator.channelName}</p>
-              </div>
-              <div className="card p-4">
                 <p
-                  className="text-sm"
-                  style={{ color: "hsl(var(--surface-muted-foreground))" }}
+                  className={cn(
+                    "text-lg font-black",
+                    isDark ? "text-white" : "text-slate-800",
+                  )}
+                >
+                  {selectedCreator.channelName}
+                </p>
+              </div>
+              <div
+                className={cn(
+                  "p-6 rounded-[2rem] transition-colors duration-300",
+                  isDark ? "bg-slate-700/50" : "bg-slate-50",
+                )}
+              >
+                <p
+                  className={cn(
+                    "text-[10px] font-black uppercase tracking-wider mb-2",
+                    isDark ? "text-slate-400" : "text-slate-400",
+                  )}
                 >
                   Videos
                 </p>
-                <p className="font-medium">
+                <p
+                  className={cn(
+                    "text-lg font-black",
+                    isDark ? "text-white" : "text-slate-800",
+                  )}
+                >
                   {formatNumber(selectedCreator.totalVideos)}
                 </p>
               </div>
-              <div className="card p-4">
+              <div
+                className={cn(
+                  "p-6 rounded-[2rem] transition-colors duration-300",
+                  isDark ? "bg-slate-700/50" : "bg-slate-50",
+                )}
+              >
                 <p
-                  className="text-sm"
-                  style={{ color: "hsl(var(--surface-muted-foreground))" }}
+                  className={cn(
+                    "text-[10px] font-black uppercase tracking-wider mb-2",
+                    isDark ? "text-slate-400" : "text-slate-400",
+                  )}
                 >
                   Total Views
                 </p>
-                <p className="font-medium">
+                <p
+                  className={cn(
+                    "text-lg font-black",
+                    isDark ? "text-white" : "text-slate-800",
+                  )}
+                >
                   {formatNumber(selectedCreator.totalViews)}
                 </p>
               </div>
-              <div className="card p-4">
+              <div
+                className={cn(
+                  "p-6 rounded-[2rem] bg-gradient-to-br from-amber-400 to-amber-600 text-white",
+                )}
+              >
                 <p
-                  className="text-sm"
-                  style={{ color: "hsl(var(--surface-muted-foreground))" }}
+                  className={cn(
+                    "text-[10px] font-black uppercase tracking-wider mb-2 opacity-80",
+                  )}
                 >
                   Total Earnings
                 </p>
-                <p className="font-medium">
+                <p className="text-lg font-black">
                   {formatCurrency(selectedCreator.totalEarnings)}
                 </p>
               </div>
             </div>
 
+            {/* SmatPay Section */}
             {selectedCreator.smatPayMerchantId && (
-              <div className="card p-4">
+              <div
+                className={cn(
+                  "p-6 rounded-[2rem] transition-colors duration-300",
+                  isDark ? "bg-slate-800" : "bg-white",
+                )}
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p
-                      className="text-sm"
-                      style={{ color: "hsl(var(--surface-muted-foreground))" }}
+                      className={cn(
+                        "text-[10px] font-black uppercase tracking-wider mb-1",
+                        isDark ? "text-slate-400" : "text-slate-400",
+                      )}
                     >
-                      SmatPay Merchant ID
+                      SmatPay Merchant
                     </p>
-                    <p className="font-medium">
+                    <p
+                      className={cn(
+                        "text-sm font-bold",
+                        isDark ? "text-white" : "text-slate-800",
+                      )}
+                    >
                       {selectedCreator.smatPayMerchantId}
                     </p>
                   </div>
@@ -752,12 +817,42 @@ export default function CreatorsPage() {
                           ? "warning"
                           : "danger"
                     }
+                    className="text-[10px] font-black uppercase tracking-wider"
                   >
                     {selectedCreator.smatPayStatus}
                   </Badge>
                 </div>
               </div>
             )}
+
+            {/* Online Status */}
+            <div
+              className={cn(
+                "p-4 rounded-[2rem] flex items-center gap-4 transition-colors duration-300",
+                isDark ? "bg-slate-700/30" : "bg-slate-50",
+              )}
+            >
+              <span
+                className={cn(
+                  "h-3 w-3 rounded-full",
+                  selectedCreator.onlineStatus === "online"
+                    ? "bg-emerald-400"
+                    : selectedCreator.onlineStatus === "away"
+                      ? "bg-amber-400"
+                      : isDark
+                        ? "bg-slate-600"
+                        : "bg-slate-300",
+                )}
+              />
+              <span
+                className={cn(
+                  "text-xs font-black uppercase tracking-wider",
+                  isDark ? "text-slate-400" : "text-slate-400",
+                )}
+              >
+                Last seen {formatRelativeTime(selectedCreator.lastSeen)}
+              </span>
+            </div>
           </div>
         )}
       </Modal>

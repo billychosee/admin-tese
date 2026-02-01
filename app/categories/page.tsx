@@ -86,6 +86,58 @@ export default function CategoriesPage() {
     }
   };
 
+  const handleUpdateCategory = async () => {
+    if (!selectedCategory) return;
+    try {
+      await api.categories.update(selectedCategory.id, {
+        name: formData.name || selectedCategory.name,
+        slug: (formData.name || selectedCategory.name)
+          .toLowerCase()
+          .replace(/\s+/g, "-"),
+        description: formData.description || selectedCategory.description,
+        icon: "Folder",
+        color: formData.color || selectedCategory.color,
+        isActive: selectedCategory.isActive,
+      });
+      addToast({
+        type: "success",
+        title: "Success",
+        message: "Category updated successfully",
+      });
+      setShowEditModal(false);
+      setSelectedCategory(null);
+      setFormData({ name: "", description: "", color: "#3B82F6" });
+      fetchCategories();
+    } catch {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to update category",
+      });
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!selectedCategory) return;
+    try {
+      await api.categories.delete(selectedCategory.id);
+      addToast({
+        type: "success",
+        title: "Success",
+        message: "Category deleted successfully",
+      });
+      setShowDeleteModal(false);
+      setSelectedCategory(null);
+      fetchCategories();
+    } catch {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to delete category",
+      });
+    }
+  };
+
   const handleToggleStatus = async (category: Category) => {
     try {
       await api.categories.toggleStatus(category.id);
@@ -191,7 +243,8 @@ export default function CategoriesPage() {
 
           <Button
             onClick={() => setShowAddModal(true)}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl px-6 py-6 font-black uppercase text-[10px] shadow-lg shadow-emerald-500/20"
+            size="lg"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black uppercase text-[10px] shadow-lg shadow-emerald-500/20"
           >
             <Icons.Plus className="mr-2" size={16} /> Add New
           </Button>
@@ -265,6 +318,11 @@ export default function CategoriesPage() {
                     size="sm"
                     onClick={() => {
                       setSelectedCategory(category);
+                      setFormData({
+                        name: category.name,
+                        description: category.description,
+                        color: category.color,
+                      });
                       setShowEditModal(true);
                     }}
                     className="text-slate-400 hover:text-indigo-500"
@@ -360,6 +418,11 @@ export default function CategoriesPage() {
                           size="sm"
                           onClick={() => {
                             setSelectedCategory(category);
+                            setFormData({
+                              name: category.name,
+                              description: category.description,
+                              color: category.color,
+                            });
                             setShowEditModal(true);
                           }}
                           className="h-8 w-8 p-0"
@@ -387,20 +450,310 @@ export default function CategoriesPage() {
         </Card>
       )}
 
-      {/* Modals remain the same logic but I suggest styled buttons inside them to match */}
+      {/* Add Category Modal */}
       <Modal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title="New Category" children={undefined}      >
-        {/* ... existing modal content ... */}
+        onClose={() => {
+          setShowAddModal(false);
+          setFormData({ name: "", description: "", color: "#3B82F6" });
+        }}
+        title="Add New Category"
+        size="md"
+      >
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label
+              className={cn(
+                "text-[10px] font-black uppercase tracking-wider",
+                isDark ? "text-slate-400" : "text-slate-400",
+              )}
+            >
+              Category Name
+            </label>
+            <Input
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder="Enter category name"
+              className={cn(
+                "rounded-xl font-medium",
+                isDark
+                  ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                  : "bg-slate-50 border-slate-200",
+              )}
+            />
+          </div>
+          <div className="space-y-2">
+            <label
+              className={cn(
+                "text-[10px] font-black uppercase tracking-wider",
+                isDark ? "text-slate-400" : "text-slate-400",
+              )}
+            >
+              Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              placeholder="Enter description"
+              rows={3}
+              className={cn(
+                "w-full rounded-xl p-3 text-sm font-medium resize-none transition-colors",
+                isDark
+                  ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                  : "bg-slate-50 border-slate-200",
+              )}
+            />
+          </div>
+          <div className="space-y-2">
+            <label
+              className={cn(
+                "text-[10px] font-black uppercase tracking-wider",
+                isDark ? "text-slate-400" : "text-slate-400",
+              )}
+            >
+              Color
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={formData.color}
+                onChange={(e) =>
+                  setFormData({ ...formData, color: e.target.value })
+                }
+                className="w-12 h-12 rounded-xl cursor-pointer border-none"
+              />
+              <Input
+                value={formData.color}
+                onChange={(e) =>
+                  setFormData({ ...formData, color: e.target.value })
+                }
+                className={cn(
+                  "w-32 rounded-xl font-mono text-sm",
+                  isDark
+                    ? "bg-slate-700 border-slate-600 text-white"
+                    : "bg-slate-50 border-slate-200",
+                )}
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAddModal(false);
+                setFormData({ name: "", description: "", color: "#3B82F6" });
+              }}
+              className={cn(
+                "flex-1 rounded-xl font-black uppercase text-[10px]",
+                isDark ? "border-slate-600 hover:bg-slate-700" : "",
+              )}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddCategory}
+              disabled={!formData.name.trim()}
+              className={cn(
+                "flex-1 rounded-xl font-black uppercase text-[10px] shadow-lg",
+                !formData.name.trim()
+                  ? "bg-slate-400 cursor-not-allowed"
+                  : "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20",
+              )}
+            >
+              Create Category
+            </Button>
+          </div>
+        </div>
       </Modal>
 
-      <ConfirmModal
+      {/* Edit Category Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedCategory(null);
+          setFormData({ name: "", description: "", color: "#3B82F6" });
+        }}
+        title="Edit Category"
+        size="md"
+      >
+        {selectedCategory && (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label
+                className={cn(
+                  "text-[10px] font-black uppercase tracking-wider",
+                  isDark ? "text-slate-400" : "text-slate-400",
+                )}
+              >
+                Category Name
+              </label>
+              <Input
+                value={formData.name || selectedCategory.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                className={cn(
+                  "rounded-xl font-medium",
+                  isDark
+                    ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                    : "bg-slate-50 border-slate-200",
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                className={cn(
+                  "text-[10px] font-black uppercase tracking-wider",
+                  isDark ? "text-slate-400" : "text-slate-400",
+                )}
+              >
+                Description
+              </label>
+              <textarea
+                value={formData.description || selectedCategory.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                rows={3}
+                className={cn(
+                  "w-full rounded-xl p-3 text-sm font-medium resize-none transition-colors",
+                  isDark
+                    ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                    : "bg-slate-50 border-slate-200",
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                className={cn(
+                  "text-[10px] font-black uppercase tracking-wider",
+                  isDark ? "text-slate-400" : "text-slate-400",
+                )}
+              >
+                Color
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={formData.color || selectedCategory.color}
+                  onChange={(e) =>
+                    setFormData({ ...formData, color: e.target.value })
+                  }
+                  className="w-12 h-12 rounded-xl cursor-pointer border-none"
+                />
+                <Input
+                  value={formData.color || selectedCategory.color}
+                  onChange={(e) =>
+                    setFormData({ ...formData, color: e.target.value })
+                  }
+                  className={cn(
+                    "w-32 rounded-xl font-mono text-sm",
+                    isDark
+                      ? "bg-slate-700 border-slate-600 text-white"
+                      : "bg-slate-50 border-slate-200",
+                  )}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedCategory(null);
+                  setFormData({ name: "", description: "", color: "#3B82F6" });
+                }}
+                className={cn(
+                  "flex-1 rounded-xl font-black uppercase text-[10px]",
+                  isDark ? "border-slate-600 hover:bg-slate-700" : "",
+                )}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateCategory}
+                className={cn(
+                  "flex-1 rounded-xl font-black uppercase text-[10px] shadow-lg bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20",
+                )}
+              >
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Category Modal */}
+      <Modal
         isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleAddCategory}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedCategory(null);
+        }}
         title="Delete Category"
-        variant="danger" message={""}      />
+        size="sm"
+      >
+        {selectedCategory && (
+          <div className="space-6">
+            {/* Warning Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center">
+                <Icons.AlertTriangle size={32} className="text-rose-500" />
+              </div>
+            </div>
+
+            {/* Message */}
+            <div className="text-center space-y-2">
+              <p
+                className={cn(
+                  "text-lg font-black",
+                  isDark ? "text-white" : "text-slate-800",
+                )}
+              >
+                Are you sure?
+              </p>
+              <p
+                className={cn(
+                  "text-sm",
+                  isDark ? "text-slate-400" : "text-slate-500",
+                )}
+              >
+                You are about to delete <span className="font-bold">{selectedCategory.name}</span>. This action cannot be undone.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSelectedCategory(null);
+                }}
+                className={cn(
+                  "flex-1 rounded-xl font-black uppercase text-[10px]",
+                  isDark ? "border-slate-600 hover:bg-slate-700" : "",
+                )}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteCategory}
+                className={cn(
+                  "flex-1 rounded-xl font-black uppercase text-[10px] shadow-lg bg-rose-500 hover:bg-rose-600 shadow-rose-500/20",
+                )}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
