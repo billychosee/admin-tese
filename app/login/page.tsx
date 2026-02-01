@@ -190,7 +190,7 @@ function LoginContent() {
             <Button
               type="submit"
               isLoading={isLoading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl py-8 font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-emerald-500/20 transition-all hover:scale-[1.01] active:scale-[0.98]"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl py-4 font-bold uppercase text-xs tracking-[0.2em] shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.01] active:scale-[0.98]"
             >
               Authorize System Entry
             </Button>

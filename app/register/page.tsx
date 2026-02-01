@@ -270,7 +270,7 @@ function RegisterContent() {
             <Button
               type="submit"
               isLoading={isLoading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl py-8 font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-emerald-500/20 transition-all hover:scale-[1.01]"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl py-4 font-bold uppercase text-xs tracking-[0.2em] shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.01]"
             >
               Initialize Account
             </Button>
