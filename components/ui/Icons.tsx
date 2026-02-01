@@ -217,10 +217,10 @@ import {
   CloudSun,
   Hash,
   AtSign,
-  Coin,
   XSquare,
   CircleDot,
   HashIcon,
+  GripHorizontal,
 } from "lucide-react";
 
 interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -311,6 +311,7 @@ export const Icons = {
   Shield: (props: IconProps) => <Shield {...props} />,
   Lock: (props: IconProps) => <Lock {...props} />,
   Unlock: (props: IconProps) => <Unlock {...props} />,
+  DragHandle: (props: IconProps) => <GripHorizontal {...props} />,
   Key: (props: IconProps) => <Key {...props} />,
   BadgeCheck: (props: IconProps) => <BadgeCheck {...props} />,
   Heart: (props: IconProps) => <Heart {...props} />,
