@@ -226,7 +226,7 @@ function RegisterContent() {
                 Confirm Identity
               </label>
               <div className="relative group">
-                <Icons.Plus
+                <Icons.Lock
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors"
                   size={18}
                 />
