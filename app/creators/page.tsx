@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/Modal";
-import { SkeletonTable, SkeletonList } from "@/components/ui/Skeleton";
+import { SkeletonList, SkeletonTable } from "@/components/ui/Skeleton";
+import { CreatorTable } from "@/components/Tables/CreatorTable";
 import { Icons } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -279,244 +280,65 @@ export default function CreatorsPage() {
           </CardContent>
         </Card>
       ) : viewMode === "list" ? (
-        <Card
-          className={cn(
-            "rounded-[3rem] border-none shadow-xl overflow-hidden transition-colors duration-300",
-            colors.surface,
-          )}
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr
-                  className={cn(
-                    "border-b text-xs font-black uppercase tracking-widest",
-                    colors.surfaceBorder,
-                    colors.textSecondary,
-                  )}
-                >
-                  <th className="px-8 py-5 text-left">Creator</th>
-                  <th className="px-4 py-5 text-left">Channel</th>
-                  <th className="px-4 py-5 text-left">Status</th>
-                  <th className="px-4 py-5 text-left">Online</th>
-                  <th className="px-4 py-5 text-left">Videos</th>
-                  <th className="px-4 py-5 text-left">Earnings</th>
-                  <th className="px-4 py-5 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody
-                className={cn(
-                  "divide-y transition-colors duration-300",
-                  colors.surfaceBorder,
-                )}
-              >
-                {filteredCreators.map((creator) => (
-                  <tr
-                    key={creator.id}
-                    className={cn(
-                      "hover transition-all group",
-                      isDark
-                        ? "hover:bg-[hsl(var(--surface-hover))]/50"
-                        : "hover:bg-[hsl(var(--surface-hover))]",
-                    )}
-                  >
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={cn(
-                            "avatar avatar-md font-bold",
-                            isDark
-                              ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
-                              : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
-                          )}
-                        >
-                          {getInitials(creator.name)}
-                        </div>
-                        <div>
-                          <p
-                            className={cn(
-                              "text-sm font-black",
-                              colors.textPrimary,
-                            )}
-                          >
-                            {creator.name}
-                          </p>
-                          <p
-                            className={cn(
-                              "text-xs font-bold uppercase",
-                              colors.textMuted,
-                            )}
-                          >
-                            {creator.email}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td
-                      className={cn("px-4 py-5 text-sm", colors.textSecondary)}
-                    >
-                      {creator.channelName}
-                    </td>
-                    <td className="px-4 py-5">
-                      <Badge
-                        variant={
-                          creator.status === "active"
-                            ? "success"
-                            : creator.status === "pending"
-                              ? "warning"
-                              : "danger"
-                        }
-                      >
-                        {creator.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-5">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={cn(
-                            "h-2 w-2 rounded-full",
-                            creator.onlineStatus === "online"
-                              ? "bg-[hsl(var(--success))]"
-                              : creator.onlineStatus === "away"
-                                ? "bg-[hsl(var(--warning))]"
-                                : colors.textMuted,
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            "text-xs font-bold uppercase",
-                            colors.textMuted,
-                          )}
-                        >
-                          {formatRelativeTime(creator.lastSeen)}
-                        </span>
-                      </div>
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-5 text-sm font-medium",
-                        colors.textSecondary,
-                      )}
-                    >
-                      {formatNumber(creator.totalVideos)}
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-5 text-sm font-bold",
-                        colors.successText,
-                      )}
-                    >
-                      {formatCurrency(creator.totalEarnings)}
-                    </td>
-                    <td className="px-4 py-5">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => openProfile(creator)}
-                          className={cn(
-                            "p-2 rounded-xl transition-all",
-                            isDark
-                              ? `${colors.surfaceHover} ${colors.textSecondary} hover:${colors.textPrimary}`
-                              : `${colors.surfaceHover} ${colors.textSecondary} hover:${colors.textPrimary}`,
-                          )}
-                          title="View profile"
-                        >
-                          <Icons.Eye size={16} />
-                        </button>
-                        {creator.status === "pending" && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setSelectedCreator(creator);
-                                setShowApproveModal(true);
-                              }}
-                              className={cn(
-                                "p-2 rounded-xl transition-all hover:bg-[hsl(var(--success))]/10",
-                                colors.successText,
-                              )}
-                              title="Approve"
-                            >
-                              <Icons.Check size={16} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedCreator(creator);
-                                setShowRejectModal(true);
-                              }}
-                              className={cn(
-                                "p-2 rounded-xl transition-all hover:bg-[hsl(var(--danger))]/10",
-                                colors.dangerText,
-                              )}
-                              title="Reject"
-                            >
-                              <Icons.XCircle size={16} />
-                            </button>
-                          </>
-                        )}
-                        <button
-                          onClick={() => handleToggleStatus(creator)}
-                          className={cn(
-                            "p-2 rounded-xl transition-all",
-                            isDark
-                              ? `${colors.surfaceHover} ${colors.textSecondary} hover:${colors.textPrimary}`
-                              : `${colors.surfaceHover} ${colors.textSecondary} hover:${colors.textPrimary}`,
-                          )}
-                          title={
-                            creator.status === "active"
-                              ? "Deactivate"
-                              : "Activate"
-                          }
-                        >
-                          {creator.status === "active" ? (
-                            <Icons.Lock size={16} />
-                          ) : (
-                            <Icons.Unlock size={16} />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        <CreatorTable
+          creators={filteredCreators}
+          isLoading={isLoading}
+          onViewProfile={openProfile}
+          onApprove={(creator) => {
+            setSelectedCreator(creator);
+            setShowApproveModal(true);
+          }}
+          onReject={(creator) => {
+            setSelectedCreator(creator);
+            setShowRejectModal(true);
+          }}
+          onToggleStatus={handleToggleStatus}
+        />
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredCreators.map((creator) => (
             <Card
               key={creator.id}
               hover
               className={cn(
-                "rounded-[3rem] border-none shadow-xl transition-all duration-300",
+                "rounded-2xl border transition-all duration-300",
+                colors.surfaceBorder,
                 colors.surface,
               )}
             >
               <CardContent className="p-5">
-                <div className="flex flex-col items-center text-center">
-                  <div
-                    className={cn(
-                      "avatar font-bold text-sm",
-                      isDark
-                        ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
-                        : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
-                    )}
-                  >
-                    {getInitials(creator.name)}
-                  </div>
-                  <h3
-                    className={cn("mt-3 text-sm font-bold", colors.textPrimary)}
-                  >
-                    {creator.name}
-                  </h3>
-                  <p
-                    className={cn(
-                      "text-[10px] font-medium uppercase tracking-wider mt-1",
-                      colors.textMuted,
-                    )}
-                  >
-                    {creator.channelName}
-                  </p>
-                  <div className="mt-3 flex items-center gap-2">
+                <div className="flex flex-col">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={cn(
+                          "avatar font-bold text-xs",
+                          isDark
+                            ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                            : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
+                        )}
+                      >
+                        {getInitials(creator.name)}
+                      </div>
+                      <div>
+                        <h3
+                          className={cn(
+                            "text-sm font-semibold",
+                            colors.textPrimary,
+                          )}
+                        >
+                          {creator.name}
+                        </h3>
+                        <p
+                          className={cn(
+                            "text-xs font-medium uppercase tracking-wider",
+                            colors.textMuted,
+                          )}
+                        >
+                          {creator.channelName}
+                        </p>
+                      </div>
+                    </div>
                     <Badge
                       variant={
                         creator.status === "active"
@@ -528,21 +350,17 @@ export default function CreatorsPage() {
                     >
                       {creator.status}
                     </Badge>
-                    <span
-                      className={cn(
-                        "h-2.5 w-2.5 rounded-full",
-                        creator.onlineStatus === "online"
-                          ? "bg-[hsl(var(--success))]"
-                          : creator.onlineStatus === "away"
-                            ? "bg-[hsl(var(--warning))]"
-                            : colors.textMuted,
-                      )}
-                    />
                   </div>
-                  <div className="mt-4 grid grid-cols-2 gap-3 w-full">
+                  <div
+                    className={cn(
+                      "mt-4 h-px w-full",
+                      colors.surfaceBorder,
+                    )}
+                  />
+                  <div className="mt-4 grid grid-cols-2 gap-3">
                     <div
                       className={cn(
-                        "p-3 rounded-xl transition-colors duration-300",
+                        "rounded-lg p-3 transition-colors duration-300",
                         isDark
                           ? "bg-[hsl(var(--surface-hover))]/50"
                           : "bg-[hsl(var(--surface-hover))]",
@@ -558,7 +376,7 @@ export default function CreatorsPage() {
                       </p>
                       <p
                         className={cn(
-                          "text-[9px] font-medium uppercase tracking-wider",
+                          "text-[10px] font-medium uppercase tracking-wider",
                           colors.textMuted,
                         )}
                       >
@@ -567,7 +385,7 @@ export default function CreatorsPage() {
                     </div>
                     <div
                       className={cn(
-                        "p-3 rounded-xl transition-colors duration-300",
+                        "rounded-lg p-3 transition-colors duration-300",
                         isDark
                           ? "bg-[hsl(var(--success))]/10"
                           : "bg-[hsl(var(--success))]/10",
@@ -583,7 +401,7 @@ export default function CreatorsPage() {
                       </p>
                       <p
                         className={cn(
-                          "text-[9px] font-medium uppercase tracking-wider",
+                          "text-[10px] font-medium uppercase tracking-wider",
                           colors.successText,
                         )}
                       >
@@ -591,36 +409,59 @@ export default function CreatorsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 flex gap-2 w-full">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "flex-1 transition-colors duration-300",
-                        colors.surfaceBorder,
-                        isDark ? `hover:${colors.surfaceHover}` : "",
-                      )}
-                      onClick={() => openProfile(creator)}
-                    >
-                      View
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        "transition-colors duration-300",
-                        isDark
-                          ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
-                          : "",
-                      )}
-                      onClick={() => handleToggleStatus(creator)}
-                    >
-                      {creator.status === "active" ? (
-                        <Icons.Lock size={14} />
-                      ) : (
-                        <Icons.Unlock size={14} />
-                      )}
-                    </Button>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "h-2.5 w-2.5 rounded-full",
+                          creator.onlineStatus === "online"
+                            ? "bg-[hsl(var(--success))]"
+                            : creator.onlineStatus === "away"
+                              ? "bg-[hsl(var(--warning))]"
+                              : colors.textMuted,
+                        )}
+                      />
+                      <span
+                        className={cn(
+                          "text-xs font-medium uppercase tracking-wider",
+                          colors.textMuted,
+                        )}
+                      >
+                        {creator.onlineStatus}
+                      </span>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "h-8 w-8 p-0 transition-colors duration-300",
+                          isDark
+                            ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
+                            : "",
+                        )}
+                        onClick={() => openProfile(creator)}
+                      >
+                        <Icons.Eye size={14} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "h-8 w-8 p-0 transition-colors duration-300",
+                          isDark
+                            ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
+                            : "",
+                        )}
+                        onClick={() => handleToggleStatus(creator)}
+                      >
+                        {creator.status === "active" ? (
+                          <Icons.Lock size={14} />
+                        ) : (
+                          <Icons.Unlock size={14} />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>

@@ -60,6 +60,7 @@ export interface Video {
   isFeatured: boolean;
   isBanner: boolean;
   isPaid: boolean;
+  currency?: "USD" | "ZWG";
   price?: number;
   views: number;
   likes: number;

@@ -168,6 +168,9 @@ export const VIDEO_FILTERS = [
   { value: "all", label: "All Videos" },
   { value: "free", label: "Free" },
   { value: "paid", label: "Paid" },
+  { value: "featured", label: "Featured" },
+  { value: "banner", label: "Banner" },
+  { value: "suspended", label: "Suspended" },
 ];
 
 export const DEVICE_TYPES = [

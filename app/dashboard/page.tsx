@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardTitle } from "@/components/ui/Card";
 import { SkeletonStats, SkeletonChart } from "@/components/ui/Skeleton";
 import { Icons } from "@/components/ui/Icons";
 import { cn, formatCurrency, formatNumber } from "@/utils";
@@ -90,6 +90,29 @@ export default function DashboardPage() {
 
   const isDark = theme === "dark";
 
+  // Color tokens for consistent theming
+  const colors = {
+    background: "bg-[hsl(var(--background))]",
+    surface: "bg-[hsl(var(--surface))]",
+    surfaceMuted: "bg-[hsl(var(--surface-muted))]",
+    surfaceHover: "bg-[hsl(var(--surface-hover))]",
+    surfaceBorder: "border-[hsl(var(--surface-border))]",
+    textPrimary: "text-[hsl(var(--text-primary))]",
+    textSecondary: "text-[hsl(var(--text-secondary))]",
+    textMuted: "text-[hsl(var(--text-muted))]",
+    primary: "bg-[hsl(var(--primary))]",
+    primaryText: "text-[hsl(var(--primary))]",
+    primaryForeground: "text-[hsl(var(--primary-foreground))]",
+    success: "bg-[hsl(var(--success))]",
+    successText: "text-[hsl(var(--success))]",
+    warning: "bg-[hsl(var(--warning))]",
+    warningText: "text-[hsl(var(--warning))]",
+    danger: "bg-[hsl(var(--danger))]",
+    dangerText: "text-[hsl(var(--danger))]",
+    info: "bg-[hsl(var(--info))]",
+    focusRing: "focus:ring-[hsl(var(--focus-ring))]",
+  };
+
   if (loading)
     return (
       <div
@@ -106,39 +129,35 @@ export default function DashboardPage() {
   return (
     <div
       className={cn(
-        "space-y-10 min-h-screen font-sans transition-colors duration-300",
-        isDark ? "bg-[#020617]" : "bg-white",
+        "space-y-8 min-h-screen font-sans transition-colors duration-300",
+        colors.background,
       )}
     >
       {/* 1. TOP STATS CARDS - Key Metrics */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
             label: "Total Creators",
             value: formatNumber(data.totals.creators),
-            color: "from-emerald-400 to-emerald-600",
-            icon: <Icons.Users />,
+            icon: <Icons.Users size={20} />,
             href: "/creators",
           },
           {
             label: "Total Videos",
             value: formatNumber(data.totals.videos),
-            color: "from-rose-400 to-rose-600",
-            icon: <Icons.Video />,
+            icon: <Icons.Video size={20} />,
             href: "/videos",
           },
           {
             label: "Total Channels",
             value: formatNumber(data.totals.channels),
-            color: "from-slate-700 to-slate-900",
-            icon: <Icons.Grid />,
+            icon: <Icons.Grid size={20} />,
             href: "/creators",
           },
           {
             label: "Total Views",
             value: formatNumber(data.totals.views),
-            color: "from-amber-400 to-amber-600",
-            icon: <Icons.Eye />,
+            icon: <Icons.Eye size={20} />,
             href: "/videos",
           },
         ].map((card, i) => (
@@ -146,314 +165,306 @@ export default function DashboardPage() {
             key={i}
             href={card.href}
             className={cn(
-              "p-6 rounded-[2.5rem] text-white bg-gradient-to-br shadow-2xl relative overflow-hidden group hover:scale-105 transition-all duration-500 cursor-pointer",
-              card.color,
+              "rounded-2xl border p-5 transition-all duration-300 hover:shadow-lg",
+              colors.surfaceBorder,
+              colors.surface,
             )}
           >
-            <div className="relative z-10 flex flex-col justify-between h-full">
-              <div className="flex justify-between items-start">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between">
+                <span
+                  className={cn(
+                    "text-xs font-medium uppercase tracking-wider",
+                    colors.textMuted,
+                  )}
+                >
                   {card.label}
                 </span>
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
-                  {card.icon}
+                <div
+                  className={cn(
+                    "p-2 rounded-lg",
+                    isDark
+                      ? "bg-[hsl(var(--primary))]/20"
+                      : "bg-[hsl(var(--primary))]/10",
+                  )}
+                >
+                  <span className={cn("text-[hsl(var(--primary))]")}>
+                    {card.icon}
+                  </span>
                 </div>
               </div>
-              <h3 className="text-3xl font-black mt-4">{card.value}</h3>
+              <h3 className={cn("text-2xl font-bold mt-3", colors.textPrimary)}>
+                {card.value}
+              </h3>
             </div>
-            <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all" />
           </Link>
         ))}
       </div>
 
       {/* 2. MAIN ANALYTICS ROW - Transactions & Daily Stats */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-6">
         {/* TRANSACTIONS CHART */}
         <Card
           className={cn(
-            "lg:col-span-2 p-8 rounded-[3rem] border-none shadow-xl transition-colors duration-300",
-            isDark ? "bg-slate-800" : "bg-white",
+            "lg:col-span-2 rounded-2xl border transition-colors duration-300",
+            colors.surfaceBorder,
+            colors.surface,
           )}
         >
-          <div className="flex justify-between items-center mb-10">
-            <div>
-              <h2
+          <CardContent className="p-5">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className={cn("text-lg font-semibold", colors.textPrimary)}>
+                  Transactions
+                </h2>
+                <p className={cn("text-xs font-medium uppercase tracking-wider", colors.textMuted)}>
+                  Revenue tracking by period
+                </p>
+              </div>
+              <div
                 className={cn(
-                  "text-3xl font-black tracking-tighter",
-                  isDark ? "text-white" : "text-slate-800",
+                  "flex p-1 rounded-xl transition-colors duration-300",
+                  isDark ? "bg-[hsl(var(--surface-hover))]/50" : "bg-[hsl(var(--surface-hover))]",
                 )}
               >
-                Transactions
-              </h2>
-              <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest">
-                Revenue tracking by period
-              </p>
+                {["DAILY", "WEEKLY", "MONTHLY", "YEARLY"].map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRange(r as Range)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-medium rounded-lg transition-all",
+                      range === r
+                        ? "bg-[hsl(var(--primary))] text-white shadow-md"
+                        : isDark
+                          ? `${colors.textMuted} hover:${colors.textPrimary}`
+                          : `${colors.textMuted} hover:${colors.textPrimary}`,
+                    )}
+                  >
+                    {r.charAt(0) + r.slice(1).toLowerCase()}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div
-              className={cn(
-                "flex p-1 rounded-2xl transition-colors duration-300",
-                isDark ? "bg-slate-700" : "bg-slate-100",
-              )}
-            >
-              {["DAILY", "WEEKLY", "MONTHLY", "YEARLY"].map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setRange(r as Range)}
-                  className={cn(
-                    "px-4 py-2 text-[10px] font-black rounded-xl transition-all",
-                    range === r
-                      ? "bg-white text-emerald-600 shadow-md"
-                      : isDark
-                        ? "text-slate-400 hover:text-slate-200"
-                        : "text-slate-400 hover:text-slate-600",
-                  )}
-                >
-                  {r.charAt(0) + r.slice(1).toLowerCase()}
-                </button>
-              ))}
+            <div className="h-64 w-full relative">
+              <div className="absolute inset-0 flex flex-col justify-between opacity-[0.05] pointer-events-none">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "border-t w-full",
+                      colors.surfaceBorder,
+                    )}
+                  />
+                ))}
+              </div>
+              <AreaChart
+                data={data.transactions}
+                color="#10b981"
+                id="transactions"
+              />
             </div>
-          </div>
-          <div className="h-80 w-full relative">
-            <div className="absolute inset-0 flex flex-col justify-between opacity-[0.05] pointer-events-none">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    "border-t-[2px] w-full",
-                    isDark ? "border-white" : "border-slate-900",
-                  )}
-                />
-              ))}
-            </div>
-            <AreaChart
-              data={data.transactions}
-              color="#10b981"
-              id="transactions"
-            />
-          </div>
+          </CardContent>
         </Card>
 
         {/* DAILY VISITORS & VIEWS */}
         <Card
           className={cn(
-            "p-8 rounded-[3rem] border-none shadow-xl flex flex-col items-center transition-colors duration-300",
-            isDark ? "bg-slate-800" : "bg-white",
+            "rounded-2xl border flex flex-col transition-colors duration-300",
+            colors.surfaceBorder,
+            colors.surface,
           )}
         >
-          <CardTitle
-            className={cn(
-              "text-[10px] font-black uppercase tracking-widest mb-8 self-start transition-colors duration-300",
-              isDark ? "text-slate-400" : "text-slate-400",
-            )}
-          >
-            Daily Visitors & Views
-          </CardTitle>
-          <div className="relative h-60 w-60">
-            <svg
-              viewBox="0 0 36 36"
-              className="w-full h-full transform -rotate-90 drop-shadow-2xl"
-            >
-              <circle
-                cx="18"
-                cy="18"
-                r="15.9"
-                fill="none"
-                stroke={isDark ? "#334155" : "#f1f5f9"}
-                strokeWidth="4"
-              />
-              <circle
-                cx="18"
-                cy="18"
-                r="15.9"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="4"
-                strokeDasharray="100"
-                strokeDashoffset="35"
-                strokeLinecap="round"
-              />
-              <circle
-                cx="18"
-                cy="18"
-                r="15.9"
-                fill="none"
-                stroke="#f43f5e"
-                strokeWidth="4"
-                strokeDasharray="100"
-                strokeDashoffset="85"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span
-                className={cn(
-                  "text-4xl font-black",
-                  isDark ? "text-white" : "text-slate-800",
-                )}
+          <CardContent className="p-5">
+            <h3 className={cn("text-sm font-semibold mb-4", colors.textPrimary)}>
+              Daily Visitors & Views
+            </h3>
+            <div className="relative h-48 w-48 mx-auto">
+              <svg
+                viewBox="0 0 36 36"
+                className="w-full h-full transform -rotate-90"
               >
-                {formatNumber(data.totals.visitors)}
-              </span>
-              <p
-                className={cn(
-                  "text-[10px] font-black uppercase",
-                  isDark ? "text-slate-400" : "text-slate-400",
-                )}
-              >
-                Visitors/Day
-              </p>
-            </div>
-          </div>
-          <div className="w-full space-y-4 mt-8">
-            <div
-              className={cn(
-                "flex justify-between items-center p-3 rounded-2xl transition-colors duration-300",
-                isDark ? "bg-emerald-900/30" : "bg-emerald-50",
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span
-                  className={cn(
-                    "text-xs font-black transition-colors duration-300",
-                    isDark ? "text-slate-200" : "text-slate-700",
-                  )}
-                >
-                  Views/Day
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="15.9"
+                  fill="none"
+                  stroke={isDark ? "#334155" : "#e2e8f0"}
+                  strokeWidth="3"
+                />
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="15.9"
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="3"
+                  strokeDasharray="100"
+                  strokeDashoffset="35"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="15.9"
+                  fill="none"
+                  stroke="#f43f5e"
+                  strokeWidth="3"
+                  strokeDasharray="100"
+                  strokeDashoffset="85"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className={cn("text-3xl font-bold", colors.textPrimary)}>
+                  {formatNumber(data.totals.visitors)}
                 </span>
-              </div>
-              <span className="text-xs font-black text-emerald-600">
-                {formatNumber(Math.round(data.totals.views / 365))}
-              </span>
-            </div>
-            <div
-              className={cn(
-                "flex justify-between items-center p-3 rounded-2xl transition-colors duration-300",
-                isDark ? "bg-rose-900/30" : "bg-rose-50",
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-rose-500" />
-                <span
-                  className={cn(
-                    "text-xs font-black transition-colors duration-300",
-                    isDark ? "text-slate-200" : "text-slate-700",
-                  )}
-                >
+                <span className={cn("text-xs font-medium uppercase", colors.textMuted)}>
                   Visitors/Day
                 </span>
               </div>
-              <span className="text-xs font-black text-rose-600">
-                {formatNumber(data.totals.visitors)}
-              </span>
             </div>
-          </div>
+            <div className="w-full space-y-3 mt-6">
+              <div
+                className={cn(
+                  "flex justify-between items-center p-3 rounded-lg transition-colors duration-300",
+                  isDark ? "bg-[hsl(var(--success))]/10" : "bg-[hsl(var(--success))]/10",
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--success))]" />
+                  <span className={cn("text-xs font-medium", colors.textMuted)}>
+                    Views/Day
+                  </span>
+                </div>
+                <span className={cn("text-xs font-semibold", colors.successText)}>
+                  {formatNumber(Math.round(data.totals.views / 365))}
+                </span>
+              </div>
+              <div
+                className={cn(
+                  "flex justify-between items-center p-3 rounded-lg transition-colors duration-300",
+                  isDark ? "bg-[hsl(var(--danger))]/10" : "bg-[hsl(var(--danger))]/10",
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[hsl(var(--danger))]" />
+                  <span className={cn("text-xs font-medium", colors.textMuted)}>
+                    Visitors/Day
+                  </span>
+                </div>
+                <span className={cn("text-xs font-semibold", colors.dangerText)}>
+                  {formatNumber(data.totals.visitors)}
+                </span>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
       {/* 3. BOTTOM SECTION - Activity & Recent Transactions */}
-      <div className="grid lg:grid-cols-5 gap-8">
+      <div className="grid lg:grid-cols-5 gap-6">
         <Card
           className={cn(
-            "lg:col-span-2 p-8 rounded-[3rem] border-none shadow-xl transition-colors duration-300",
-            isDark ? "bg-slate-800" : "bg-white",
+            "lg:col-span-2 rounded-2xl border transition-colors duration-300",
+            colors.surfaceBorder,
+            colors.surface,
           )}
         >
-          <h3
-            className={cn(
-              "text-[10px] font-black uppercase tracking-widest mb-8 transition-colors duration-300",
-              isDark ? "text-slate-400" : "text-slate-400",
-            )}
-          >
-            Creator Activity
-          </h3>
-          <div className="space-y-6">
-            {[
-              {
-                user: "Tech Master",
-                action: "Published new video",
-                time: "2m ago",
-                color: "bg-emerald-500",
-              },
-              {
-                user: "Gaming Hub",
-                action: "Reached 8M views",
-                time: "1h ago",
-                color: "bg-rose-500",
-              },
-              {
-                user: "Cooking Expert",
-                action: "New subscriber milestone",
-                time: "3h ago",
-                color: "bg-emerald-500",
-              },
-              {
-                user: "Music Channel",
-                action: "Channel suspended",
-                time: "5h ago",
-                color: "bg-amber-500",
-              },
-            ].map((log, i) => (
-              <Link
-                key={i}
-                href="/creators"
-                className={cn(
-                  "flex items-center gap-4 p-4 rounded-2xl transition-all cursor-pointer group",
-                  isDark ? "hover:bg-slate-700/50" : "hover:bg-slate-50",
-                )}
-              >
-                <div
+          <CardContent className="p-5">
+            <h3 className={cn("text-sm font-semibold mb-4", colors.textPrimary)}>
+              Creator Activity
+            </h3>
+            <div className="space-y-3">
+              {[
+                {
+                  user: "Tech Master",
+                  action: "Published new video",
+                  time: "2m ago",
+                  color: colors.success,
+                },
+                {
+                  user: "Gaming Hub",
+                  action: "Reached 8M views",
+                  time: "1h ago",
+                  color: colors.danger,
+                },
+                {
+                  user: "Cooking Expert",
+                  action: "New subscriber milestone",
+                  time: "3h ago",
+                  color: colors.success,
+                },
+                {
+                  user: "Music Channel",
+                  action: "Channel suspended",
+                  time: "5h ago",
+                  color: colors.warning,
+                },
+              ].map((log, i) => (
+                <Link
+                  key={i}
+                  href="/creators"
                   className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg",
-                    log.color,
+                    "flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer group",
+                    isDark ? "hover:bg-[hsl(var(--surface-hover))]/50" : "hover:bg-[hsl(var(--surface-hover))]",
                   )}
                 >
-                  <Icons.User size={16} />
-                </div>
-                <div className="flex-1">
-                  <p
+                  <div
                     className={cn(
-                      "text-xs font-black transition-colors duration-300",
-                      isDark ? "text-white" : "text-slate-800",
+                      "w-9 h-9 rounded-full flex items-center justify-center text-white",
+                      log.color,
                     )}
                   >
-                    {log.action}
-                  </p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">
-                    {log.user} • {log.time}
-                  </p>
-                </div>
-                <Icons.ChevronRight
-                  size={14}
-                  className={cn(
-                    "transition-colors duration-300",
-                    isDark
-                      ? "text-slate-500 group-hover:text-slate-300"
-                      : "text-slate-300 group-hover:text-slate-600",
-                  )}
-                />
-              </Link>
-            ))}
-          </div>
+                    <Icons.User size={14} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={cn("text-xs font-medium truncate", colors.textPrimary)}>
+                      {log.action}
+                    </p>
+                    <p className={cn("text-[10px] font-medium uppercase truncate", colors.textMuted)}>
+                      {log.user} • {log.time}
+                    </p>
+                  </div>
+                  <Icons.ChevronRight
+                    size={12}
+                    className={cn(
+                      "transition-colors duration-300 flex-shrink-0",
+                      isDark
+                        ? `${colors.textMuted} group-hover:${colors.textPrimary}`
+                        : `${colors.textMuted} group-hover:${colors.textPrimary}`,
+                    )}
+                  />
+                </Link>
+              ))}
+            </div>
+          </CardContent>
         </Card>
 
         <Card
           className={cn(
-            "lg:col-span-3 rounded-[3rem] border-none shadow-xl overflow-hidden transition-colors duration-300",
-            isDark ? "bg-slate-800" : "bg-white",
+            "lg:col-span-3 rounded-2xl border overflow-hidden transition-colors duration-300",
+            colors.surfaceBorder,
+            colors.surface,
           )}
         >
           <div
             className={cn(
-              "p-8 flex justify-between items-center transition-colors duration-300",
-              isDark ? "bg-slate-900 text-white" : "bg-slate-900 text-white",
+              "p-4 flex justify-between items-center",
+              isDark ? "bg-[hsl(var(--surface-hover))]/50" : "bg-[hsl(var(--surface-hover))]",
             )}
           >
-            <h3 className="text-[10px] font-black uppercase tracking-widest opacity-60">
+            <h3 className={cn("text-sm font-semibold", colors.textPrimary)}>
               Recent Transactions
             </h3>
             <Link
               href="/transactions"
-              className="text-[10px] font-black bg-emerald-500 px-4 py-2 rounded-xl hover:bg-emerald-600 transition-all"
+              className={cn(
+                "text-xs font-medium px-3 py-1.5 rounded-lg transition-colors",
+                isDark
+                  ? "bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/80"
+                  : "bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/80",
+              )}
+              style={{ color: "hsl(var(--primary-foreground))" }}
             >
               View All
             </Link>
@@ -463,21 +474,20 @@ export default function DashboardPage() {
               <thead>
                 <tr
                   className={cn(
-                    "border-b text-[9px] font-black uppercase transition-colors duration-300",
-                    isDark
-                      ? "border-slate-700 text-slate-400"
-                      : "border-slate-100 text-slate-400",
+                    "border-b text-xs font-semibold uppercase tracking-wider",
+                    colors.textMuted,
+                    colors.surfaceBorder,
                   )}
                 >
-                  <th className="px-8 py-5 text-left">User</th>
-                  <th className="px-4 py-5 text-left">Type</th>
-                  <th className="px-8 py-5 text-right">Amount</th>
+                  <th className="px-4 py-3 text-left">User</th>
+                  <th className="px-4 py-3 text-left">Type</th>
+                  <th className="px-4 py-3 text-right">Amount</th>
                 </tr>
               </thead>
               <tbody
                 className={cn(
-                  "divide-y transition-colors duration-300",
-                  isDark ? "divide-slate-700" : "divide-slate-50",
+                  "divide-y text-xs",
+                  colors.surfaceBorder,
                 )}
               >
                 {[
@@ -486,7 +496,7 @@ export default function DashboardPage() {
                     type: "Payment",
                     amount: 29.99,
                     status: "Completed",
-                    color: "text-emerald-500",
+                    color: colors.successText,
                     href: "/transactions",
                   },
                   {
@@ -494,7 +504,7 @@ export default function DashboardPage() {
                     type: "Withdrawal",
                     amount: 75.0,
                     status: "Pending",
-                    color: "text-amber-500",
+                    color: colors.warningText,
                     href: "/transactions",
                   },
                   {
@@ -502,7 +512,7 @@ export default function DashboardPage() {
                     type: "Payout",
                     amount: 99.99,
                     status: "Completed",
-                    color: "text-emerald-500",
+                    color: colors.successText,
                     href: "/transactions",
                   },
                 ].map((row, i) => (
@@ -510,37 +520,33 @@ export default function DashboardPage() {
                     key={i}
                     onClick={() => (window.location.href = row.href)}
                     className={cn(
-                      "hover transition-all group cursor-pointer",
-                      isDark ? "hover:bg-slate-700/50" : "hover:bg-slate-50",
+                      "hover transition-colors cursor-pointer",
+                      isDark ? "hover:bg-[hsl(var(--surface-hover))]/50" : "hover:bg-[hsl(var(--surface-hover))]",
                     )}
                   >
-                    <td
-                      className={cn(
-                        "px-8 py-5 text-xs font-black transition-colors duration-300",
-                        isDark ? "text-white" : "text-slate-800",
-                      )}
-                    >
+                    <td className={cn("px-4 py-3 font-medium", colors.textPrimary)}>
                       {row.name}
                     </td>
-                    <td className="px-4 py-5 text-xs font-bold text-slate-500">
+                    <td className={cn("px-4 py-3 font-medium", colors.textMuted)}>
                       {row.type}
                     </td>
                     <td
                       className={cn(
-                        "px-8 py-5 text-right text-[10px] font-black uppercase flex items-center justify-end gap-2",
+                        "px-4 py-3 text-right font-semibold flex items-center justify-end gap-2",
                         row.color,
                       )}
                     >
                       {formatCurrency(row.amount)}
                       <span
                         className={cn(
-                          "px-2 py-0.5 rounded-full text-[8px]",
+                          "px-2 py-0.5 rounded-full text-[10px]",
                           row.status === "Completed"
                             ? isDark
-                              ? "bg-emerald-900/50 text-emerald-400"
-                              : "bg-emerald-100"
-                            : "bg-amber-100",
+                              ? "bg-[hsl(var(--success))]/20"
+                              : "bg-[hsl(var(--success))]/10"
+                            : "bg-[hsl(var(--warning))]/10",
                         )}
+                        style={{ color: row.status === "Completed" ? "hsl(var(--success))" : "hsl(var(--warning))" }}
                       >
                         {row.status}
                       </span>

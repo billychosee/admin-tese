@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { SkeletonTable } from "@/components/ui/Skeleton";
+import { TransactionTable } from "@/components/Tables/TransactionTable";
 import { Icons } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -195,147 +196,22 @@ export default function TransactionsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card
-          className={cn(
-            "rounded-[3rem] border-none shadow-xl overflow-hidden transition-colors duration-300",
-            isDark ? "bg-slate-800" : "bg-white",
-          )}
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr
-                  className={cn(
-                    "border-b text-xs font-black uppercase tracking-widest",
-                    isDark
-                      ? "border-slate-700 text-slate-400"
-                      : "border-slate-100 text-slate-400",
-                  )}
-                >
-                  <th className="px-8 py-5 text-left">Transaction ID</th>
-                  <th className="px-4 py-5 text-left">User</th>
-                  <th className="px-4 py-5 text-left">Type</th>
-                  <th className="px-4 py-5 text-left">Amount</th>
-                  <th className="px-4 py-5 text-left">Status</th>
-                  <th className="px-4 py-5 text-left">Date</th>
-                  <th className="px-4 py-5 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody
-                className={cn(
-                  "divide-y",
-                  isDark ? "divide-slate-700" : "divide-slate-50",
-                )}
-              >
-                {transactions.map((txn) => (
-                  <tr
-                    key={txn.id}
-                    className={cn(
-                      "hover transition-all group",
-                      isDark ? "hover:bg-slate-700/50" : "hover:bg-slate-50",
-                    )}
-                  >
-                    <td className="px-8 py-5">
-                      <code
-                        className={cn(
-                          "text-sm font-mono px-3 py-1 rounded-xl",
-                          isDark
-                            ? "bg-slate-700/50 text-emerald-400"
-                            : "bg-slate-100 text-emerald-600",
-                        )}
-                      >
-                        {txn.id}
-                      </code>
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-5 font-medium",
-                        isDark ? "text-slate-300" : "text-slate-600",
-                      )}
-                    >
-                      {txn.userName}
-                    </td>
-                    <td className="px-4 py-5">
-                      <Badge variant="neutral" className="capitalize">
-                        {txn.type}
-                      </Badge>
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-5 font-bold",
-                        isDark ? "text-emerald-400" : "text-emerald-600",
-                      )}
-                    >
-                      {formatCurrency(txn.amount, txn.currency)}
-                    </td>
-                    <td className="px-4 py-5">
-                      <Badge
-                        variant={
-                          getStatusVariant(txn.status) as
-                            | "success"
-                            | "warning"
-                            | "danger"
-                            | "info"
-                            | "neutral"
-                        }
-                      >
-                        {txn.status}
-                      </Badge>
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-5 text-sm",
-                        isDark ? "text-slate-500" : "text-slate-400",
-                      )}
-                    >
-                      {formatDateTime(txn.createdAt)}
-                    </td>
-                    <td className="px-4 py-5">
-                      <div className="flex items-center gap-1">
-                        {txn.status === "completed" && (
-                          <button
-                            onClick={() => {
-                              setSelectedTransaction(txn);
-                              setShowRefundModal(true);
-                            }}
-                            className="p-2 rounded-xl hover:bg-blue-500/10 text-blue-400 transition-all"
-                            title="Refund"
-                          >
-                            <Icons.Refresh size={16} />
-                          </button>
-                        )}
-                        {txn.status !== "flagged" &&
-                          txn.status !== "refunded" && (
-                            <button
-                              onClick={() => {
-                                setSelectedTransaction(txn);
-                                setShowFlagModal(true);
-                              }}
-                              className="p-2 rounded-xl hover:bg-red-500/10 text-red-400 transition-all"
-                              title="Flag"
-                            >
-                              <Icons.AlertCircle size={16} />
-                            </button>
-                          )}
-                        <button
-                          className={cn(
-                            "p-2 rounded-xl transition-all",
-                            isDark
-                              ? "hover:bg-slate-700 text-slate-400 hover:text-slate-200"
-                              : "hover:bg-slate-100 text-slate-400 hover:text-slate-600",
-                          )}
-                          title="View details"
-                        >
-                          <Icons.Eye size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        <TransactionTable
+          transactions={transactions}
+          isLoading={isLoading}
+          onRefund={(txn) => {
+            setSelectedTransaction(txn);
+            setShowRefundModal(true);
+          }}
+          onFlag={(txn) => {
+            setSelectedTransaction(txn);
+            setShowFlagModal(true);
+          }}
+          onViewDetails={(txn) => {
+            // Handle view details
+            console.log("View details", txn);
+          }}
+        />
       )}
 
       {totalPages > 1 && (

@@ -1,18 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { ConfirmModal } from '@/components/ui/Modal';
 import { SkeletonList } from '@/components/ui/Skeleton';
+import { DeviceTable } from '@/components/Tables/DeviceTable';
 import { Icons } from '@/components/ui/Icons';
 import { useToast } from '@/components/ui/Toast';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { api } from '@/services/api';
 import { cn, formatRelativeTime } from '@/utils';
-import { DEVICE_TYPES, MAX_DEVICES } from '@/constants';
+import { MAX_DEVICES } from '@/constants';
 import type { Device } from '@/types';
 
 export default function DevicesPage() {
@@ -52,15 +53,6 @@ export default function DevicesPage() {
       fetchDevices();
     } catch {
       addToast({ type: 'error', title: 'Error', message: 'Failed to logout device' });
-    }
-  };
-
-  const getDeviceIcon = (type: Device['deviceType']) => {
-    switch (type) {
-      case 'desktop': return <Icons.LayoutDashboard size={20} />;
-      case 'mobile': return <Icons.Smartphone size={20} />;
-      case 'tablet': return <Icons.Grid size={20} />;
-      default: return <Icons.Smartphone size={20} />;
     }
   };
 
@@ -145,9 +137,10 @@ export default function DevicesPage() {
             onChange={(e) => setDeviceTypeFilter(e.target.value)}
             className={cn("input w-40", isDark ? "bg-slate-700 border-slate-600 text-white" : "bg-slate-50 border-slate-200")}
           >
-            {DEVICE_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>{type.label}</option>
-            ))}
+            <option value="all">All Devices</option>
+            <option value="desktop">Desktop</option>
+            <option value="mobile">Mobile</option>
+            <option value="tablet">Tablet</option>
           </select>
         </div>
       </div>
@@ -160,63 +153,14 @@ export default function DevicesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {filteredDevices.map((device) => (
-            <Card key={device.id} hover={!device.isCurrentSession} className={cn("rounded-[3rem] border-none shadow-xl transition-all duration-300", isDark ? "bg-slate-800" : "bg-white")}>
-              <CardContent className="pt-8 pb-8">
-                <div className="flex items-start gap-6">
-                  <div className={cn(
-                    'p-4 rounded-2xl',
-                    device.deviceType === 'desktop' && isDark ? 'bg-blue-500/20 text-blue-400' : device.deviceType === 'desktop' ? 'bg-blue-100 text-blue-600' :
-                    device.deviceType === 'mobile' && isDark ? 'bg-green-500/20 text-green-400' : device.deviceType === 'mobile' ? 'bg-green-100 text-green-600' :
-                    isDark ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-600'
-                  )}>
-                    {getDeviceIcon(device.deviceType)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className={cn("text-lg font-black", isDark ? "text-white" : "text-slate-800")}>{device.browser}</h3>
-                      <Badge variant={device.isCurrentSession ? 'success' : 'neutral'}>
-                        {device.isCurrentSession ? 'Current' : 'Active'}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-slate-500" : "text-slate-400")}>Operating System</p>
-                        <p className={cn("text-sm font-medium", isDark ? "text-slate-300" : "text-slate-600")}>{device.os}</p>
-                      </div>
-                      <div>
-                        <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-slate-500" : "text-slate-400")}>IP Address</p>
-                        <p className={cn("font-mono text-sm", isDark ? "text-slate-300" : "text-slate-600")}>{device.ipAddress}</p>
-                      </div>
-                      <div>
-                        <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-slate-500" : "text-slate-400")}>Location</p>
-                        <p className={cn("text-sm font-medium", isDark ? "text-slate-300" : "text-slate-600")}>{device.location.city}, {device.location.country}</p>
-                      </div>
-                      <div>
-                        <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-slate-500" : "text-slate-400")}>Last Active</p>
-                        <p className={cn("text-sm font-medium", isDark ? "text-slate-300" : "text-slate-600")}>{formatRelativeTime(device.lastActive)}</p>
-                      </div>
-                    </div>
-                  </div>
-                  {!device.isCurrentSession && (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedDevice(device);
-                        setShowLogoutModal(true);
-                      }}
-                    >
-                      <Icons.LogOut size={16} />
-                      Force Logout
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <DeviceTable
+          devices={filteredDevices}
+          isLoading={isLoading}
+          onForceLogout={(device) => {
+            setSelectedDevice(device);
+            setShowLogoutModal(true);
+          }}
+        />
       )}
 
       <ConfirmModal

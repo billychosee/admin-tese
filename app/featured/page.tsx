@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { SkeletonList } from "@/components/ui/Skeleton";
+import { FeaturedTable } from "@/components/Tables/FeaturedTable";
 import { Icons } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -26,6 +27,29 @@ export default function FeaturedPage() {
   useEffect(() => {
     fetchFeatured();
   }, []);
+
+  // Color tokens for consistent theming
+  const colors = {
+    background: "bg-[hsl(var(--background))]",
+    surface: "bg-[hsl(var(--surface))]",
+    surfaceMuted: "bg-[hsl(var(--surface-muted))]",
+    surfaceHover: "bg-[hsl(var(--surface-hover))]",
+    surfaceBorder: "border-[hsl(var(--surface-border))]",
+    textPrimary: "text-[hsl(var(--text-primary))]",
+    textSecondary: "text-[hsl(var(--text-secondary))]",
+    textMuted: "text-[hsl(var(--text-muted))]",
+    primary: "bg-[hsl(var(--primary))]",
+    primaryText: "text-[hsl(var(--primary))]",
+    primaryForeground: "text-[hsl(var(--primary-foreground))]",
+    success: "bg-[hsl(var(--success))]",
+    successText: "text-[hsl(var(--success))]",
+    warning: "bg-[hsl(var(--warning))]",
+    warningText: "text-[hsl(var(--warning))]",
+    danger: "bg-[hsl(var(--danger))]",
+    dangerText: "text-[hsl(var(--danger))]",
+    info: "bg-[hsl(var(--info))]",
+    focusRing: "focus:ring-[hsl(var(--focus-ring))]",
+  };
 
   const fetchFeatured = async () => {
     setIsLoading(true);
@@ -200,248 +224,191 @@ export default function FeaturedPage() {
           </CardContent>
         </Card>
       ) : viewMode === "list" ? (
-        <Card
-          className={cn(
-            "rounded-[3rem] border-none shadow-xl overflow-hidden transition-colors duration-300",
-            isDark ? "bg-slate-800" : "bg-white",
-          )}
-        >
-          <div
-            className={cn(
-              "p-6 divide-y",
-              isDark ? "divide-slate-700" : "divide-slate-100",
-            )}
-          >
-            {featured.map((item, index) => (
-              <div
-                key={item.id}
-                className={cn(
-                  "flex items-center gap-4 py-4",
-                  isDark ? "hover:bg-slate-700/50" : "hover:bg-slate-50",
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex items-center gap-2 px-2",
-                    isDark ? "text-slate-500" : "text-slate-400",
-                  )}
-                >
-                  <Icons.DragHandle size={18} className="cursor-grab" />
-                  <span
-                    className={cn(
-                      "w-8 text-center font-black text-lg",
-                      isDark ? "text-slate-600" : "text-slate-300",
-                    )}
-                  >
-                    {index + 1}
-                  </span>
-                </div>
-                <div
-                  className={cn(
-                    "avatar avatar-md font-bold",
-                    isDark
-                      ? "bg-amber-500/20 text-amber-400"
-                      : "bg-amber-100 text-amber-600",
-                  )}
-                >
-                  {getInitials(item.creator.name)}
-                </div>
-                <div className="flex-1">
-                  <p
-                    className={cn(
-                      "font-black",
-                      isDark ? "text-white" : "text-slate-800",
-                    )}
-                  >
-                    {item.creator.name}
-                  </p>
-                  <p
-                    className={cn(
-                      "text-xs font-bold uppercase tracking-wider",
-                      isDark ? "text-slate-500" : "text-slate-400",
-                    )}
-                  >
-                    {item.creator.channelName}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p
-                    className={cn(
-                      "text-sm font-medium",
-                      isDark ? "text-slate-300" : "text-slate-600",
-                    )}
-                  >
-                    {formatNumber(item.creator.totalVideos)} videos
-                  </p>
-                  <p
-                    className={cn(
-                      "text-sm font-bold",
-                      isDark ? "text-emerald-400" : "text-emerald-600",
-                    )}
-                  >
-                    {formatCurrency(item.creator.totalEarnings)}
-                  </p>
-                </div>
-                <Badge variant={item.isActive ? "success" : "danger"}>
-                  {item.isActive ? "Active" : "Inactive"}
-                </Badge>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => handleToggleStatus(item.id)}
-                    className={cn(
-                      "p-2 rounded-xl transition-all",
-                      isDark
-                        ? "hover:bg-slate-700 text-slate-400 hover:text-slate-200"
-                        : "hover:bg-slate-100 text-slate-400 hover:text-slate-600",
-                    )}
-                  >
-                    {item.isActive ? (
-                      <Icons.Lock size={16} />
-                    ) : (
-                      <Icons.Unlock size={16} />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedId(item.id);
-                      setShowRemoveModal(true);
-                    }}
-                    className="p-2 rounded-xl hover:bg-red-500/10 text-red-400 transition-all"
-                  >
-                    <Icons.Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <FeaturedTable
+          featured={featured}
+          isLoading={isLoading}
+          onToggleStatus={handleToggleStatus}
+          onRemove={(id) => {
+            setSelectedId(id);
+            setShowRemoveModal(true);
+          }}
+        />
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {featured.map((item, index) => (
             <Card
               key={item.id}
               hover
               className={cn(
-                "rounded-[3rem] border-none shadow-xl transition-all duration-300",
-                isDark ? "bg-slate-800" : "bg-white",
+                "rounded-2xl border transition-all duration-300",
+                colors.surfaceBorder,
+                colors.surface,
               )}
             >
-              <CardContent className="pt-8 pb-8">
-                <div className="flex items-center gap-4 mb-6">
-                  <span
-                    className={cn(
-                      "text-3xl font-black",
-                      isDark ? "text-amber-500/30" : "text-amber-200",
-                    )}
-                  >
-                    #{index + 1}
-                  </span>
+              <CardContent className="p-5">
+                <div className="flex flex-col">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          "text-2xl font-black",
+                          isDark ? "text-amber-500/30" : "text-amber-200",
+                        )}
+                      >
+                        #{index + 1}
+                      </span>
+                      <div
+                        className={cn(
+                          "avatar font-bold text-xs",
+                          isDark
+                            ? "bg-amber-500/20 text-amber-400"
+                            : "bg-amber-100 text-amber-600",
+                        )}
+                      >
+                        {getInitials(item.creator.name)}
+                      </div>
+                      <div>
+                        <p
+                          className={cn(
+                            "text-sm font-semibold",
+                            colors.textPrimary,
+                          )}
+                        >
+                          {item.creator.name}
+                        </p>
+                        <p
+                          className={cn(
+                            "text-xs font-medium uppercase tracking-wider",
+                            colors.textMuted,
+                          )}
+                        >
+                          {item.creator.channelName}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge
+                      variant={item.isActive ? "success" : "danger"}
+                    >
+                      {item.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
                   <div
                     className={cn(
-                      "avatar avatar-lg font-bold",
-                      isDark
-                        ? "bg-amber-500/20 text-amber-400"
-                        : "bg-amber-100 text-amber-600",
+                      "mt-4 h-px w-full",
+                      colors.surfaceBorder,
                     )}
-                  >
-                    {getInitials(item.creator.name)}
+                  />
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div
+                      className={cn(
+                        "rounded-lg p-3 transition-colors duration-300",
+                        isDark
+                          ? "bg-[hsl(var(--surface-hover))]/50"
+                          : "bg-[hsl(var(--surface-hover))]",
+                      )}
+                    >
+                      <p
+                        className={cn(
+                          "text-xs font-medium uppercase tracking-wider",
+                          colors.textMuted,
+                        )}
+                      >
+                        Videos
+                      </p>
+                      <p
+                        className={cn(
+                          "text-base font-bold",
+                          colors.textPrimary,
+                        )}
+                      >
+                        {formatNumber(item.creator.totalVideos)}
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "rounded-lg p-3 transition-colors duration-300",
+                        isDark
+                          ? "bg-[hsl(var(--success))]/10"
+                          : "bg-[hsl(var(--success))]/10",
+                      )}
+                    >
+                      <p
+                        className={cn(
+                          "text-xs font-medium uppercase tracking-wider",
+                          colors.successText,
+                        )}
+                      >
+                        Earnings
+                      </p>
+                      <p
+                        className={cn(
+                          "text-base font-bold",
+                          colors.successText,
+                        )}
+                      >
+                        {formatCurrency(item.creator.totalEarnings)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p
-                      className={cn(
-                        "font-black",
-                        isDark ? "text-white" : "text-slate-800",
-                      )}
-                    >
-                      {item.creator.name}
-                    </p>
-                    <p
-                      className={cn(
-                        "text-xs font-bold uppercase tracking-wider",
-                        isDark ? "text-slate-500" : "text-slate-400",
-                      )}
-                    >
-                      {item.creator.channelName}
-                    </p>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "text-xs font-medium uppercase tracking-wider",
+                          colors.textMuted,
+                        )}
+                      >
+                        {item.creator.onlineStatus}
+                      </span>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "h-8 w-8 p-0 transition-colors duration-300",
+                          isDark
+                            ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
+                            : "",
+                        )}
+                        onClick={() => window.location.href = `/creators?id=${item.creator.id}`}
+                      >
+                        <Icons.Eye size={14} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "h-8 w-8 p-0 transition-colors duration-300",
+                          isDark
+                            ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
+                            : "",
+                        )}
+                        onClick={() => handleToggleStatus(item.id)}
+                      >
+                        {item.isActive ? (
+                          <Icons.Lock size={14} />
+                        ) : (
+                          <Icons.Unlock size={14} />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "h-8 w-8 p-0 transition-colors duration-300",
+                          "hover:bg-[hsl(var(--danger)/0.1)]",
+                          colors.dangerText,
+                        )}
+                        onClick={() => {
+                          setSelectedId(item.id);
+                          setShowRemoveModal(true);
+                        }}
+                      >
+                        <Icons.Trash2 size={14} />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                <div
-                  className={cn(
-                    "grid grid-cols-2 gap-4 mb-6 p-4 rounded-2xl",
-                    isDark ? "bg-slate-700/50" : "bg-slate-50",
-                  )}
-                >
-                  <div>
-                    <p
-                      className={cn(
-                        "text-[10px] font-black uppercase tracking-widest mb-1",
-                        isDark ? "text-slate-500" : "text-slate-400",
-                      )}
-                    >
-                      Videos
-                    </p>
-                    <p
-                      className={cn(
-                        "text-xl font-black",
-                        isDark ? "text-white" : "text-slate-800",
-                      )}
-                    >
-                      {formatNumber(item.creator.totalVideos)}
-                    </p>
-                  </div>
-                  <div>
-                    <p
-                      className={cn(
-                        "text-[10px] font-black uppercase tracking-widest mb-1",
-                        isDark ? "text-slate-500" : "text-slate-400",
-                      )}
-                    >
-                      Earnings
-                    </p>
-                    <p
-                      className={cn(
-                        "text-xl font-black",
-                        isDark ? "text-emerald-400" : "text-emerald-600",
-                      )}
-                    >
-                      {formatCurrency(item.creator.totalEarnings)}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant={item.isActive ? "success" : "danger"}
-                    className="flex-1 justify-center"
-                  >
-                    {item.isActive ? "Active" : "Inactive"}
-                  </Badge>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={
-                      isDark
-                        ? "text-slate-400 hover:text-slate-200 hover:bg-slate-700"
-                        : ""
-                    }
-                    onClick={() => handleToggleStatus(item.id)}
-                  >
-                    {item.isActive ? (
-                      <Icons.Lock size={14} />
-                    ) : (
-                      <Icons.Unlock size={14} />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    onClick={() => {
-                      setSelectedId(item.id);
-                      setShowRemoveModal(true);
-                    }}
-                  >
-                    <Icons.Trash2 size={14} />
-                  </Button>
                 </div>
               </CardContent>
             </Card>
