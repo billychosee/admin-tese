@@ -196,7 +196,17 @@ function LoginContent() {
             </Button>
           </form>
 
-          <footer className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
+          <p className="mt-8 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            Don't have an account?{" "}
+            <Link
+              href="/register"
+              className="text-emerald-500 hover:text-emerald-600 ml-1"
+            >
+              Register
+            </Link>
+          </p>
+
+          <footer className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
             <div className="flex justify-between items-center text-[9px] font-black text-slate-400 uppercase tracking-widest">
               <span>© {new Date().getFullYear()} TESE CORP</span>
               <div className="flex gap-4">
