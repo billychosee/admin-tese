@@ -45,6 +45,12 @@ export const SIDEBAR_ITEMS = [
     icon: "LayoutDashboard",
   },
   {
+    id: "kyc",
+    label: "KYC Verification",
+    href: "/kyc",
+    icon: "Shield",
+  },
+  {
     id: "categories",
     label: "Categories",
     href: "/categories",
@@ -91,6 +97,12 @@ export const SIDEBAR_ITEMS = [
     label: "Notifications",
     href: "/notifications",
     icon: "Bell",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/settings",
+    icon: "Settings",
   },
 ];
 
@@ -192,4 +204,36 @@ export const PAYOUT_STATUSES = [
   { value: "approved", label: "Approved" },
   { value: "completed", label: "Completed" },
   { value: "rejected", label: "Rejected" },
+];
+
+export const KYC_STATUSES = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending Upload" },
+  { value: "pending_approval", label: "Pending Approval" },
+  { value: "approved", label: "Approved" },
+  { value: "declined", label: "Declined" },
+];
+
+export const ADMIN_ROLES = [
+  { value: "super_admin", label: "Super Admin" },
+  { value: "admin", label: "Admin" },
+  { value: "editor", label: "Editor" },
+  { value: "auditor", label: "Auditor" },
+];
+
+export const PERMISSION_MODULES = [
+  { value: "users", label: "Users" },
+  { value: "creators", label: "Creators" },
+  { value: "kyc", label: "KYC" },
+  { value: "transactions", label: "Transactions" },
+  { value: "videos", label: "Videos" },
+  { value: "settings", label: "Settings" },
+  { value: "payouts", label: "Payouts" },
+];
+
+export const FEE_TYPES = [
+  { value: "platform", label: "Platform Fee" },
+  { value: "service", label: "Service Provider Fee" },
+  { value: "payout", label: "Payout Processing Fee" },
+  { value: "subscription", label: "Subscription Processing Fee" },
 ];

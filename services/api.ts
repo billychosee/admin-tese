@@ -10,6 +10,12 @@ import type {
   PaginatedResponse,
   DashboardOverview,
   PayoutRequest,
+  KYCUser,
+  KYCStatus,
+  AdminUser,
+  Role,
+  Permission,
+  FeeConfiguration,
 } from "@/types";
 import {
   mockTransactions,
@@ -23,6 +29,11 @@ import {
   mockRevenueChartData,
   mockOverviewData,
   mockPayoutRequests,
+  mockKYCUsers,
+  mockAdminUsers,
+  mockFeeConfigurations,
+  mockPermissions,
+  mockRoles,
 } from "./mockData";
 import { generateId } from "@/utils";
 
@@ -499,6 +510,213 @@ export const api = {
         rejected: mockPayoutRequests.filter((p) => p.status === "rejected").length,
         totalPendingAmount: pending.reduce((sum, p) => sum + p.amount, 0),
       };
+    },
+  },
+
+  // KYC Management
+  kyc: {
+    async getAll(
+      page: number = 1,
+      pageSize: number = 10,
+      status?: string,
+    ): Promise<PaginatedResponse<KYCUser>> {
+      await simulateApiDelay();
+
+      let filtered = [...mockKYCUsers];
+      if (status && status !== "all") {
+        filtered = filtered.filter((k) => k.status === status);
+      }
+
+      const start = (page - 1) * pageSize;
+      const data = filtered.slice(start, start + pageSize);
+
+      return {
+        data,
+        total: filtered.length,
+        page,
+        pageSize,
+        totalPages: Math.ceil(filtered.length / pageSize),
+      };
+    },
+
+    async getById(id: string): Promise<KYCUser> {
+      await simulateApiDelay();
+      const kyc = mockKYCUsers.find((k) => k.id === id);
+      if (!kyc) throw new Error("KYC application not found");
+      return kyc;
+    },
+
+    async approve(id: string): Promise<KYCUser> {
+      await simulateApiDelay();
+      const kyc = mockKYCUsers.find((k) => k.id === id);
+      if (!kyc) throw new Error("KYC application not found");
+      kyc.status = "approved";
+      kyc.reviewedAt = new Date();
+      kyc.reviewedBy = "admin@tese.com";
+      return kyc;
+    },
+
+    async decline(id: string, reason: string): Promise<KYCUser> {
+      await simulateApiDelay();
+      const kyc = mockKYCUsers.find((k) => k.id === id);
+      if (!kyc) throw new Error("KYC application not found");
+      kyc.status = "declined";
+      kyc.reviewedAt = new Date();
+      kyc.reviewedBy = "admin@tese.com";
+      kyc.rejectionReason = reason;
+      return kyc;
+    },
+
+    async updateStatus(id: string, status: KYCStatus): Promise<KYCUser> {
+      await simulateApiDelay();
+      const kyc = mockKYCUsers.find((k) => k.id === id);
+      if (!kyc) throw new Error("KYC application not found");
+      kyc.status = status;
+      if (status === "pending_approval") {
+        kyc.submittedAt = new Date();
+      }
+      return kyc;
+    },
+  },
+
+  // Admin Users Management
+  adminUsers: {
+    async getAll(): Promise<AdminUser[]> {
+      await simulateApiDelay();
+      return mockAdminUsers;
+    },
+
+    async getById(id: string): Promise<AdminUser> {
+      await simulateApiDelay();
+      const user = mockAdminUsers.find((u) => u.id === id);
+      if (!user) throw new Error("Admin user not found");
+      return user;
+    },
+
+    async create(data: Omit<AdminUser, "id" | "createdAt">): Promise<AdminUser> {
+      await simulateApiDelay();
+      const newUser: AdminUser = {
+        ...data,
+        id: "admin_" + generateId(),
+        createdAt: new Date(),
+      };
+      mockAdminUsers.push(newUser);
+      return newUser;
+    },
+
+    async update(id: string, data: Partial<AdminUser>): Promise<AdminUser> {
+      await simulateApiDelay();
+      const index = mockAdminUsers.findIndex((u) => u.id === id);
+      if (index === -1) throw new Error("Admin user not found");
+      mockAdminUsers[index] = { ...mockAdminUsers[index], ...data };
+      return mockAdminUsers[index];
+    },
+
+    async toggleActive(id: string): Promise<AdminUser> {
+      await simulateApiDelay();
+      const user = mockAdminUsers.find((u) => u.id === id);
+      if (!user) throw new Error("Admin user not found");
+      user.isActive = !user.isActive;
+      return user;
+    },
+  },
+
+  // Roles & Permissions
+  roles: {
+    async getAll(): Promise<Role[]> {
+      await simulateApiDelay();
+      return mockRoles;
+    },
+
+    async getById(id: string): Promise<Role> {
+      await simulateApiDelay();
+      const role = mockRoles.find((r) => r.id === id);
+      if (!role) throw new Error("Role not found");
+      return role;
+    },
+
+    async create(data: Omit<Role, "id" | "createdAt">): Promise<Role> {
+      await simulateApiDelay();
+      const newRole: Role = {
+        ...data,
+        id: "role_" + generateId(),
+        createdAt: new Date(),
+      };
+      mockRoles.push(newRole);
+      return newRole;
+    },
+
+    async update(id: string, data: Partial<Role>): Promise<Role> {
+      await simulateApiDelay();
+      const index = mockRoles.findIndex((r) => r.id === id);
+      if (index === -1) throw new Error("Role not found");
+      mockRoles[index] = { ...mockRoles[index], ...data };
+      return mockRoles[index];
+    },
+
+    async delete(id: string): Promise<void> {
+      await simulateApiDelay();
+      const index = mockRoles.findIndex((r) => r.id === id);
+      if (index === -1) throw new Error("Role not found");
+      mockRoles.splice(index, 1);
+    },
+  },
+
+  permissions: {
+    async getAll(): Promise<Permission[]> {
+      await simulateApiDelay();
+      return mockPermissions;
+    },
+
+    async getByModule(module: string): Promise<Permission[]> {
+      await simulateApiDelay();
+      return mockPermissions.filter((p) => p.module === module);
+    },
+  },
+
+  // Fee Configuration
+  fees: {
+    async getAll(): Promise<FeeConfiguration[]> {
+      await simulateApiDelay();
+      return mockFeeConfigurations;
+    },
+
+    async getByType(type: string): Promise<FeeConfiguration | undefined> {
+      await simulateApiDelay();
+      return mockFeeConfigurations.find((f) => f.type === type);
+    },
+
+    async create(data: Omit<FeeConfiguration, "id" | "createdAt" | "updatedAt">): Promise<FeeConfiguration> {
+      await simulateApiDelay();
+      const newFee: FeeConfiguration = {
+        ...data,
+        id: "fee_" + generateId(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockFeeConfigurations.push(newFee);
+      return newFee;
+    },
+
+    async update(id: string, data: Partial<FeeConfiguration>): Promise<FeeConfiguration> {
+      await simulateApiDelay();
+      const index = mockFeeConfigurations.findIndex((f) => f.id === id);
+      if (index === -1) throw new Error("Fee configuration not found");
+      mockFeeConfigurations[index] = {
+        ...mockFeeConfigurations[index],
+        ...data,
+        updatedAt: new Date(),
+      };
+      return mockFeeConfigurations[index];
+    },
+
+    async toggleActive(id: string): Promise<FeeConfiguration> {
+      await simulateApiDelay();
+      const fee = mockFeeConfigurations.find((f) => f.id === id);
+      if (!fee) throw new Error("Fee configuration not found");
+      fee.isActive = !fee.isActive;
+      fee.updatedAt = new Date();
+      return fee;
     },
   },
 };

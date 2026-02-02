@@ -10,6 +10,11 @@ import type {
   ChartDataPoint,
   DashboardOverview,
   PayoutRequest,
+  KYCUser,
+  AdminUser,
+  Role,
+  Permission,
+  FeeConfiguration,
 } from "@/types";
 
 export const mockUsers: User[] = [
@@ -834,5 +839,218 @@ export const mockPayoutRequests: PayoutRequest[] = [
     accountHolderName: "Music Channel",
     notes: "",
     requestedAt: new Date("2024-01-15T12:00:00"),
+  },
+];
+
+// KYC Users Mock Data
+export const mockKYCUsers: KYCUser[] = [
+  {
+    id: "kyc_001",
+    userId: "user_001",
+    firstName: "John",
+    lastName: "Doe",
+    email: "john.doe@example.com",
+    selfieUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop",
+    idImageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop",
+    idType: "national_id",
+    idNumber: "1234567890123",
+    status: "pending",
+    submittedAt: new Date("2024-01-14T10:30:00"),
+  },
+  {
+    id: "kyc_002",
+    userId: "user_002",
+    firstName: "Jane",
+    lastName: "Smith",
+    email: "jane.smith@example.com",
+    selfieUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop",
+    idImageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop",
+    idType: "passport",
+    idNumber: "A12345678",
+    status: "pending_approval",
+    submittedAt: new Date("2024-01-13T14:20:00"),
+  },
+  {
+    id: "kyc_003",
+    userId: "user_003",
+    firstName: "Bob",
+    lastName: "Wilson",
+    email: "bob.wilson@example.com",
+    selfieUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop",
+    idImageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop",
+    idType: "drivers_license",
+    idNumber: "D1234567",
+    status: "approved",
+    submittedAt: new Date("2024-01-10T09:15:00"),
+    reviewedAt: new Date("2024-01-11T11:30:00"),
+    reviewedBy: "admin@tese.com",
+  },
+  {
+    id: "kyc_004",
+    userId: "user_004",
+    firstName: "Alice",
+    lastName: "Brown",
+    email: "alice.brown@example.com",
+    selfieUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop",
+    idImageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop",
+    idType: "national_id",
+    idNumber: "2345678901234",
+    status: "declined",
+    submittedAt: new Date("2024-01-08T16:45:00"),
+    reviewedAt: new Date("2024-01-09T10:00:00"),
+    reviewedBy: "admin@tese.com",
+    rejectionReason: "ID document is unclear",
+  },
+];
+
+// Admin Users Mock Data
+export const mockAdminUsers: AdminUser[] = [
+  {
+    id: "admin_001",
+    email: "admin@tese.com",
+    name: "TESE Admin",
+    role: "super_admin",
+    avatar: "",
+    isActive: true,
+    lastLogin: new Date(),
+    createdAt: new Date("2024-01-01"),
+  },
+  {
+    id: "admin_002",
+    email: "editor@tese.com",
+    name: "Content Editor",
+    role: "editor",
+    avatar: "",
+    isActive: true,
+    lastLogin: new Date(Date.now() - 86400000),
+    createdAt: new Date("2024-01-15"),
+  },
+  {
+    id: "admin_003",
+    email: "auditor@tese.com",
+    name: "System Auditor",
+    role: "auditor",
+    avatar: "",
+    isActive: true,
+    lastLogin: new Date(Date.now() - 172800000),
+    createdAt: new Date("2024-01-20"),
+  },
+  {
+    id: "admin_004",
+    email: "support@tese.com",
+    name: "Support Staff",
+    role: "admin",
+    avatar: "",
+    isActive: false,
+    lastLogin: new Date(Date.now() - 604800000),
+    createdAt: new Date("2024-02-01"),
+  },
+];
+
+// Permissions Mock Data
+export const mockPermissions: Permission[] = [
+  { id: "perm_001", name: "users.view", description: "View users list", module: "users" },
+  { id: "perm_002", name: "users.create", description: "Create new users", module: "users" },
+  { id: "perm_003", name: "users.edit", description: "Edit user details", module: "users" },
+  { id: "perm_004", name: "users.delete", description: "Delete users", module: "users" },
+  { id: "perm_005", name: "creators.view", description: "View creators list", module: "creators" },
+  { id: "perm_006", name: "creators.approve", description: "Approve/reject creators", module: "creators" },
+  { id: "perm_007", name: "creators.deactivate", description: "Deactivate creators", module: "creators" },
+  { id: "perm_008", name: "kyc.view", description: "View KYC applications", module: "kyc" },
+  { id: "perm_009", name: "kyc.verify", description: "Verify KYC documents", module: "kyc" },
+  { id: "perm_010", name: "transactions.view", description: "View transactions", module: "transactions" },
+  { id: "perm_011", name: "transactions.refund", description: "Process refunds", module: "transactions" },
+  { id: "perm_012", name: "transactions.export", description: "Export transactions", module: "transactions" },
+  { id: "perm_013", name: "videos.view", description: "View videos", module: "videos" },
+  { id: "perm_014", name: "videos.edit", description: "Edit video settings", module: "videos" },
+  { id: "perm_015", name: "videos.featured", description: "Manage featured content", module: "videos" },
+  { id: "perm_016", name: "settings.view", description: "View settings", module: "settings" },
+  { id: "perm_017", name: "settings.edit", description: "Modify settings", module: "settings" },
+  { id: "perm_018", name: "payouts.view", description: "View payouts", module: "payouts" },
+  { id: "perm_019", name: "payouts.approve", description: "Approve payouts", module: "payouts" },
+  { id: "perm_020", name: "payouts.complete", description: "Complete payouts", module: "payouts" },
+];
+
+// Roles Mock Data
+export const mockRoles: Role[] = [
+  {
+    id: "role_001",
+    name: "Super Admin",
+    description: "Full system access",
+    permissions: mockPermissions.filter((_, i) => i < 20),
+    createdAt: new Date("2024-01-01"),
+  },
+  {
+    id: "role_002",
+    name: "Admin",
+    description: "Administrative access",
+    permissions: mockPermissions.filter((p) =>
+      ["users.view", "creators.view", "creators.approve", "kyc.view", "kyc.verify",
+       "transactions.view", "transactions.refund", "videos.view", "videos.edit", "videos.featured",
+       "payouts.view", "payouts.approve"].includes(p.name)
+    ),
+    createdAt: new Date("2024-01-01"),
+  },
+  {
+    id: "role_003",
+    name: "Editor",
+    description: "Content management access",
+    permissions: mockPermissions.filter((p) =>
+      ["creators.view", "videos.view", "videos.edit", "videos.featured"].includes(p.name)
+    ),
+    createdAt: new Date("2024-01-01"),
+  },
+  {
+    id: "role_004",
+    name: "Auditor",
+    description: "Read-only access for auditing",
+    permissions: mockPermissions.filter((p) =>
+      ["users.view", "creators.view", "transactions.view", "payouts.view"].includes(p.name)
+    ),
+    createdAt: new Date("2024-01-01"),
+  },
+];
+
+// Fee Configuration Mock Data
+export const mockFeeConfigurations: FeeConfiguration[] = [
+  {
+    id: "fee_001",
+    type: "platform",
+    name: "Platform Fee",
+    percentage: 5.0,
+    fixedAmount: 0,
+    isActive: true,
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date("2024-01-01"),
+  },
+  {
+    id: "fee_002",
+    type: "service",
+    name: "Service Provider Fee",
+    percentage: 0,
+    fixedAmount: 0.50,
+    isActive: true,
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date("2024-01-01"),
+  },
+  {
+    id: "fee_003",
+    type: "payout",
+    name: "Payout Processing Fee",
+    percentage: 1.5,
+    fixedAmount: 0,
+    isActive: true,
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date("2024-01-01"),
+  },
+  {
+    id: "fee_004",
+    type: "subscription",
+    name: "Subscription Processing Fee",
+    percentage: 2.5,
+    fixedAmount: 0,
+    isActive: true,
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date("2024-01-01"),
   },
 ];

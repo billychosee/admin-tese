@@ -224,6 +224,7 @@ import {
   GripHorizontal,
   Loader2,
   Banknote,
+  Table,
 } from "lucide-react";
 
 interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -411,6 +412,7 @@ export const Icons = {
   Grid: (props: IconProps) => <Grid {...props} />,
   List: (props: IconProps) => <List {...props} />,
   ListOrdered: (props: IconProps) => <ListOrdered {...props} />,
+  Table: (props: IconProps) => <Table {...props} />,
   AlignLeft: (props: IconProps) => <AlignLeft {...props} />,
   AlignCenter: (props: IconProps) => <AlignCenter {...props} />,
   AlignRight: (props: IconProps) => <AlignRight {...props} />,

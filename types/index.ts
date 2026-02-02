@@ -214,6 +214,84 @@ export interface ApiError {
 
 export type ThemeMode = "light" | "dark";
 
+export interface KYCUser {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  selfieUrl?: string;
+  idImageUrl?: string;
+  idType: "national_id" | "passport" | "drivers_license";
+  idNumber: string;
+  status: KYCStatus;
+  submittedAt: Date;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  rejectionReason?: string;
+}
+
+export type KYCStatus =
+  | "pending"
+  | "pending_approval"
+  | "approved"
+  | "declined";
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  role: AdminRole;
+  avatar?: string;
+  isActive: boolean;
+  lastLogin?: Date;
+  createdAt: Date;
+}
+
+export type AdminRole = "super_admin" | "admin" | "editor" | "auditor";
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string;
+  permissions: Permission[];
+  createdAt: Date;
+}
+
+export interface Permission {
+  id: string;
+  name: string;
+  description: string;
+  module: PermissionModule;
+}
+
+export type PermissionModule =
+  | "users"
+  | "creators"
+  | "kyc"
+  | "transactions"
+  | "videos"
+  | "settings"
+  | "payouts";
+
+export interface FeeConfiguration {
+  id: string;
+  type: FeeType;
+  name: string;
+  percentage: number;
+  fixedAmount: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type FeeType = "platform" | "service" | "payout" | "subscription";
+
+export interface DateRange {
+  startDate: Date;
+  endDate: Date;
+}
+
 export interface ThemeContextType {
   theme: ThemeMode;
   toggleTheme: () => void;

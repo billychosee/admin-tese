@@ -4,12 +4,16 @@ import { AUTH_TOKEN_KEY } from "./constants";
 
 const protectedRoutes = [
   "/dashboard",
+  "/kyc",
   "/categories",
   "/creators",
   "/videos",
   "/featured",
   "/transactions",
   "/devices",
+  "/notifications",
+  "/payouts",
+  "/settings",
 ];
 const authRoutes = ["/login", "/register"];
 
@@ -46,12 +50,16 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/kyc/:path*",
     "/categories/:path*",
     "/creators/:path*",
     "/videos/:path*",
     "/featured/:path*",
     "/transactions/:path*",
     "/devices/:path*",
+    "/notifications/:path*",
+    "/payouts/:path*",
+    "/settings/:path*",
     "/login",
     "/register",
   ],

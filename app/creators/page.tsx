@@ -33,6 +33,7 @@ export default function CreatorsPage() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -129,6 +130,12 @@ export default function CreatorsPage() {
   const openProfile = (creator: Creator) => {
     setSelectedCreator(creator);
     setShowProfileModal(true);
+  };
+
+  const openAvatarPreview = (creator: Creator, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedCreator(creator);
+    setShowAvatarModal(true);
   };
 
   // Color tokens for consistent theming
@@ -274,11 +281,19 @@ export default function CreatorsPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       {creator.avatar ? (
-                        <img
-                          src={creator.avatar}
-                          alt={`${creator.firstName} ${creator.lastName}`}
-                          className="w-10 h-10 rounded-xl object-cover"
-                        />
+                        <button
+                          onClick={(e) => openAvatarPreview(creator, e)}
+                          className="relative group"
+                        >
+                          <img
+                            src={creator.avatar}
+                            alt={`${creator.firstName} ${creator.lastName}`}
+                            className="w-10 h-10 rounded-xl object-cover group-hover:ring-2 ring-[hsl(var(--primary))] transition-all"
+                          />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity flex items-center justify-center">
+                            <Icons.Search size={14} className="text-white" />
+                          </div>
+                        </button>
                       ) : (
                         <div
                           className={cn(
@@ -288,7 +303,9 @@ export default function CreatorsPage() {
                               : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
                           )}
                         >
-                          {getInitials(`${creator.firstName} ${creator.lastName}`)}
+                          {getInitials(
+                            `${creator.firstName} ${creator.lastName}`,
+                          )}
                         </div>
                       )}
                       <div>
@@ -323,10 +340,7 @@ export default function CreatorsPage() {
                     </Badge>
                   </div>
                   <div
-                    className={cn(
-                      "mt-4 h-px w-full",
-                      colors.surfaceBorder,
-                    )}
+                    className={cn("mt-4 h-px w-full", colors.surfaceBorder)}
                   />
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     <div
@@ -412,6 +426,7 @@ export default function CreatorsPage() {
                             : "",
                         )}
                         onClick={() => openProfile(creator)}
+                        title="View Profile"
                       >
                         <Icons.Eye size={14} />
                       </Button>
@@ -425,6 +440,11 @@ export default function CreatorsPage() {
                             : "",
                         )}
                         onClick={() => handleToggleStatus(creator)}
+                        title={
+                          creator.status === "active"
+                            ? "Deactivate"
+                            : "Activate"
+                        }
                       >
                         {creator.status === "active" ? (
                           <Icons.Lock size={14} />
@@ -432,6 +452,46 @@ export default function CreatorsPage() {
                           <Icons.Unlock size={14} />
                         )}
                       </Button>
+                      {creator.status === "pending" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={cn(
+                            "h-8 w-8 p-0 transition-colors duration-300",
+                            isDark
+                              ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                              : "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50",
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCreator(creator);
+                            setShowApproveModal(true);
+                          }}
+                          title="Approve"
+                        >
+                          <Icons.Check size={14} />
+                        </Button>
+                      )}
+                      {creator.status === "pending" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={cn(
+                            "h-8 w-8 p-0 transition-colors duration-300",
+                            isDark
+                              ? "text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                              : "text-red-500 hover:text-red-600 hover:bg-red-50",
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCreator(creator);
+                            setShowRejectModal(true);
+                          }}
+                          title="Reject"
+                        >
+                          <Icons.X size={14} />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -509,12 +569,18 @@ export default function CreatorsPage() {
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    getInitials(`${selectedCreator.firstName} ${selectedCreator.lastName}`)
+                    getInitials(
+                      `${selectedCreator.firstName} ${selectedCreator.lastName}`,
+                    )
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold truncate">{selectedCreator.firstName} {selectedCreator.lastName}</h3>
-                  <p className="text-xs opacity-80 truncate">{selectedCreator.email}</p>
+                  <h3 className="font-bold truncate">
+                    {selectedCreator.firstName} {selectedCreator.lastName}
+                  </h3>
+                  <p className="text-xs opacity-80 truncate">
+                    {selectedCreator.email}
+                  </p>
                 </div>
                 <Badge
                   variant={
@@ -538,26 +604,72 @@ export default function CreatorsPage() {
 
             {/* Personal Information Table */}
             <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-              <div className={cn("px-4 py-2 text-[10px] font-bold uppercase tracking-wider", colors.textSecondary)}>
+              <div
+                className={cn(
+                  "px-4 py-2 text-[10px] font-bold uppercase tracking-wider",
+                  colors.textSecondary,
+                )}
+              >
                 Personal Information
               </div>
               <table className="w-full text-sm">
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  <tr className={cn("hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors", isDark ? "" : "bg-slate-50")}>
-                    <td className={cn("px-4 py-2 font-medium w-32", colors.textSecondary)}>Name</td>
-                    <td className={cn("px-4 py-2 font-semibold", colors.textPrimary)}>
+                  <tr
+                    className={cn(
+                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
+                      isDark ? "" : "bg-slate-50",
+                    )}
+                  >
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium w-32",
+                        colors.textSecondary,
+                      )}
+                    >
+                      Name
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.firstName} {selectedCreator.lastName}
                     </td>
                   </tr>
                   <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className={cn("px-4 py-2 font-medium", colors.textSecondary)}>Email</td>
-                    <td className={cn("px-4 py-2 font-semibold truncate", colors.textPrimary)}>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium",
+                        colors.textSecondary,
+                      )}
+                    >
+                      Email
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold truncate",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.email}
                     </td>
                   </tr>
                   <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className={cn("px-4 py-2 font-medium", colors.textSecondary)}>Phone</td>
-                    <td className={cn("px-4 py-2 font-semibold font-mono", colors.textPrimary)}>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium",
+                        colors.textSecondary,
+                      )}
+                    >
+                      Phone
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold font-mono",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.phone}
                     </td>
                   </tr>
@@ -567,18 +679,41 @@ export default function CreatorsPage() {
 
             {/* Address Table */}
             <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-              <div className={cn("px-4 py-2 text-[10px] font-bold uppercase tracking-wider", colors.textSecondary)}>
+              <div
+                className={cn(
+                  "px-4 py-2 text-[10px] font-bold uppercase tracking-wider",
+                  colors.textSecondary,
+                )}
+              >
                 Address
               </div>
               <table className="w-full text-sm">
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  <tr className={cn("hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors", isDark ? "" : "bg-slate-50")}>
-                    <td className={cn("px-4 py-2 font-medium w-32", colors.textSecondary)}>Full Address</td>
-                    <td className={cn("px-4 py-2 font-semibold", colors.textPrimary)}>
+                  <tr
+                    className={cn(
+                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
+                      isDark ? "" : "bg-slate-50",
+                    )}
+                  >
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium w-32",
+                        colors.textSecondary,
+                      )}
+                    >
+                      Full Address
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.address}
                       <br />
                       <span className={cn("text-xs", colors.textSecondary)}>
-                        {selectedCreator.city}, {selectedCreator.province} {selectedCreator.postalCode}
+                        {selectedCreator.city}, {selectedCreator.province}{" "}
+                        {selectedCreator.postalCode}
                       </span>
                       <br />
                       <span className={cn("text-xs", colors.textSecondary)}>
@@ -592,20 +727,54 @@ export default function CreatorsPage() {
 
             {/* Identity Verification Table */}
             <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-              <div className={cn("px-4 py-2 text-[10px] font-bold uppercase tracking-wider", colors.textSecondary)}>
+              <div
+                className={cn(
+                  "px-4 py-2 text-[10px] font-bold uppercase tracking-wider",
+                  colors.textSecondary,
+                )}
+              >
                 Identity Verification
               </div>
               <table className="w-full text-sm">
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  <tr className={cn("hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors", isDark ? "" : "bg-slate-50")}>
-                    <td className={cn("px-4 py-2 font-medium w-32", colors.textSecondary)}>ID Type</td>
-                    <td className={cn("px-4 py-2 font-semibold capitalize", colors.textPrimary)}>
+                  <tr
+                    className={cn(
+                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
+                      isDark ? "" : "bg-slate-50",
+                    )}
+                  >
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium w-32",
+                        colors.textSecondary,
+                      )}
+                    >
+                      ID Type
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold capitalize",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.idType?.replace("_", " ") || "N/A"}
                     </td>
                   </tr>
                   <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className={cn("px-4 py-2 font-medium", colors.textSecondary)}>ID Number</td>
-                    <td className={cn("px-4 py-2 font-semibold font-mono", colors.textPrimary)}>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium",
+                        colors.textSecondary,
+                      )}
+                    >
+                      ID Number
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold font-mono",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.idNumber || "N/A"}
                     </td>
                   </tr>
@@ -649,32 +818,90 @@ export default function CreatorsPage() {
 
             {/* Banking Details Table */}
             <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-              <div className={cn("px-4 py-2 text-[10px] font-bold uppercase tracking-wider", colors.textSecondary)}>
+              <div
+                className={cn(
+                  "px-4 py-2 text-[10px] font-bold uppercase tracking-wider",
+                  colors.textSecondary,
+                )}
+              >
                 Banking Details
               </div>
               <table className="w-full text-sm">
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  <tr className={cn("hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors", isDark ? "" : "bg-slate-50")}>
-                    <td className={cn("px-4 py-2 font-medium w-32", colors.textSecondary)}>Bank Name</td>
-                    <td className={cn("px-4 py-2 font-semibold", colors.textPrimary)}>
+                  <tr
+                    className={cn(
+                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
+                      isDark ? "" : "bg-slate-50",
+                    )}
+                  >
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium w-32",
+                        colors.textSecondary,
+                      )}
+                    >
+                      Bank Name
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.bankName || "N/A"}
                     </td>
                   </tr>
                   <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className={cn("px-4 py-2 font-medium", colors.textSecondary)}>Account Holder</td>
-                    <td className={cn("px-4 py-2 font-semibold", colors.textPrimary)}>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium",
+                        colors.textSecondary,
+                      )}
+                    >
+                      Account Holder
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.accountHolderName || "N/A"}
                     </td>
                   </tr>
                   <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className={cn("px-4 py-2 font-medium", colors.textSecondary)}>Account Number</td>
-                    <td className={cn("px-4 py-2 font-semibold font-mono", colors.textPrimary)}>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium",
+                        colors.textSecondary,
+                      )}
+                    >
+                      Account Number
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold font-mono",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.bankAccountNumber || "N/A"}
                     </td>
                   </tr>
                   <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className={cn("px-4 py-2 font-medium", colors.textSecondary)}>Branch</td>
-                    <td className={cn("px-4 py-2 font-semibold", colors.textPrimary)}>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium",
+                        colors.textSecondary,
+                      )}
+                    >
+                      Branch
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.bankBranch || "N/A"}
                     </td>
                   </tr>
@@ -684,22 +911,60 @@ export default function CreatorsPage() {
 
             {/* Channel Information Table */}
             <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-              <div className={cn("px-4 py-2 text-[10px] font-bold uppercase tracking-wider", colors.textSecondary)}>
+              <div
+                className={cn(
+                  "px-4 py-2 text-[10px] font-bold uppercase tracking-wider",
+                  colors.textSecondary,
+                )}
+              >
                 Channel Information
               </div>
               <table className="w-full text-sm">
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  <tr className={cn("hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors", isDark ? "" : "bg-slate-50")}>
-                    <td className={cn("px-4 py-2 font-medium w-32", colors.textSecondary)}>Channel Name</td>
-                    <td className={cn("px-4 py-2 font-semibold", colors.textPrimary)}>
+                  <tr
+                    className={cn(
+                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
+                      isDark ? "" : "bg-slate-50",
+                    )}
+                  >
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-medium w-32",
+                        colors.textSecondary,
+                      )}
+                    >
+                      Channel Name
+                    </td>
+                    <td
+                      className={cn(
+                        "px-4 py-2 font-semibold",
+                        colors.textPrimary,
+                      )}
+                    >
                       {selectedCreator.channelName}
                     </td>
                   </tr>
                   {selectedCreator.channelUrl && (
                     <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                      <td className={cn("px-4 py-2 font-medium", colors.textSecondary)}>Channel URL</td>
-                      <td className={cn("px-4 py-2 font-semibold truncate", colors.primaryText)}>
-                        <a href={selectedCreator.channelUrl} target="_blank" rel="noopener noreferrer">
+                      <td
+                        className={cn(
+                          "px-4 py-2 font-medium",
+                          colors.textSecondary,
+                        )}
+                      >
+                        Channel URL
+                      </td>
+                      <td
+                        className={cn(
+                          "px-4 py-2 font-semibold truncate",
+                          colors.primaryText,
+                        )}
+                      >
+                        <a
+                          href={selectedCreator.channelUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           {selectedCreator.channelUrl}
                         </a>
                       </td>
@@ -712,7 +977,12 @@ export default function CreatorsPage() {
             {/* SmatPay Section */}
             {selectedCreator.smatPayMerchantId && (
               <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-                <div className={cn("px-4 py-2 text-[10px] font-bold uppercase tracking-wider flex items-center justify-between", colors.textSecondary)}>
+                <div
+                  className={cn(
+                    "px-4 py-2 text-[10px] font-bold uppercase tracking-wider flex items-center justify-between",
+                    colors.textSecondary,
+                  )}
+                >
                   <span>SmatPay Integration</span>
                   <Badge
                     variant={
@@ -729,9 +999,26 @@ export default function CreatorsPage() {
                 </div>
                 <table className="w-full text-sm">
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                    <tr className={cn("hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors", isDark ? "" : "bg-slate-50")}>
-                      <td className={cn("px-4 py-2 font-medium w-32", colors.textSecondary)}>Merchant ID</td>
-                      <td className={cn("px-4 py-2 font-semibold font-mono text-xs", colors.textPrimary)}>
+                    <tr
+                      className={cn(
+                        "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
+                        isDark ? "" : "bg-slate-50",
+                      )}
+                    >
+                      <td
+                        className={cn(
+                          "px-4 py-2 font-medium w-32",
+                          colors.textSecondary,
+                        )}
+                      >
+                        Merchant ID
+                      </td>
+                      <td
+                        className={cn(
+                          "px-4 py-2 font-semibold font-mono text-xs",
+                          colors.textPrimary,
+                        )}
+                      >
                         {selectedCreator.smatPayMerchantId}
                       </td>
                     </tr>
@@ -759,8 +1046,14 @@ export default function CreatorsPage() {
                       : colors.textMuted,
                 )}
               />
-              <span className={cn("text-xs font-bold uppercase tracking-wider flex-1", colors.textSecondary)}>
-                {selectedCreator.onlineStatus} - Last seen {formatRelativeTime(selectedCreator.lastSeen)}
+              <span
+                className={cn(
+                  "text-xs font-bold uppercase tracking-wider flex-1",
+                  colors.textSecondary,
+                )}
+              >
+                {selectedCreator.onlineStatus} - Last seen{" "}
+                {formatRelativeTime(selectedCreator.lastSeen)}
               </span>
             </div>
 
@@ -822,6 +1115,60 @@ export default function CreatorsPage() {
         confirmText="Reject"
         variant="danger"
       />
+
+      {/* Avatar Preview Modal */}
+      <Modal
+        isOpen={showAvatarModal}
+        onClose={() => setShowAvatarModal(false)}
+        title="Profile Picture"
+        size="sm"
+      >
+        {selectedCreator && (
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative w-48 h-48">
+              {selectedCreator.avatar ? (
+                <img
+                  src={selectedCreator.avatar}
+                  alt={`${selectedCreator.firstName} ${selectedCreator.lastName}`}
+                  className="w-full h-full rounded-full object-cover ring-4 ring-[hsl(var(--primary))]"
+                />
+              ) : (
+                <div
+                  className={cn(
+                    "w-full h-full rounded-full flex items-center justify-center text-4xl font-bold",
+                    isDark
+                      ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                      : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
+                  )}
+                >
+                  {getInitials(
+                    `${selectedCreator.firstName} ${selectedCreator.lastName}`,
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="text-center">
+              <h3 className={cn("text-lg font-semibold", colors.textPrimary)}>
+                {selectedCreator.firstName} {selectedCreator.lastName}
+              </h3>
+              <p className={cn("text-sm", colors.textSecondary)}>
+                {selectedCreator.channelName}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowAvatarModal(false);
+                openProfile(selectedCreator);
+              }}
+            >
+              <Icons.Eye size={14} className="mr-2" />
+              View Full Profile
+            </Button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
