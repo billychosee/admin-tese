@@ -45,32 +45,50 @@ export interface Creator {
   totalVideos: number;
   totalViews: number;
   totalEarnings: number;
-  
+
   // Address Information
   address: string;
   city: string;
   province: string;
   country: string;
   postalCode: string;
-  
+
   // Identity Verification
   idType?: "national_id" | "passport" | "drivers_license";
   idNumber?: string;
   idCopyUrl?: string;
   proofOfResidenceUrl?: string;
-  
+
   // Banking Information
   bankName?: string;
   bankAccountNumber?: string;
   bankBranch?: string;
   accountHolderName?: string;
-  
+
   // SmatPay Integration
   smatPayMerchantId?: string;
   smatPayStatus?: "verified" | "pending" | "rejected";
-  
+
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface PayoutRequest {
+  id: string;
+  creatorId: string;
+  creatorName: string;
+  creatorEmail: string;
+  channelName: string;
+  amount: number;
+  currency: string;
+  status: "pending" | "approved" | "rejected" | "completed";
+  bankName: string;
+  bankAccountNumber: string;
+  accountHolderName: string;
+  notes?: string;
+  requestedAt: Date;
+  processedAt?: Date;
+  processedBy?: string;
 }
 
 export interface Video {

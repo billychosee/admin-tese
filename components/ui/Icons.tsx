@@ -223,6 +223,7 @@ import {
   HashIcon,
   GripHorizontal,
   Loader2,
+  Banknote,
 } from "lucide-react";
 
 interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -433,6 +434,7 @@ export const Icons = {
   CreditCard: (props: IconProps) => <CreditCard {...props} />,
   Wallet: (props: IconProps) => <Wallet {...props} />,
   Percent: (props: IconProps) => <Percent {...props} />,
+  Banknote: (props: IconProps) => <Banknote {...props} />,
   Coin: () => (
     <svg
       viewBox="0 0 24 24"

@@ -66,6 +66,39 @@ export default function DevicesPage() {
 
   const currentSession = devices.find((d) => d.isCurrentSession);
 
+  // Dashboard-style colors
+  const colors = {
+    surface: "bg-[hsl(var(--surface))]",
+    surfaceBorder: "border-[hsl(var(--surface-border))]",
+    textPrimary: "text-[hsl(var(--text-primary))]",
+    textMuted: "text-[hsl(var(--text-muted))]",
+  };
+
+  // Stats cards with dashboard styling
+  const statsCards = [
+    {
+      label: "Active Sessions",
+      value: devices.length,
+      icon: <Icons.Activity size={20} />,
+      iconColor: "text-emerald-500",
+      iconBg: isDark ? "bg-emerald-500/20" : "bg-emerald-100",
+    },
+    {
+      label: "Max Devices",
+      value: MAX_DEVICES,
+      icon: <Icons.Users size={20} />,
+      iconColor: "text-blue-500",
+      iconBg: isDark ? "bg-blue-500/20" : "bg-blue-100",
+    },
+    {
+      label: "Current Session",
+      value: currentSession ? currentSession.browser.split(' ')[0] : 'None',
+      icon: <Icons.Check size={20} />,
+      iconColor: "text-purple-500",
+      iconBg: isDark ? "bg-purple-500/20" : "bg-purple-100",
+    },
+  ];
+
   if (isLoading) {
     return (
       <div className={cn("space-y-6 min-h-screen font-sans", isDark ? "bg-[#020617]" : "bg-[#F1F5F9]")}>
@@ -76,47 +109,30 @@ export default function DevicesPage() {
 
   return (
     <div className={cn("space-y-8 min-h-screen font-sans transition-colors duration-300", isDark ? "bg-[#020617]" : "bg-white")}>
-      {/* Stats Cards */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {[
-          {
-            label: "Active Sessions",
-            value: devices.length,
-            icon: <Icons.Activity />,
-            color: "from-emerald-400 to-emerald-600",
-          },
-          {
-            label: "Max Devices",
-            value: MAX_DEVICES,
-            icon: <Icons.Users />,
-            color: "from-blue-400 to-blue-600",
-          },
-          {
-            label: "Current Session",
-            value: currentSession ? currentSession.browser.split(' ')[0] : 'None',
-            icon: <Icons.Check />,
-            color: "from-purple-400 to-purple-600",
-          },
-        ].map((stat, i) => (
+      {/* Stats Cards - Dashboard Style */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {statsCards.map((card, i) => (
           <div
             key={i}
             className={cn(
-              "p-6 rounded-[2.5rem] text-white bg-gradient-to-br shadow-2xl relative overflow-hidden group hover:scale-105 transition-all duration-500",
-              stat.color,
+              "rounded-2xl border p-5 transition-all duration-300 hover:shadow-lg",
+              colors.surfaceBorder,
+              colors.surface,
             )}
           >
-            <div className="relative z-10 flex flex-col justify-between h-full">
-              <div className="flex justify-between items-start">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70">
-                  {stat.label}
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between">
+                <span className={cn("text-xs font-medium uppercase tracking-wider", colors.textMuted)}>
+                  {card.label}
                 </span>
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
-                  {stat.icon}
+                <div className={cn("p-2 rounded-lg", card.iconBg)}>
+                  <span className={card.iconColor}>{card.icon}</span>
                 </div>
               </div>
-              <h3 className="text-3xl font-black mt-4">{stat.value}</h3>
+              <h3 className={cn("text-2xl font-bold mt-3", colors.textPrimary)}>
+                {card.value}
+              </h3>
             </div>
-            <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all" />
           </div>
         ))}
       </div>

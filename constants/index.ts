@@ -75,6 +75,12 @@ export const SIDEBAR_ITEMS = [
     icon: "CreditCard",
   },
   {
+    id: "payouts",
+    label: "Payouts",
+    href: "/payouts",
+    icon: "Banknote",
+  },
+  {
     id: "devices",
     label: "Devices",
     href: "/devices",
@@ -178,4 +184,12 @@ export const DEVICE_TYPES = [
   { value: "desktop", label: "Desktop" },
   { value: "mobile", label: "Mobile" },
   { value: "tablet", label: "Tablet" },
+];
+
+export const PAYOUT_STATUSES = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "completed", label: "Completed" },
+  { value: "rejected", label: "Rejected" },
 ];

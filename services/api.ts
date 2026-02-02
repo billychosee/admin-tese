@@ -9,6 +9,7 @@ import type {
   DashboardStats,
   PaginatedResponse,
   DashboardOverview,
+  PayoutRequest,
 } from "@/types";
 import {
   mockTransactions,
@@ -21,6 +22,7 @@ import {
   mockTransactionChartData,
   mockRevenueChartData,
   mockOverviewData,
+  mockPayoutRequests,
 } from "./mockData";
 import { generateId } from "@/utils";
 
@@ -415,6 +417,88 @@ export const api = {
       const device = mockDevices.find((d) => d.id === id);
       if (!device) throw new Error("Device not found");
       device.lastActive = new Date(0);
+    },
+  },
+
+  payouts: {
+    async getAll(
+      page: number = 1,
+      pageSize: number = 10,
+      status?: string,
+    ): Promise<PaginatedResponse<PayoutRequest>> {
+      await simulateApiDelay();
+
+      let filtered = [...mockPayoutRequests];
+      if (status && status !== "all") {
+        filtered = filtered.filter((p) => p.status === status);
+      }
+
+      const start = (page - 1) * pageSize;
+      const data = filtered.slice(start, start + pageSize);
+
+      return {
+        data,
+        total: filtered.length,
+        page,
+        pageSize,
+        totalPages: Math.ceil(filtered.length / pageSize),
+      };
+    },
+
+    async getById(id: string): Promise<PayoutRequest> {
+      await simulateApiDelay();
+      const payout = mockPayoutRequests.find((p) => p.id === id);
+      if (!payout) throw new Error("Payout request not found");
+      return payout;
+    },
+
+    async approve(id: string): Promise<PayoutRequest> {
+      await simulateApiDelay();
+      const payout = mockPayoutRequests.find((p) => p.id === id);
+      if (!payout) throw new Error("Payout request not found");
+      payout.status = "approved";
+      payout.processedAt = new Date();
+      payout.processedBy = "Admin User";
+      return payout;
+    },
+
+    async reject(id: string, notes?: string): Promise<PayoutRequest> {
+      await simulateApiDelay();
+      const payout = mockPayoutRequests.find((p) => p.id === id);
+      if (!payout) throw new Error("Payout request not found");
+      payout.status = "rejected";
+      payout.processedAt = new Date();
+      payout.processedBy = "Admin User";
+      if (notes) payout.notes = notes;
+      return payout;
+    },
+
+    async complete(id: string): Promise<PayoutRequest> {
+      await simulateApiDelay();
+      const payout = mockPayoutRequests.find((p) => p.id === id);
+      if (!payout) throw new Error("Payout request not found");
+      payout.status = "completed";
+      payout.processedAt = new Date();
+      payout.processedBy = "Admin User";
+      return payout;
+    },
+
+    async getStats(): Promise<{
+      pending: number;
+      approved: number;
+      completed: number;
+      rejected: number;
+      totalPendingAmount: number;
+    }> {
+      await simulateApiDelay();
+      const pending = mockPayoutRequests.filter((p) => p.status === "pending");
+      return {
+        pending: mockPayoutRequests.filter((p) => p.status === "pending").length,
+        approved: mockPayoutRequests.filter((p) => p.status === "approved").length,
+        completed: mockPayoutRequests.filter((p) => p.status === "completed").length,
+        rejected: mockPayoutRequests.filter((p) => p.status === "rejected").length,
+        totalPendingAmount: pending.reduce((sum, p) => sum + p.amount, 0),
+      };
     },
   },
 };
