@@ -181,7 +181,7 @@ export const api = {
         const s = search.toLowerCase();
         filtered = filtered.filter(
           (c) =>
-            c.name.toLowerCase().includes(s) ||
+            `${c.firstName} ${c.lastName}`.toLowerCase().includes(s) ||
             c.email.toLowerCase().includes(s) ||
             c.channelName.toLowerCase().includes(s),
         );

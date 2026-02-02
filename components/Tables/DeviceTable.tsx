@@ -118,29 +118,29 @@ export function DeviceTable({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                  <tr className="border-b-2 border-slate-300 dark:border-slate-600">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Device
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Browser
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       OS
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       IP Address
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Location
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Last Active
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Status
                     </th>
-                    <th className="text-right py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-right py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Actions
                     </th>
                   </tr>
@@ -156,7 +156,7 @@ export function DeviceTable({
                     paginatedDevices.map((device) => (
                       <tr
                         key={device.id}
-                        className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
+                        className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition"
                       >
                         <td className="py-4 px-4">
                           <div className={cn("p-2 rounded-xl w-fit", getDeviceColor(device.deviceType))}>

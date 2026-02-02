@@ -30,20 +30,47 @@ export interface Transaction {
 
 export interface Creator {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
+  phone: string;
   avatar?: string;
+  coverImage?: string;
   channelId: string;
   channelName: string;
+  channelUrl?: string;
   status: "active" | "pending" | "suspended";
   onlineStatus: "online" | "away" | "offline";
   lastSeen: Date;
   totalVideos: number;
   totalViews: number;
   totalEarnings: number;
+  
+  // Address Information
+  address: string;
+  city: string;
+  province: string;
+  country: string;
+  postalCode: string;
+  
+  // Identity Verification
+  idType?: "national_id" | "passport" | "drivers_license";
+  idNumber?: string;
+  idCopyUrl?: string;
+  proofOfResidenceUrl?: string;
+  
+  // Banking Information
+  bankName?: string;
+  bankAccountNumber?: string;
+  bankBranch?: string;
+  accountHolderName?: string;
+  
+  // SmatPay Integration
   smatPayMerchantId?: string;
   smatPayStatus?: "verified" | "pending" | "rejected";
+  
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Video {

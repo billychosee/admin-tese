@@ -27,10 +27,13 @@ export function FeaturedTable({
   const itemsPerPage = 10;
 
   const filteredFeatured = useMemo(() => {
-    return featured.filter((item) =>
-      item.creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.creator.channelName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return featured.filter((item) => {
+      const fullName = `${item.creator.firstName} ${item.creator.lastName}`.toLowerCase();
+      return (
+        fullName.includes(searchTerm.toLowerCase()) ||
+        item.creator.channelName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
   }, [featured, searchTerm]);
 
   const totalPages = Math.ceil(filteredFeatured.length / itemsPerPage);
@@ -73,23 +76,23 @@ export function FeaturedTable({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                  <tr className="border-b-2 border-slate-300 dark:border-slate-600">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       #
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Creator
                     </th>
-                    <th className="text-right py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-right py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Videos
                     </th>
-                    <th className="text-right py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-right py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Earnings
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Status
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Actions
                     </th>
                   </tr>
@@ -105,7 +108,7 @@ export function FeaturedTable({
                     paginatedFeatured.map((item, index) => (
                       <tr
                         key={item.id}
-                        className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
+                        className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition"
                       >
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
@@ -118,11 +121,11 @@ export function FeaturedTable({
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
                             <div className="avatar avatar-md font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
-                              {getInitials(item.creator.name)}
+                              {getInitials(`${item.creator.firstName} ${item.creator.lastName}`)}
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                                {item.creator.name}
+                                {item.creator.firstName} {item.creator.lastName}
                               </p>
                               <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                 {item.creator.channelName}
@@ -137,18 +140,7 @@ export function FeaturedTable({
                           {formatCurrency(item.creator.totalEarnings)}
                         </td>
                         <td className="py-4 px-4">
-                          <Badge
-                            variant={item.isActive ? "success" : "danger"}
-                            className="flex items-center gap-1.5"
-                          >
-                            <span
-                              className={cn(
-                                "w-1.5 h-1.5 rounded-full",
-                                item.isActive
-                                  ? "bg-current"
-                                  : "bg-current",
-                              )}
-                            />
+                          <Badge variant={item.isActive ? "success" : "danger"}>
                             {item.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </td>

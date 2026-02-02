@@ -265,7 +265,7 @@ export default function FeaturedPage() {
                             : "bg-amber-100 text-amber-600",
                         )}
                       >
-                        {getInitials(item.creator.name)}
+                        {getInitials(`${item.creator.firstName} ${item.creator.lastName}`)}
                       </div>
                       <div>
                         <p
@@ -274,7 +274,7 @@ export default function FeaturedPage() {
                             colors.textPrimary,
                           )}
                         >
-                          {item.creator.name}
+                          {item.creator.firstName} {item.creator.lastName}
                         </p>
                         <p
                           className={cn(

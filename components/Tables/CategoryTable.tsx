@@ -74,20 +74,20 @@ export function CategoryTable({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                  <tr className="border-b-2 border-slate-300 dark:border-slate-600">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Category
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Description
                     </th>
-                    <th className="text-center py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-center py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Videos
                     </th>
-                    <th className="text-center py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-center py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Status
                     </th>
-                    <th className="text-right py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-right py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Actions
                     </th>
                   </tr>

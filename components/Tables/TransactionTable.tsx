@@ -121,26 +121,26 @@ export function TransactionTable({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                  <tr className="border-b-2 border-slate-300 dark:border-slate-600">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Transaction ID
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       User
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Type
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Amount
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Status
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Date
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Actions
                     </th>
                   </tr>
@@ -156,7 +156,7 @@ export function TransactionTable({
                     paginatedTransactions.map((txn) => (
                       <tr
                         key={txn.id}
-                        className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
+                        className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition"
                       >
                         <td className="py-4 px-4">
                           <code className="text-sm font-mono px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-700/50 text-emerald-600 dark:text-emerald-400">
@@ -184,18 +184,8 @@ export function TransactionTable({
                                 | "info"
                                 | "neutral"
                             }
-                            className="flex items-center gap-1.5 capitalize"
+                            className="capitalize"
                           >
-                            <span
-                              className={cn(
-                                "w-1.5 h-1.5 rounded-full",
-                                txn.status === "completed" && "bg-current",
-                                txn.status === "pending" && "bg-current",
-                                txn.status === "failed" && "bg-current",
-                                txn.status === "refunded" && "bg-current",
-                                txn.status === "flagged" && "bg-current",
-                              )}
-                            />
                             {txn.status}
                           </Badge>
                         </td>

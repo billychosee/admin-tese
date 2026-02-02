@@ -10,7 +10,6 @@ import {
   formatNumber,
   formatDuration,
   formatDate,
-  getStatusColor,
 } from "@/utils";
 import { Icons } from "@/components/ui/Icons";
 import { VIDEO_STATUSES, VIDEO_FILTERS } from "@/constants";
@@ -40,6 +39,23 @@ export function VideoTable({
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case "published":
+        return "success";
+      case "pending":
+        return "warning";
+      case "suspended":
+        return "danger";
+      case "draft":
+        return "neutral";
+      case "deleted":
+        return "danger";
+      default:
+        return "neutral";
+    }
+  };
 
   const filteredVideos = useMemo(() => {
     return videos.filter((video) => {
@@ -135,29 +151,29 @@ export function VideoTable({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                  <tr className="border-b-2 border-slate-300 dark:border-slate-600">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Video
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Creator
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Category
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Status
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Views
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Duration
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Price
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Actions
                     </th>
                   </tr>
@@ -176,7 +192,7 @@ export function VideoTable({
                     paginatedVideos.map((video) => (
                       <tr
                         key={video.id}
-                        className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
+                        className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition"
                       >
                         <td className="py-4 px-4">
                           <div className="max-w-xs">
@@ -197,15 +213,15 @@ export function VideoTable({
                         <td className="py-4 px-4">
                           <Badge
                             variant={
-                              getStatusColor(video.status) as
+                              getStatusVariant(video.status) as
                                 | "success"
                                 | "warning"
                                 | "danger"
+                                | "info"
                                 | "neutral"
                             }
-                            className="flex items-center gap-1.5 capitalize"
+                            className="capitalize"
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-current" />
                             {video.status}
                           </Badge>
                         </td>

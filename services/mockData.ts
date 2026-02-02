@@ -117,103 +117,223 @@ export const mockTransactions: Transaction[] = [
 export const mockCreators: Creator[] = [
   {
     id: "cr_001",
-    name: "Tech Master",
+    firstName: "Tech",
+    lastName: "Master",
     email: "techmaster@example.com",
+    phone: "+27 82 123 4567",
     avatar: "",
+    coverImage: "",
     channelId: "ch_001",
     channelName: "TechMaster Official",
+    channelUrl: "https://tese.com/channel/techmaster",
     status: "active",
     onlineStatus: "online",
     lastSeen: new Date(),
     totalVideos: 156,
     totalViews: 2500000,
     totalEarnings: 15000,
+    
+    // Address Information
+    address: "123 Tech Street",
+    city: "Johannesburg",
+    province: "Gauteng",
+    country: "South Africa",
+    postalCode: "2001",
+    
+    // Identity Verification
+    idType: "national_id",
+    idNumber: "1234567890123",
+    idCopyUrl: "/docs/id_cr_001.pdf",
+    proofOfResidenceUrl: "/docs/por_cr_001.pdf",
+    
+    // Banking Information
+    bankName: "First National Bank",
+    bankAccountNumber: "1234567890",
+    bankBranch: "FNB001",
+    accountHolderName: "Tech Master",
+    
+    // SmatPay Integration
     smatPayMerchantId: "SP_MERCHANT_001",
     smatPayStatus: "verified",
+    
     createdAt: new Date("2023-06-15"),
+    updatedAt: new Date("2024-01-01"),
   },
   {
     id: "cr_002",
-    name: "Cooking Expert",
+    firstName: "Cooking",
+    lastName: "Expert",
     email: "cookingexpert@example.com",
+    phone: "+27 83 234 5678",
     avatar: "",
+    coverImage: "",
     channelId: "ch_002",
     channelName: "Chef's Kitchen",
+    channelUrl: "https://tese.com/channel/cookingexpert",
     status: "active",
     onlineStatus: "away",
     lastSeen: new Date(Date.now() - 3600000),
     totalVideos: 89,
     totalViews: 1800000,
     totalEarnings: 12000,
+    
+    // Address Information
+    address: "456 Food Avenue",
+    city: "Cape Town",
+    province: "Western Cape",
+    country: "South Africa",
+    postalCode: "8001",
+    
+    // Identity Verification
+    idType: "national_id",
+    idNumber: "2345678901234",
+    idCopyUrl: "/docs/id_cr_002.pdf",
+    proofOfResidenceUrl: "/docs/por_cr_002.pdf",
+    
+    // Banking Information
+    bankName: "Standard Bank",
+    bankAccountNumber: "2345678901",
+    bankBranch: "STD001",
+    accountHolderName: "Cooking Expert",
+    
+    // SmatPay Integration
     smatPayMerchantId: "SP_MERCHANT_002",
     smatPayStatus: "verified",
+    
     createdAt: new Date("2023-08-20"),
+    updatedAt: new Date("2024-01-02"),
   },
   {
     id: "cr_003",
-    name: "Fitness Pro",
+    firstName: "Fitness",
+    lastName: "Pro",
     email: "fitnesspro@example.com",
+    phone: "+27 84 345 6789",
     avatar: "",
+    coverImage: "",
     channelId: "ch_003",
     channelName: "FitLife Studio",
+    channelUrl: "https://tese.com/channel/fitnesspro",
     status: "pending",
     onlineStatus: "offline",
     lastSeen: new Date(Date.now() - 86400000),
     totalVideos: 45,
     totalViews: 500000,
     totalEarnings: 3500,
+    
+    // Address Information
+    address: "789 Health Road",
+    city: "Durban",
+    province: "KwaZulu-Natal",
+    country: "South Africa",
+    postalCode: "4001",
+    
+    // Identity Verification
+    idType: "passport",
+    idNumber: "A12345678",
+    idCopyUrl: "/docs/id_cr_003.pdf",
+    proofOfResidenceUrl: "/docs/por_cr_003.pdf",
+    
+    // Banking Information
+    bankName: "Absa Bank",
+    bankAccountNumber: "3456789012",
+    bankBranch: "ABSA001",
+    accountHolderName: "Fitness Pro",
+    
+    // SmatPay Integration
     smatPayMerchantId: "SP_MERCHANT_003",
     smatPayStatus: "pending",
+    
     createdAt: new Date("2023-11-10"),
+    updatedAt: new Date("2024-01-03"),
   },
   {
     id: "cr_004",
-    name: "Music Channel",
+    firstName: "Music",
+    lastName: "Channel",
     email: "musicchannel@example.com",
+    phone: "+27 85 456 7890",
     avatar: "",
+    coverImage: "",
     channelId: "ch_004",
     channelName: "Melody Beats",
+    channelUrl: "https://tese.com/channel/melodybeats",
     status: "suspended",
     onlineStatus: "offline",
     lastSeen: new Date(Date.now() - 172800000),
     totalVideos: 200,
     totalViews: 5000000,
     totalEarnings: 25000,
+    
+    // Address Information
+    address: "321 Music Lane",
+    city: "Pretoria",
+    province: "Gauteng",
+    country: "South Africa",
+    postalCode: "0002",
+    
+    // Identity Verification
+    idType: "national_id",
+    idNumber: "3456789012345",
+    idCopyUrl: "/docs/id_cr_004.pdf",
+    proofOfResidenceUrl: "/docs/por_cr_004.pdf",
+    
+    // Banking Information
+    bankName: "Nedbank",
+    bankAccountNumber: "4567890123",
+    bankBranch: "NED001",
+    accountHolderName: "Music Channel",
+    
+    // SmatPay Integration
+    smatPayMerchantId: "",
+    smatPayStatus: undefined,
+    
     createdAt: new Date("2023-03-01"),
+    updatedAt: new Date("2024-01-04"),
   },
   {
     id: "cr_005",
-    name: "Gaming Hub",
+    firstName: "Gaming",
+    lastName: "Hub",
     email: "gaminghub@example.com",
+    phone: "+27 86 567 8901",
     avatar: "",
+    coverImage: "",
     channelId: "ch_005",
     channelName: "Pro Gaming Zone",
+    channelUrl: "https://tese.com/channel/progaming",
     status: "active",
     onlineStatus: "online",
     lastSeen: new Date(),
     totalVideos: 312,
     totalViews: 8000000,
     totalEarnings: 45000,
+    
+    // Address Information
+    address: "555 Player Street",
+    city: "Johannesburg",
+    province: "Gauteng",
+    country: "South Africa",
+    postalCode: "2196",
+    
+    // Identity Verification
+    idType: "drivers_license",
+    idNumber: "D1234567",
+    idCopyUrl: "/docs/id_cr_005.pdf",
+    proofOfResidenceUrl: "/docs/por_cr_005.pdf",
+    
+    // Banking Information
+    bankName: "Capitec Bank",
+    bankAccountNumber: "5678901234",
+    bankBranch: "CAP001",
+    accountHolderName: "Gaming Hub",
+    
+    // SmatPay Integration
     smatPayMerchantId: "SP_MERCHANT_005",
     smatPayStatus: "verified",
+    
     createdAt: new Date("2023-01-15"),
-  },
-  {
-    id: "cr_006",
-    name: "Education Plus",
-    email: "educationplus@example.com",
-    avatar: "",
-    channelId: "ch_006",
-    channelName: "Learn Everyday",
-    status: "active",
-    onlineStatus: "away",
-    lastSeen: new Date(Date.now() - 7200000),
-    totalVideos: 78,
-    totalViews: 950000,
-    totalEarnings: 8000,
-    smatPayMerchantId: "SP_MERCHANT_006",
-    smatPayStatus: "verified",
-    createdAt: new Date("2023-09-05"),
+    updatedAt: new Date("2024-01-05"),
   },
 ];
 

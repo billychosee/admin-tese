@@ -14,8 +14,6 @@ interface CreatorTableProps {
   creators: Creator[];
   isLoading?: boolean;
   onViewProfile: (creator: Creator) => void;
-  onApprove: (creator: Creator) => void;
-  onReject: (creator: Creator) => void;
   onToggleStatus: (creator: Creator) => void;
 }
 
@@ -23,8 +21,6 @@ export function CreatorTable({
   creators,
   isLoading,
   onViewProfile,
-  onApprove,
-  onReject,
   onToggleStatus,
 }: CreatorTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,8 +30,9 @@ export function CreatorTable({
 
   const filteredCreators = useMemo(() => {
     return creators.filter((creator) => {
+      const fullName = `${creator.firstName} ${creator.lastName}`.toLowerCase();
       const matchesSearch =
-        creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fullName.includes(searchTerm.toLowerCase()) ||
         creator.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         creator.channelName.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -111,26 +108,26 @@ export function CreatorTable({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                  <tr className="border-b-2 border-slate-300 dark:border-slate-600">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Creator
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Channel
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Status
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Online
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Videos
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Earnings
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-slate-500 dark:text-slate-400">
+                    <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                       Actions
                     </th>
                   </tr>
@@ -146,16 +143,16 @@ export function CreatorTable({
                     paginatedCreators.map((creator) => (
                       <tr
                         key={creator.id}
-                        className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
+                        className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition"
                       >
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
                             <div className="avatar avatar-md font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
-                              {getInitials(creator.name)}
+                              {getInitials(`${creator.firstName} ${creator.lastName}`)}
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                                {creator.name}
+                                {creator.firstName} {creator.lastName}
                               </p>
                               <p className="text-xs text-slate-500 dark:text-slate-400">
                                 {creator.email}
@@ -207,24 +204,6 @@ export function CreatorTable({
                             >
                               <Icons.Eye size={16} />
                             </button>
-                            {creator.status === "pending" && (
-                              <>
-                                <button
-                                  onClick={() => onApprove(creator)}
-                                  className="p-2 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition"
-                                  title="Approve"
-                                >
-                                  <Icons.Check size={16} />
-                                </button>
-                                <button
-                                  onClick={() => onReject(creator)}
-                                  className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition"
-                                  title="Reject"
-                                >
-                                  <Icons.XCircle size={16} />
-                                </button>
-                              </>
-                            )}
                             <button
                               onClick={() => onToggleStatus(creator)}
                               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition"
