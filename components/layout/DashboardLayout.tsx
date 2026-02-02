@@ -22,6 +22,7 @@ const pageTitles: Record<string, string> = {
   "/transactions": "Transactions",
   "/devices": "Devices & Sessions",
   "/notifications": "Notifications",
+  "/settings": "Settings",
 };
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {

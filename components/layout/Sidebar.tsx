@@ -69,7 +69,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 mt-6 px-4">
+      <nav className="flex-1 mt-6 px-4 overflow-y-auto max-h-[calc(100vh-180px)]">
         <ul className="space-y-2" role="list">
           {SIDEBAR_ITEMS.map((item) => {
             const isActive =

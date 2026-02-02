@@ -65,24 +65,32 @@ export function TopBar({ title }: TopBarProps) {
         borderBottom: "1px solid hsl(var(--surface-border) / 0.5)",
       }}
     >
-      {/* Left side - Search only */}
-      <div className="relative hidden lg:block">
-        <Icons.Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40"
-          size={16}
-        />
-        <input
-          type="search"
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="h-9 w-64 rounded-full pl-10 pr-4 text-xs font-medium outline-none transition-all focus:ring-2 focus:ring-primary/20"
-          style={{
-            border: "1px solid hsl(var(--surface-border))",
-            backgroundColor: "hsl(var(--surface-muted) / 0.3)",
-            color: "hsl(var(--text-primary))",
-          }}
-        />
+      {/* Left side - Title and Search */}
+      <div className="flex items-center gap-6">
+        <h1
+          className="text-lg font-bold tracking-tight"
+          style={{ color: "hsl(var(--text-primary))" }}
+        >
+          {title}
+        </h1>
+        <div className="relative hidden lg:block">
+          <Icons.Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40"
+            size={16}
+          />
+          <input
+            type="search"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-9 w-64 rounded-full pl-10 pr-4 text-xs font-medium outline-none transition-all focus:ring-2 focus:ring-primary/20"
+            style={{
+              border: "1px solid hsl(var(--surface-border))",
+              backgroundColor: "hsl(var(--surface-muted) / 0.3)",
+              color: "hsl(var(--text-primary))",
+            }}
+          />
+        </div>
       </div>
 
       {/* Right side - Theme toggle, notifications, divider, profile */}
@@ -252,6 +260,7 @@ export function TopBar({ title }: TopBarProps) {
                 <DropdownLink
                   icon={<Icons.Settings size={18} />}
                   label="Settings"
+                  href="/settings"
                 />
               </div>
               <div className="border-t border-[hsl(var(--surface-border))] py-2">
