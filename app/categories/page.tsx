@@ -224,8 +224,11 @@ export default function CategoriesPage() {
 
           {/* VIEW TOGGLE */}
           <div
-            className="flex p-1 rounded-xl shadow-sm"
-            style={{ backgroundColor: "hsl(var(--surface))" }}
+            className="flex p-1 rounded-xl border"
+            style={{
+              backgroundColor: "hsl(var(--surface))",
+              borderColor: "hsl(var(--surface-border))",
+            }}
           >
             <button
               onClick={() => setViewMode("grid")}
@@ -338,9 +341,18 @@ export default function CategoriesPage() {
                       {category.isActive ? "Active" : "Disabled"}
                     </Badge>
                   </div>
+                  {/* Category Color Visual */}
                   <div
                     className={cn(
-                      "mt-4 h-px w-full",
+                      "mt-4 h-24 -mx-5 rounded-t-2xl",
+                    )}
+                    style={{
+                      background: `linear-gradient(135deg, ${category.color}40 0%, ${category.color}10 100%)`,
+                    }}
+                  />
+                  <div
+                    className={cn(
+                      "mt-0 h-px w-full",
                       colors.surfaceBorder,
                     )}
                   />

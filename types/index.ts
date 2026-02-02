@@ -45,6 +45,7 @@ export interface Creator {
   totalVideos: number;
   totalViews: number;
   totalEarnings: number;
+  categories?: string[]; // Array of category names this creator creates content for
 
   // Address Information
   address: string;
@@ -149,6 +150,7 @@ export interface Device {
   };
   lastActive: Date;
   isCurrentSession: boolean;
+  isBlocked: boolean;
 }
 
 export interface Notification {

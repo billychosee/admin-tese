@@ -13,6 +13,7 @@ interface FeaturedTableProps {
   featured: FeaturedCreator[];
   isLoading?: boolean;
   onToggleStatus: (id: string) => void;
+  onReorder: (startIndex: number, endIndex: number) => void;
   onRemove: (id: string) => void;
 }
 
@@ -20,10 +21,13 @@ export function FeaturedTable({
   featured,
   isLoading,
   onToggleStatus,
+  onReorder,
   onRemove,
 }: FeaturedTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const itemsPerPage = 10;
 
   const filteredFeatured = useMemo(() => {
@@ -41,6 +45,39 @@ export function FeaturedTable({
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    // Make the drag image transparent except for the handle
+    const img = new Image();
+    img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+    e.dataTransfer.setDragImage(img, 0, 0);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== dropIndex) {
+      onReorder(draggedIndex, dropIndex);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
 
   return (
     <Card>
@@ -108,21 +145,49 @@ export function FeaturedTable({
                     paginatedFeatured.map((item, index) => (
                       <tr
                         key={item.id}
-                        className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition"
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={(e) => handleDragOver(e, index)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, index)}
+                        onDragEnd={handleDragEnd}
+                        className={cn(
+                          "border-b border-slate-200 dark:border-slate-700 transition",
+                          draggedIndex === index && "opacity-50",
+                          dragOverIndex === index && "bg-emerald-50 dark:bg-emerald-900/20",
+                          draggedIndex !== index && dragOverIndex !== index && "hover:bg-slate-100 dark:hover:bg-slate-800/70"
+                        )}
                       >
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
-                            <Icons.DragHandle size={18} className="cursor-grab text-slate-400" />
-                            <span className="w-8 text-center font-black text-lg text-slate-400">
+                            <Icons.DragHandle
+                              size={18}
+                              className={cn(
+                                "cursor-grab text-slate-400 hover:text-slate-600 dark:hover:text-slate-300",
+                                draggedIndex === index && "text-emerald-500"
+                              )}
+                            />
+                            <span className={cn(
+                              "w-8 text-center font-black text-lg",
+                              draggedIndex === index ? "text-emerald-500" : "text-slate-400"
+                            )}>
                               {index + 1}
                             </span>
                           </div>
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="avatar avatar-md font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
-                              {getInitials(`${item.creator.firstName} ${item.creator.lastName}`)}
-                            </div>
+                            {item.creator.avatar ? (
+                              <img
+                                src={item.creator.avatar}
+                                alt={`${item.creator.firstName} ${item.creator.lastName}`}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="avatar avatar-md font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                                {getInitials(`${item.creator.firstName} ${item.creator.lastName}`)}
+                              </div>
+                            )}
                             <div>
                               <p className="text-sm font-semibold text-slate-900 dark:text-white">
                                 {item.creator.firstName} {item.creator.lastName}

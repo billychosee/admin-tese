@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/Modal";
 import { SkeletonList, SkeletonTable } from "@/components/ui/Skeleton";
@@ -21,7 +20,6 @@ import {
   getStatusColor,
   getInitials,
 } from "@/utils";
-import { CREATOR_STATUSES } from "@/constants";
 import type { Creator } from "@/types";
 
 export default function CreatorsPage() {
@@ -30,8 +28,6 @@ export default function CreatorsPage() {
   const isDark = theme === "dark";
   const [creators, setCreators] = useState<Creator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -42,17 +38,12 @@ export default function CreatorsPage() {
 
   useEffect(() => {
     fetchCreators();
-  }, [page, statusFilter, searchQuery]);
+  }, [page]);
 
   const fetchCreators = async () => {
     setIsLoading(true);
     try {
-      const result = await api.creators.getAll(
-        page,
-        10,
-        statusFilter,
-        searchQuery,
-      );
+      const result = await api.creators.getAll(page, 10);
       setCreators(result.data);
       setTotalPages(result.totalPages);
     } catch {
@@ -140,8 +131,6 @@ export default function CreatorsPage() {
     setShowProfileModal(true);
   };
 
-  const filteredCreators = creators;
-
   // Color tokens for consistent theming
   const colors = {
     background: "bg-[hsl(var(--background))]",
@@ -190,80 +179,62 @@ export default function CreatorsPage() {
       )}
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className={cn("relative", colors.surfaceMuted)}>
-            <Input
-              placeholder="Search creators..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn(
-                "w-64 pl-10 transition-colors duration-300",
-                colors.surface,
-                colors.surfaceBorder,
-                colors.textPrimary,
-                "placeholder:text-[hsl(var(--text-muted))]",
-              )}
-            />
-            <Icons.Search
-              size={18}
-              className={cn(
-                "absolute left-3 top-1/2 -translate-y-1/2",
-                colors.textMuted,
-              )}
-            />
-          </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className={cn(
-              "input w-40 transition-colors duration-300",
-              colors.surface,
-              colors.surfaceBorder,
-              colors.textPrimary,
-            )}
-          >
-            {CREATOR_STATUSES.map((status) => (
-              <option key={status.value} value={status.value}>
-                {status.label}
-              </option>
-            ))}
-          </select>
+        {/* Page Title */}
+        <div>
+          <h1 className="text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
+            Creators
+          </h1>
+          <p className="text-xs font-bold uppercase tracking-widest mt-1 text-[hsl(var(--text-muted))]">
+            Manage your content creators
+          </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* View Mode Toggle */}
+        <div
+          className="flex p-1 rounded-xl border"
+          style={{
+            backgroundColor: "hsl(var(--surface))",
+            borderColor: "hsl(var(--surface-border))",
+          }}
+        >
           <button
             onClick={() => setViewMode("list")}
             className={cn(
-              "p-3 rounded-2xl transition-all",
-              viewMode === "list"
-                ? isDark
-                  ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
-                  : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]"
-                : isDark
-                  ? `${colors.surfaceMuted} ${colors.textSecondary} hover:${colors.textPrimary}`
-                  : `${colors.surface} ${colors.textSecondary} hover:${colors.textPrimary}`,
+              "p-2.5 rounded-lg transition-all",
+              viewMode === "list" ? "text-white shadow-lg" : "",
             )}
+            style={{
+              backgroundColor:
+                viewMode === "list" ? "hsl(var(--primary))" : "transparent",
+              color:
+                viewMode === "list"
+                  ? "hsl(var(--primary-foreground))"
+                  : "hsl(var(--text-secondary))",
+            }}
           >
             <Icons.List size={18} />
           </button>
           <button
             onClick={() => setViewMode("grid")}
             className={cn(
-              "p-3 rounded-2xl transition-all",
-              viewMode === "grid"
-                ? isDark
-                  ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
-                  : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]"
-                : isDark
-                  ? `${colors.surfaceMuted} ${colors.textSecondary} hover:${colors.textPrimary}`
-                  : `${colors.surface} ${colors.textSecondary} hover:${colors.textPrimary}`,
+              "p-2.5 rounded-lg transition-all",
+              viewMode === "grid" ? "text-white shadow-lg" : "",
             )}
+            style={{
+              backgroundColor:
+                viewMode === "grid" ? "hsl(var(--primary))" : "transparent",
+              color:
+                viewMode === "grid"
+                  ? "hsl(var(--primary-foreground))"
+                  : "hsl(var(--text-secondary))",
+            }}
           >
             <Icons.Grid size={18} />
           </button>
         </div>
       </div>
 
-      {filteredCreators.length === 0 ? (
+      {creators.length === 0 ? (
         <Card
           className={cn(
             "p-12 rounded-[3rem] border-none shadow-xl text-center transition-colors duration-300",
@@ -281,14 +252,14 @@ export default function CreatorsPage() {
         </Card>
       ) : viewMode === "list" ? (
         <CreatorTable
-          creators={filteredCreators}
+          creators={creators}
           isLoading={isLoading}
           onViewProfile={openProfile}
           onToggleStatus={handleToggleStatus}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredCreators.map((creator) => (
+          {creators.map((creator) => (
             <Card
               key={creator.id}
               hover
@@ -302,16 +273,24 @@ export default function CreatorsPage() {
                 <div className="flex flex-col">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          "avatar font-bold text-xs",
-                          isDark
-                            ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
-                            : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
-                        )}
-                      >
-                        {getInitials(`${creator.firstName} ${creator.lastName}`)}
-                      </div>
+                      {creator.avatar ? (
+                        <img
+                          src={creator.avatar}
+                          alt={`${creator.firstName} ${creator.lastName}`}
+                          className="w-10 h-10 rounded-xl object-cover"
+                        />
+                      ) : (
+                        <div
+                          className={cn(
+                            "avatar font-bold text-xs",
+                            isDark
+                              ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                              : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
+                          )}
+                        >
+                          {getInitials(`${creator.firstName} ${creator.lastName}`)}
+                        </div>
+                      )}
                       <div>
                         <h3
                           className={cn(

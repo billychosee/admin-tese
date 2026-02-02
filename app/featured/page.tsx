@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -11,26 +11,23 @@ import { Icons } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { api } from "@/services/api";
-import { cn, formatNumber, formatCurrency, getInitials } from "@/utils";
+import { cn, formatNumber, formatCurrency } from "@/utils";
 import type { FeaturedCreator } from "@/types";
 
 export default function FeaturedPage() {
   const { addToast } = useToast();
   const { theme } = useTheme();
   const isDark = theme === "dark";
+
   const [featured, setFeatured] = useState<FeaturedCreator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
 
-  useEffect(() => {
-    fetchFeatured();
-  }, []);
-
   // Color tokens for consistent theming
   const colors = {
-    background: "bg-[hsl(var(--background))]",
+    background: isDark ? "bg-[#020617]" : "bg-white",
     surface: "bg-[hsl(var(--surface))]",
     surfaceMuted: "bg-[hsl(var(--surface-muted))]",
     surfaceHover: "bg-[hsl(var(--surface-hover))]",
@@ -39,24 +36,18 @@ export default function FeaturedPage() {
     textSecondary: "text-[hsl(var(--text-secondary))]",
     textMuted: "text-[hsl(var(--text-muted))]",
     primary: "bg-[hsl(var(--primary))]",
-    primaryText: "text-[hsl(var(--primary))]",
-    primaryForeground: "text-[hsl(var(--primary-foreground))]",
     success: "bg-[hsl(var(--success))]",
+    successForeground: "text-[hsl(var(--success-foreground))]",
     successText: "text-[hsl(var(--success))]",
-    warning: "bg-[hsl(var(--warning))]",
-    warningText: "text-[hsl(var(--warning))]",
-    danger: "bg-[hsl(var(--danger))]",
     dangerText: "text-[hsl(var(--danger))]",
-    info: "bg-[hsl(var(--info))]",
-    focusRing: "focus:ring-[hsl(var(--focus-ring))]",
   };
 
-  const fetchFeatured = async () => {
+  const fetchFeatured = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await api.featured.getAll();
       setFeatured(data);
-    } catch {
+    } catch (error) {
       addToast({
         type: "error",
         title: "Error",
@@ -65,7 +56,11 @@ export default function FeaturedPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [addToast]);
+
+  useEffect(() => {
+    fetchFeatured();
+  }, [fetchFeatured]);
 
   const handleToggleStatus = async (id: string) => {
     try {
@@ -92,7 +87,7 @@ export default function FeaturedPage() {
       addToast({
         type: "success",
         title: "Success",
-        message: "Creator removed from featured",
+        message: "Creator removed",
       });
       setShowRemoveModal(false);
       setSelectedId(null);
@@ -110,27 +105,25 @@ export default function FeaturedPage() {
     const items = Array.from(featured);
     const [removed] = items.splice(startIndex, 1);
     items.splice(endIndex, 0, removed);
+
     const updatedItems = items.map((item, index) => ({
       ...item,
       position: index + 1,
     }));
+
     try {
+      setFeatured(updatedItems); // Optimistic update
       await api.featured.reorder(updatedItems);
-      setFeatured(updatedItems);
       addToast({ type: "success", title: "Success", message: "Order updated" });
     } catch {
       addToast({ type: "error", title: "Error", message: "Failed to reorder" });
+      fetchFeatured(); // Rollback
     }
   };
 
   if (isLoading) {
     return (
-      <div
-        className={cn(
-          "space-y-6 min-h-screen font-sans",
-          isDark ? "bg-[#020617]" : "bg-[#F1F5F9]",
-        )}
-      >
+      <div className={cn("space-y-6 min-h-screen p-8", colors.background)}>
         <SkeletonList count={5} />
       </div>
     );
@@ -139,8 +132,8 @@ export default function FeaturedPage() {
   return (
     <div
       className={cn(
-        "space-y-8 min-h-screen font-sans transition-colors duration-300",
-        isDark ? "bg-[#020617]" : "bg-white",
+        "space-y-8 min-h-screen font-sans transition-colors duration-300 p-8",
+        colors.background,
       )}
     >
       <div className="flex items-center justify-between">
@@ -153,26 +146,25 @@ export default function FeaturedPage() {
           >
             Featured Creators
           </h2>
-          <p
-            className={cn(
-              "text-xs font-bold text-emerald-500 uppercase tracking-widest mt-1",
-            )}
-          >
+          <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest mt-1">
             Manage creators displayed on the homepage
           </p>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div
+          className={cn(
+            "flex p-1 rounded-xl border",
+            colors.surface,
+            colors.surfaceBorder,
+          )}
+        >
           <button
             onClick={() => setViewMode("list")}
             className={cn(
-              "p-3 rounded-2xl transition-all",
+              "p-2.5 rounded-lg transition-all",
               viewMode === "list"
-                ? isDark
-                  ? "bg-emerald-500/20 text-emerald-400"
-                  : "bg-emerald-100 text-emerald-600"
-                : isDark
-                  ? "bg-slate-800 text-slate-400 hover:text-slate-200"
-                  : "bg-white text-slate-400 hover:text-slate-600",
+                ? cn(colors.success, colors.successForeground, "shadow-lg")
+                : colors.textSecondary,
             )}
           >
             <Icons.List size={18} />
@@ -180,14 +172,10 @@ export default function FeaturedPage() {
           <button
             onClick={() => setViewMode("grid")}
             className={cn(
-              "p-3 rounded-2xl transition-all",
+              "p-2.5 rounded-lg transition-all",
               viewMode === "grid"
-                ? isDark
-                  ? "bg-emerald-500/20 text-emerald-400"
-                  : "bg-emerald-100 text-emerald-600"
-                : isDark
-                  ? "bg-slate-800 text-slate-400 hover:text-slate-200"
-                  : "bg-white text-slate-400 hover:text-slate-600",
+                ? cn(colors.success, colors.successForeground, "shadow-lg")
+                : colors.textSecondary,
             )}
           >
             <Icons.Grid size={18} />
@@ -198,7 +186,7 @@ export default function FeaturedPage() {
       {featured.length === 0 ? (
         <Card
           className={cn(
-            "p-12 rounded-[3rem] border-none shadow-xl text-center transition-colors duration-300",
+            "p-12 rounded-[3rem] border-none shadow-xl text-center",
             isDark ? "bg-slate-800" : "bg-white",
           )}
         >
@@ -218,7 +206,7 @@ export default function FeaturedPage() {
               No featured creators
             </p>
             <Button className="bg-emerald-500 hover:bg-emerald-600">
-              <Icons.Plus size={18} />
+              <Icons.Plus size={18} className="mr-2" />
               Add Featured Creator
             </Button>
           </CardContent>
@@ -228,6 +216,7 @@ export default function FeaturedPage() {
           featured={featured}
           isLoading={isLoading}
           onToggleStatus={handleToggleStatus}
+          onReorder={handleReorder}
           onRemove={(id) => {
             setSelectedId(id);
             setShowRemoveModal(true);
@@ -238,9 +227,8 @@ export default function FeaturedPage() {
           {featured.map((item, index) => (
             <Card
               key={item.id}
-              hover
               className={cn(
-                "rounded-2xl border transition-all duration-300",
+                "rounded-2xl border transition-all duration-300 hover:shadow-lg",
                 colors.surfaceBorder,
                 colors.surface,
               )}
@@ -257,54 +245,61 @@ export default function FeaturedPage() {
                       >
                         #{index + 1}
                       </span>
-                      <div
-                        className={cn(
-                          "avatar font-bold text-xs",
-                          isDark
-                            ? "bg-amber-500/20 text-amber-400"
-                            : "bg-amber-100 text-amber-600",
+                      <div className="flex items-center gap-3 flex-1">
+                        {item.creator.avatar ? (
+                          <img
+                            src={item.creator.avatar}
+                            alt="Avatar"
+                            className="w-10 h-10 rounded-xl object-cover"
+                          />
+                        ) : (
+                          <div
+                            className={cn(
+                              "w-10 h-10 rounded-xl flex items-center justify-center",
+                              colors.surfaceMuted,
+                            )}
+                          >
+                            <Icons.User
+                              className={
+                                isDark ? "text-amber-400" : "text-amber-500"
+                              }
+                            />
+                          </div>
                         )}
-                      >
-                        {getInitials(`${item.creator.firstName} ${item.creator.lastName}`)}
-                      </div>
-                      <div>
-                        <p
-                          className={cn(
-                            "text-sm font-semibold",
-                            colors.textPrimary,
-                          )}
-                        >
-                          {item.creator.firstName} {item.creator.lastName}
-                        </p>
-                        <p
-                          className={cn(
-                            "text-xs font-medium uppercase tracking-wider",
-                            colors.textMuted,
-                          )}
-                        >
-                          {item.creator.channelName}
-                        </p>
+                        <div className="min-w-0">
+                          <p
+                            className={cn(
+                              "text-sm font-semibold truncate",
+                              colors.textPrimary,
+                            )}
+                          >
+                            {item.creator.firstName} {item.creator.lastName}
+                          </p>
+                          <p
+                            className={cn(
+                              "text-xs font-medium uppercase tracking-wider truncate",
+                              colors.textMuted,
+                            )}
+                          >
+                            {item.creator.channelName}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    <Badge
-                      variant={item.isActive ? "success" : "danger"}
-                    >
+                    <Badge variant={item.isActive ? "success" : "danger"}>
                       {item.isActive ? "Active" : "Inactive"}
                     </Badge>
                   </div>
+
                   <div
-                    className={cn(
-                      "mt-4 h-px w-full",
-                      colors.surfaceBorder,
-                    )}
+                    className={cn("mt-4 h-px w-full", colors.surfaceBorder)}
                   />
+
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     <div
                       className={cn(
-                        "rounded-lg p-3 transition-colors duration-300",
-                        isDark
-                          ? "bg-[hsl(var(--surface-hover))]/50"
-                          : "bg-[hsl(var(--surface-hover))]",
+                        "rounded-lg p-3",
+                        isDark ? "bg-white/5" : "bg-slate-50",
                       )}
                     >
                       <p
@@ -326,10 +321,9 @@ export default function FeaturedPage() {
                     </div>
                     <div
                       className={cn(
-                        "rounded-lg p-3 transition-colors duration-300",
-                        isDark
-                          ? "bg-[hsl(var(--success))]/10"
-                          : "bg-[hsl(var(--success))]/10",
+                        "rounded-lg p-3",
+                        colors.success,
+                        "bg-opacity-10",
                       )}
                     >
                       <p
@@ -350,40 +344,31 @@ export default function FeaturedPage() {
                       </p>
                     </div>
                   </div>
+
                   <div className="mt-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={cn(
-                          "text-xs font-medium uppercase tracking-wider",
-                          colors.textMuted,
-                        )}
-                      >
-                        {item.creator.onlineStatus}
-                      </span>
-                    </div>
+                    <span
+                      className={cn(
+                        "text-xs font-medium uppercase",
+                        colors.textMuted,
+                      )}
+                    >
+                      {item.creator.onlineStatus}
+                    </span>
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={cn(
-                          "h-8 w-8 p-0 transition-colors duration-300",
-                          isDark
-                            ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
-                            : "",
-                        )}
-                        onClick={() => window.location.href = `/creators?id=${item.creator.id}`}
+                        className="h-8 w-8 p-0"
+                        onClick={() =>
+                          (window.location.href = `/creators?id=${item.creator.id}`)
+                        }
                       >
                         <Icons.Eye size={14} />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={cn(
-                          "h-8 w-8 p-0 transition-colors duration-300",
-                          isDark
-                            ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
-                            : "",
-                        )}
+                        className="h-8 w-8 p-0"
                         onClick={() => handleToggleStatus(item.id)}
                       >
                         {item.isActive ? (
@@ -396,8 +381,7 @@ export default function FeaturedPage() {
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "h-8 w-8 p-0 transition-colors duration-300",
-                          "hover:bg-[hsl(var(--danger)/0.1)]",
+                          "h-8 w-8 p-0 hover:bg-red-500/10",
                           colors.dangerText,
                         )}
                         onClick={() => {

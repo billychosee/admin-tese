@@ -75,6 +75,7 @@ export default function DevicesPage() {
   };
 
   // Stats cards with dashboard styling
+  const blockedCount = devices.filter((d) => d.isBlocked).length;
   const statsCards = [
     {
       label: "Active Sessions",
@@ -84,11 +85,11 @@ export default function DevicesPage() {
       iconBg: isDark ? "bg-emerald-500/20" : "bg-emerald-100",
     },
     {
-      label: "Max Devices",
-      value: MAX_DEVICES,
-      icon: <Icons.Users size={20} />,
-      iconColor: "text-blue-500",
-      iconBg: isDark ? "bg-blue-500/20" : "bg-blue-100",
+      label: "Blocked Devices",
+      value: blockedCount,
+      icon: <Icons.Ban size={20} />,
+      iconColor: "text-red-500",
+      iconBg: isDark ? "bg-red-500/20" : "bg-red-100",
     },
     {
       label: "Current Session",
@@ -135,30 +136,6 @@ export default function DevicesPage() {
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className={cn("relative", isDark ? "bg-slate-800" : "bg-white")}>
-            <Input
-              placeholder="Search by IP or device..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn("w-64 pl-10", isDark ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400" : "bg-slate-50 border-slate-200")}
-            />
-            <Icons.Search size={18} className={cn("absolute left-3 top-1/2 -translate-y-1/2", isDark ? "text-slate-400" : "text-slate-400")} />
-          </div>
-          <select
-            value={deviceTypeFilter}
-            onChange={(e) => setDeviceTypeFilter(e.target.value)}
-            className={cn("input w-40", isDark ? "bg-slate-700 border-slate-600 text-white" : "bg-slate-50 border-slate-200")}
-          >
-            <option value="all">All Devices</option>
-            <option value="desktop">Desktop</option>
-            <option value="mobile">Mobile</option>
-            <option value="tablet">Tablet</option>
-          </select>
-        </div>
       </div>
 
       {filteredDevices.length === 0 ? (

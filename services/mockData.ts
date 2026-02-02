@@ -122,7 +122,7 @@ export const mockCreators: Creator[] = [
     lastName: "Master",
     email: "techmaster@example.com",
     phone: "+27 82 123 4567",
-    avatar: "",
+    avatar: "https://i.pravatar.cc/150?u=techmaster",
     coverImage: "",
     channelId: "ch_001",
     channelName: "TechMaster Official",
@@ -133,6 +133,7 @@ export const mockCreators: Creator[] = [
     totalVideos: 156,
     totalViews: 2500000,
     totalEarnings: 15000,
+    categories: ["Technology", "Education"],
     
     // Address Information
     address: "123 Tech Street",
@@ -166,7 +167,7 @@ export const mockCreators: Creator[] = [
     lastName: "Expert",
     email: "cookingexpert@example.com",
     phone: "+27 83 234 5678",
-    avatar: "",
+    avatar: "https://i.pravatar.cc/150?u=cookingexpert",
     coverImage: "",
     channelId: "ch_002",
     channelName: "Chef's Kitchen",
@@ -177,6 +178,7 @@ export const mockCreators: Creator[] = [
     totalVideos: 89,
     totalViews: 1800000,
     totalEarnings: 12000,
+    categories: ["Food & Cooking", "Lifestyle"],
     
     // Address Information
     address: "456 Food Avenue",
@@ -210,7 +212,7 @@ export const mockCreators: Creator[] = [
     lastName: "Pro",
     email: "fitnesspro@example.com",
     phone: "+27 84 345 6789",
-    avatar: "",
+    avatar: "https://i.pravatar.cc/150?u=fitnesspro",
     coverImage: "",
     channelId: "ch_003",
     channelName: "FitLife Studio",
@@ -221,6 +223,7 @@ export const mockCreators: Creator[] = [
     totalVideos: 45,
     totalViews: 500000,
     totalEarnings: 3500,
+    categories: ["Health & Fitness", "Sports"],
     
     // Address Information
     address: "789 Health Road",
@@ -254,7 +257,7 @@ export const mockCreators: Creator[] = [
     lastName: "Channel",
     email: "musicchannel@example.com",
     phone: "+27 85 456 7890",
-    avatar: "",
+    avatar: "https://i.pravatar.cc/150?u=musicchannel",
     coverImage: "",
     channelId: "ch_004",
     channelName: "Melody Beats",
@@ -265,6 +268,7 @@ export const mockCreators: Creator[] = [
     totalVideos: 200,
     totalViews: 5000000,
     totalEarnings: 25000,
+    categories: ["Music", "Entertainment"],
     
     // Address Information
     address: "321 Music Lane",
@@ -298,7 +302,7 @@ export const mockCreators: Creator[] = [
     lastName: "Hub",
     email: "gaminghub@example.com",
     phone: "+27 86 567 8901",
-    avatar: "",
+    avatar: "https://i.pravatar.cc/150?u=gaminghub",
     coverImage: "",
     channelId: "ch_005",
     channelName: "Pro Gaming Zone",
@@ -309,6 +313,7 @@ export const mockCreators: Creator[] = [
     totalVideos: 312,
     totalViews: 8000000,
     totalEarnings: 45000,
+    categories: ["Gaming", "Entertainment"],
     
     // Address Information
     address: "555 Player Street",
@@ -344,7 +349,7 @@ export const mockVideos: Video[] = [
     title: "Complete React Tutorial for Beginners",
     description:
       "Learn React from scratch with this comprehensive tutorial covering hooks, components, and more.",
-    thumbnail: "",
+    thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=320&h=180&fit=crop",
     duration: 7200,
     creatorId: "cr_001",
     creatorName: "Tech Master",
@@ -365,7 +370,7 @@ export const mockVideos: Video[] = [
     title: "Italian Cooking Masterclass",
     description:
       "Master authentic Italian cuisine with professional chef techniques.",
-    thumbnail: "",
+    thumbnail: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=320&h=180&fit=crop",
     duration: 5400,
     creatorId: "cr_002",
     creatorName: "Cooking Expert",
@@ -387,7 +392,7 @@ export const mockVideos: Video[] = [
     title: "30-Day Fitness Challenge",
     description:
       "Transform your body with this intensive 30-day workout program.",
-    thumbnail: "",
+    thumbnail: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=320&h=180&fit=crop",
     duration: 3600,
     creatorId: "cr_003",
     creatorName: "Fitness Pro",
@@ -409,7 +414,7 @@ export const mockVideos: Video[] = [
     title: "Music Production Fundamentals",
     description:
       "Learn the basics of music production with professional software.",
-    thumbnail: "",
+    thumbnail: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=320&h=180&fit=crop",
     duration: 9000,
     creatorId: "cr_004",
     creatorName: "Music Channel",
@@ -430,7 +435,7 @@ export const mockVideos: Video[] = [
     title: "Pro Gaming Strategies",
     description:
       "Competitive gaming tips and strategies from professional players.",
-    thumbnail: "",
+    thumbnail: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=320&h=180&fit=crop",
     duration: 2700,
     creatorId: "cr_005",
     creatorName: "Gaming Hub",
@@ -450,7 +455,7 @@ export const mockVideos: Video[] = [
     id: "vid_006",
     title: "Mathematics for Everyone",
     description: "Understanding complex mathematical concepts made simple.",
-    thumbnail: "",
+    thumbnail: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=320&h=180&fit=crop",
     duration: 4500,
     creatorId: "cr_006",
     creatorName: "Education Plus",
@@ -591,6 +596,7 @@ export const mockDevices: Device[] = [
     },
     lastActive: new Date(),
     isCurrentSession: true,
+    isBlocked: false
   },
   {
     id: "dev_002",
@@ -606,6 +612,7 @@ export const mockDevices: Device[] = [
     },
     lastActive: new Date(Date.now() - 3600000),
     isCurrentSession: false,
+    isBlocked: false
   },
   {
     id: "dev_003",
@@ -621,6 +628,7 @@ export const mockDevices: Device[] = [
     },
     lastActive: new Date(Date.now() - 7200000),
     isCurrentSession: false,
+    isBlocked: false
   },
 ];
 
