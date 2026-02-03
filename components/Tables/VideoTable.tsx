@@ -20,20 +20,12 @@ import type { Video } from "@/types";
 interface VideoTableProps {
   videos: Video[];
   isLoading?: boolean;
-  onToggleFeatured: (video: Video) => void;
-  onToggleBanner: (video: Video) => void;
-  onToggleSuspend: (video: Video) => void;
-  onUpdateStatus: (video: Video, status: Video["status"]) => void;
   onDelete: (video: Video) => void;
 }
 
 export function VideoTable({
   videos,
   isLoading,
-  onToggleFeatured,
-  onToggleBanner,
-  onToggleSuspend,
-  onUpdateStatus,
   onDelete,
 }: VideoTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -513,7 +505,7 @@ export function VideoTable({
               </div>
               
               {/* Video Details */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Creator</p>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{previewVideo.creatorName}</p>
@@ -525,6 +517,14 @@ export function VideoTable({
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Duration</p>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{formatDuration(previewVideo.duration)}</p>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Price</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    {previewVideo.isPaid && previewVideo.price
+                      ? `${previewVideo.currency || "USD"} ${previewVideo.price.toFixed(2)}`
+                      : "Free"}
+                  </p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Uploaded</p>
@@ -543,10 +543,22 @@ export function VideoTable({
             </div>
             
             {/* Actions */}
-            <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
-              <Button variant="secondary" onClick={() => setPreviewVideo(null)}>
-                Close Preview
+            <div className="flex flex-wrap items-center justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setPreviewVideo(null)}
+              >
+                <Icons.Eye size={16} className="mr-1" />
+                View
               </Button>
+              <button
+                onClick={() => onDelete(previewVideo)}
+                className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 transition"
+                title="Delete"
+              >
+                <Icons.Trash2 size={16} />
+              </button>
             </div>
           </div>
         )}
