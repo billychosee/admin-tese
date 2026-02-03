@@ -8,6 +8,7 @@ import { Icons } from "@/components/ui/Icons";
 import { cn, formatCurrency, formatNumber } from "@/utils";
 import { api } from "@/services/api";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import TransactionRevenueChart from "@/components/ui/TransactionRevenueChart";
 
 type Range = "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
 
@@ -211,58 +212,11 @@ export default function DashboardPage() {
             colors.surface,
           )}
         >
-          <CardContent className="p-5">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className={cn("text-lg font-semibold", colors.textPrimary)}>
-                  Transactions
-                </h2>
-                <p className={cn("text-xs font-medium uppercase tracking-wider", colors.textMuted)}>
-                  Revenue tracking by period
-                </p>
-              </div>
-              <div
-                className={cn(
-                  "flex p-1 rounded-xl transition-colors duration-300",
-                  isDark ? "bg-[hsl(var(--surface-hover))]/50" : "bg-[hsl(var(--surface-hover))]",
-                )}
-              >
-                {["DAILY", "WEEKLY", "MONTHLY", "YEARLY"].map((r) => (
-                  <button
-                    key={r}
-                    onClick={() => setRange(r as Range)}
-                    className={cn(
-                      "px-3 py-1.5 text-xs font-medium rounded-lg transition-all",
-                      range === r
-                        ? "bg-[hsl(var(--primary))] text-white shadow-md"
-                        : isDark
-                          ? `${colors.textMuted} hover:${colors.textPrimary}`
-                          : `${colors.textMuted} hover:${colors.textPrimary}`,
-                    )}
-                  >
-                    {r.charAt(0) + r.slice(1).toLowerCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="h-64 w-full relative">
-              <div className="absolute inset-0 flex flex-col justify-between opacity-[0.05] pointer-events-none">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "border-t w-full",
-                      colors.surfaceBorder,
-                    )}
-                  />
-                ))}
-              </div>
-              <AreaChart
-                data={data.transactions}
-                color="#10b981"
-                id="transactions"
-              />
-            </div>
+          <CardContent className="p-6">
+            <h3 className={cn("text-lg font-semibold mb-4", colors.textPrimary)}>
+              Transaction Revenue
+            </h3>
+            <TransactionRevenueChart />
           </CardContent>
         </Card>
 
@@ -275,7 +229,9 @@ export default function DashboardPage() {
           )}
         >
           <CardContent className="p-5">
-            <h3 className={cn("text-sm font-semibold mb-4", colors.textPrimary)}>
+            <h3
+              className={cn("text-sm font-semibold mb-4", colors.textPrimary)}
+            >
               Daily Visitors & Views
             </h3>
             <div className="relative h-48 w-48 mx-auto">
@@ -318,7 +274,12 @@ export default function DashboardPage() {
                 <span className={cn("text-3xl font-bold", colors.textPrimary)}>
                   {formatNumber(data.totals.visitors)}
                 </span>
-                <span className={cn("text-xs font-medium uppercase", colors.textMuted)}>
+                <span
+                  className={cn(
+                    "text-xs font-medium uppercase",
+                    colors.textMuted,
+                  )}
+                >
                   Visitors/Day
                 </span>
               </div>
@@ -327,7 +288,9 @@ export default function DashboardPage() {
               <div
                 className={cn(
                   "flex justify-between items-center p-3 rounded-lg transition-colors duration-300",
-                  isDark ? "bg-[hsl(var(--success))]/10" : "bg-[hsl(var(--success))]/10",
+                  isDark
+                    ? "bg-[hsl(var(--success))]/10"
+                    : "bg-[hsl(var(--success))]/10",
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -336,14 +299,18 @@ export default function DashboardPage() {
                     Views/Day
                   </span>
                 </div>
-                <span className={cn("text-xs font-semibold", colors.successText)}>
+                <span
+                  className={cn("text-xs font-semibold", colors.successText)}
+                >
                   {formatNumber(Math.round(data.totals.views / 365))}
                 </span>
               </div>
               <div
                 className={cn(
                   "flex justify-between items-center p-3 rounded-lg transition-colors duration-300",
-                  isDark ? "bg-[hsl(var(--danger))]/10" : "bg-[hsl(var(--danger))]/10",
+                  isDark
+                    ? "bg-[hsl(var(--danger))]/10"
+                    : "bg-[hsl(var(--danger))]/10",
                 )}
               >
                 <div className="flex items-center gap-2">
@@ -352,7 +319,9 @@ export default function DashboardPage() {
                     Visitors/Day
                   </span>
                 </div>
-                <span className={cn("text-xs font-semibold", colors.dangerText)}>
+                <span
+                  className={cn("text-xs font-semibold", colors.dangerText)}
+                >
                   {formatNumber(data.totals.visitors)}
                 </span>
               </div>
@@ -371,7 +340,9 @@ export default function DashboardPage() {
           )}
         >
           <CardContent className="p-5">
-            <h3 className={cn("text-sm font-semibold mb-4", colors.textPrimary)}>
+            <h3
+              className={cn("text-sm font-semibold mb-4", colors.textPrimary)}
+            >
               Creator Activity
             </h3>
             <div className="space-y-3">
@@ -406,7 +377,9 @@ export default function DashboardPage() {
                   href="/creators"
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer group",
-                    isDark ? "hover:bg-[hsl(var(--surface-hover))]/50" : "hover:bg-[hsl(var(--surface-hover))]",
+                    isDark
+                      ? "hover:bg-[hsl(var(--surface-hover))]/50"
+                      : "hover:bg-[hsl(var(--surface-hover))]",
                   )}
                 >
                   <div
@@ -418,10 +391,20 @@ export default function DashboardPage() {
                     <Icons.User size={14} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={cn("text-xs font-medium truncate", colors.textPrimary)}>
+                    <p
+                      className={cn(
+                        "text-xs font-medium truncate",
+                        colors.textPrimary,
+                      )}
+                    >
                       {log.action}
                     </p>
-                    <p className={cn("text-[10px] font-medium uppercase truncate", colors.textMuted)}>
+                    <p
+                      className={cn(
+                        "text-[10px] font-medium uppercase truncate",
+                        colors.textMuted,
+                      )}
+                    >
                       {log.user} • {log.time}
                     </p>
                   </div>
@@ -450,7 +433,9 @@ export default function DashboardPage() {
           <div
             className={cn(
               "p-4 flex justify-between items-center",
-              isDark ? "bg-[hsl(var(--surface-hover))]/50" : "bg-[hsl(var(--surface-hover))]",
+              isDark
+                ? "bg-[hsl(var(--surface-hover))]/50"
+                : "bg-[hsl(var(--surface-hover))]",
             )}
           >
             <h3 className={cn("text-sm font-semibold", colors.textPrimary)}>
@@ -484,12 +469,7 @@ export default function DashboardPage() {
                   <th className="px-4 py-3 text-right">Amount</th>
                 </tr>
               </thead>
-              <tbody
-                className={cn(
-                  "divide-y text-xs",
-                  colors.surfaceBorder,
-                )}
-              >
+              <tbody className={cn("divide-y text-xs", colors.surfaceBorder)}>
                 {[
                   {
                     name: "John Doe",
@@ -521,13 +501,22 @@ export default function DashboardPage() {
                     onClick={() => (window.location.href = row.href)}
                     className={cn(
                       "hover transition-colors cursor-pointer",
-                      isDark ? "hover:bg-[hsl(var(--surface-hover))]/50" : "hover:bg-[hsl(var(--surface-hover))]",
+                      isDark
+                        ? "hover:bg-[hsl(var(--surface-hover))]/50"
+                        : "hover:bg-[hsl(var(--surface-hover))]",
                     )}
                   >
-                    <td className={cn("px-4 py-3 font-medium", colors.textPrimary)}>
+                    <td
+                      className={cn(
+                        "px-4 py-3 font-medium",
+                        colors.textPrimary,
+                      )}
+                    >
                       {row.name}
                     </td>
-                    <td className={cn("px-4 py-3 font-medium", colors.textMuted)}>
+                    <td
+                      className={cn("px-4 py-3 font-medium", colors.textMuted)}
+                    >
                       {row.type}
                     </td>
                     <td
@@ -546,7 +535,12 @@ export default function DashboardPage() {
                               : "bg-[hsl(var(--success))]/10"
                             : "bg-[hsl(var(--warning))]/10",
                         )}
-                        style={{ color: row.status === "Completed" ? "hsl(var(--success))" : "hsl(var(--warning))" }}
+                        style={{
+                          color:
+                            row.status === "Completed"
+                              ? "hsl(var(--success))"
+                              : "hsl(var(--warning))",
+                        }}
                       >
                         {row.status}
                       </span>

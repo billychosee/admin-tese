@@ -37,6 +37,7 @@ export default function CategoriesPage() {
     name: "",
     description: "",
     color: "#3B82F6",
+    bannerUrl: "",
   });
 
   useEffect(() => {
@@ -90,6 +91,7 @@ export default function CategoriesPage() {
         description: formData.description,
         icon: "Folder",
         color: formData.color,
+        bannerUrl: formData.bannerUrl || undefined,
         videoCount: 0,
         isActive: true,
       });
@@ -99,7 +101,12 @@ export default function CategoriesPage() {
         message: "Category created successfully",
       });
       setShowAddModal(false);
-      setFormData({ name: "", description: "", color: "#3B82F6" });
+      setFormData({
+        name: "",
+        description: "",
+        color: "#3B82F6",
+        bannerUrl: "",
+      });
       fetchCategories();
     } catch {
       addToast({
@@ -121,6 +128,7 @@ export default function CategoriesPage() {
         description: formData.description || selectedCategory.description,
         icon: "Folder",
         color: formData.color || selectedCategory.color,
+        bannerUrl: formData.bannerUrl || selectedCategory.bannerUrl,
         isActive: selectedCategory.isActive,
       });
       addToast({
@@ -130,7 +138,12 @@ export default function CategoriesPage() {
       });
       setShowEditModal(false);
       setSelectedCategory(null);
-      setFormData({ name: "", description: "", color: "#3B82F6" });
+      setFormData({
+        name: "",
+        description: "",
+        color: "#3B82F6",
+        bannerUrl: "",
+      });
       fetchCategories();
     } catch {
       addToast({
@@ -234,9 +247,7 @@ export default function CategoriesPage() {
               onClick={() => setViewMode("grid")}
               className={cn(
                 "p-2 rounded-lg transition-all",
-                viewMode === "grid"
-                  ? "text-white shadow-lg"
-                  : "",
+                viewMode === "grid" ? "text-white shadow-lg" : "",
               )}
               style={{
                 backgroundColor:
@@ -288,7 +299,10 @@ export default function CategoriesPage() {
             className="w-16 h-16 mb-4"
             style={{ color: "hsl(var(--text-muted))" }}
           />
-          <p className="font-black uppercase text-xs" style={{ color: "hsl(var(--text-muted))" }}>
+          <p
+            className="font-black uppercase text-xs"
+            style={{ color: "hsl(var(--text-muted))" }}
+          >
             No Categories Found
           </p>
         </div>
@@ -319,7 +333,12 @@ export default function CategoriesPage() {
                         />
                       </div>
                       <div>
-                        <h3 className={cn("text-sm font-semibold", colors.textPrimary)}>
+                        <h3
+                          className={cn(
+                            "text-sm font-semibold",
+                            colors.textPrimary,
+                          )}
+                        >
                           {category.name}
                         </h3>
                         <p
@@ -336,41 +355,43 @@ export default function CategoriesPage() {
                       className={cn(
                         "rounded-lg font-black text-[8px] uppercase px-2 py-1",
                       )}
-                      variant={category.isActive ? "success" : "danger"}
+                      style={{
+                        backgroundColor: `${category.color}20`,
+                        color: category.color,
+                        border: `1px solid ${category.color}40`,
+                      }}
                     >
-                      {category.isActive ? "Active" : "Disabled"}
+                      {category.videoCount} Videos
                     </Badge>
                   </div>
-                  {/* Category Color Visual */}
+                  {/* Category Banner Image */}
                   <div
-                    className={cn(
-                      "mt-4 h-24 -mx-5 rounded-t-2xl",
+                    className={cn("mt-4 h-24 -mx-5 rounded-t-2xl overflow-hidden")}
+                  >
+                    {category.bannerUrl ? (
+                      <img
+                        src={category.bannerUrl}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                          (e.target as HTMLImageElement).parentElement!.style.background = `linear-gradient(135deg, ${category.color}40 0%, ${category.color}10 100%)`;
+                        }}
+                      />
+                    ) : (
+                      <div
+                        className="w-full h-full"
+                        style={{
+                          background: `linear-gradient(135deg, ${category.color}40 0%, ${category.color}10 100%)`,
+                        }}
+                      />
                     )}
-                    style={{
-                      background: `linear-gradient(135deg, ${category.color}40 0%, ${category.color}10 100%)`,
-                    }}
-                  />
+                  </div>
                   <div
-                    className={cn(
-                      "mt-0 h-px w-full",
-                      colors.surfaceBorder,
-                    )}
+                    className={cn("mt-0 h-px w-full", colors.surfaceBorder)}
                   />
                   <div className="mt-4 flex items-center justify-between">
                     <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "h-8 w-8 p-0 transition-colors duration-300",
-                          isDark
-                            ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
-                            : "",
-                        )}
-                        onClick={() => handleToggleStatus(category)}
-                      >
-                        <Icons.Plus size={14} />
-                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -386,6 +407,7 @@ export default function CategoriesPage() {
                             name: category.name,
                             description: category.description,
                             color: category.color,
+                            bannerUrl: category.bannerUrl || "",
                           });
                           setShowEditModal(true);
                         }}
@@ -424,6 +446,7 @@ export default function CategoriesPage() {
               name: category.name,
               description: category.description,
               color: category.color,
+              bannerUrl: category.bannerUrl || "",
             });
             setShowEditModal(true);
           }}
@@ -431,7 +454,6 @@ export default function CategoriesPage() {
             setSelectedCategory(category);
             setShowDeleteModal(true);
           }}
-          onToggleStatus={handleToggleStatus}
         />
       )}
 
@@ -440,7 +462,12 @@ export default function CategoriesPage() {
         isOpen={showAddModal}
         onClose={() => {
           setShowAddModal(false);
-          setFormData({ name: "", description: "", color: "#3B82F6" });
+          setFormData({
+            name: "",
+            description: "",
+            color: "#3B82F6",
+            bannerUrl: "",
+          });
         }}
         title="Add New Category"
         size="md"
@@ -483,12 +510,90 @@ export default function CategoriesPage() {
               }}
             />
           </div>
+          <div className="space-y-2">
+            <label
+              className="text-[10px] font-black uppercase tracking-wider"
+              style={{ color: "hsl(var(--text-secondary))" }}
+            >
+              Banner Image
+            </label>
+            <div
+              className={cn(
+                "border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors",
+                colors.surfaceBorder,
+                colors.surfaceHover,
+              )}
+              onClick={() =>
+                document.getElementById("banner-upload-add")?.click()
+              }
+            >
+              {formData.bannerUrl ? (
+                <div className="relative">
+                  <img
+                    src={formData.bannerUrl}
+                    alt="Banner preview"
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFormData({ ...formData, bannerUrl: "" });
+                    }}
+                  >
+                    <Icons.X size={14} />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center">
+                  <Icons.Image
+                    size={32}
+                    className={cn("mb-2", colors.textMuted)}
+                  />
+                  <p
+                    className={cn("text-xs font-medium", colors.textSecondary)}
+                  >
+                    Click to upload banner image
+                  </p>
+                  <p className={cn("text-[10px] mt-1", colors.textMuted)}>
+                    PNG, JPG up to 5MB
+                  </p>
+                </div>
+              )}
+            </div>
+            <input
+              id="banner-upload-add"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    setFormData({
+                      ...formData,
+                      bannerUrl: event.target?.result as string,
+                    });
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+          </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button
               variant="secondary"
               onClick={() => {
                 setShowAddModal(false);
-                setFormData({ name: "", description: "", color: "#3B82F6" });
+                setFormData({
+                  name: "",
+                  description: "",
+                  color: "#3B82F6",
+                  bannerUrl: "",
+                });
               }}
             >
               Cancel
@@ -504,7 +609,12 @@ export default function CategoriesPage() {
         onClose={() => {
           setShowEditModal(false);
           setSelectedCategory(null);
-          setFormData({ name: "", description: "", color: "#3B82F6" });
+          setFormData({
+            name: "",
+            description: "",
+            color: "#3B82F6",
+            bannerUrl: "",
+          });
         }}
         title="Edit Category"
         size="md"
@@ -547,13 +657,91 @@ export default function CategoriesPage() {
               }}
             />
           </div>
+          <div className="space-y-2">
+            <label
+              className="text-[10px] font-black uppercase tracking-wider"
+              style={{ color: "hsl(var(--text-secondary))" }}
+            >
+              Banner Image
+            </label>
+            <div
+              className={cn(
+                "border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors",
+                colors.surfaceBorder,
+                colors.surfaceHover,
+              )}
+              onClick={() =>
+                document.getElementById("banner-upload-edit")?.click()
+              }
+            >
+              {formData.bannerUrl ? (
+                <div className="relative">
+                  <img
+                    src={formData.bannerUrl}
+                    alt="Banner preview"
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFormData({ ...formData, bannerUrl: "" });
+                    }}
+                  >
+                    <Icons.X size={14} />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center">
+                  <Icons.Image
+                    size={32}
+                    className={cn("mb-2", colors.textMuted)}
+                  />
+                  <p
+                    className={cn("text-xs font-medium", colors.textSecondary)}
+                  >
+                    Click to upload banner image
+                  </p>
+                  <p className={cn("text-[10px] mt-1", colors.textMuted)}>
+                    PNG, JPG up to 5MB
+                  </p>
+                </div>
+              )}
+            </div>
+            <input
+              id="banner-upload-edit"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    setFormData({
+                      ...formData,
+                      bannerUrl: event.target?.result as string,
+                    });
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+          </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button
               variant="secondary"
               onClick={() => {
                 setShowEditModal(false);
                 setSelectedCategory(null);
-                setFormData({ name: "", description: "", color: "#3B82F6" });
+                setFormData({
+                  name: "",
+                  description: "",
+                  color: "#3B82F6",
+                  bannerUrl: "",
+                });
               }}
             >
               Cancel

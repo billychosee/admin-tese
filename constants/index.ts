@@ -45,12 +45,6 @@ export const SIDEBAR_ITEMS = [
     icon: "LayoutDashboard",
   },
   {
-    id: "kyc",
-    label: "KYC Verification",
-    href: "/kyc",
-    icon: "Shield",
-  },
-  {
     id: "categories",
     label: "Categories",
     href: "/categories",

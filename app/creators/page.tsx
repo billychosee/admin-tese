@@ -17,15 +17,20 @@ import {
   formatNumber,
   formatCurrency,
   formatRelativeTime,
+  formatDate,
   getStatusColor,
   getInitials,
 } from "@/utils";
-import type { Creator } from "@/types";
+import { KYC_STATUSES } from "@/constants";
+import type { Creator, KYCUser, KYCStatus } from "@/types";
 
 export default function CreatorsPage() {
   const { addToast } = useToast();
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const [activeTab, setActiveTab] = useState<"creators" | "kyc">("creators");
+
+  // Creators state
   const [creators, setCreators] = useState<Creator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -37,10 +42,29 @@ export default function CreatorsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchCreators();
-  }, [page]);
+  // KYC state
+  const [kycUsers, setKycUsers] = useState<KYCUser[]>([]);
+  const [kycIsLoading, setKycIsLoading] = useState(true);
+  const [kycStatusFilter, setKycStatusFilter] = useState("all");
+  const [kycPage, setKycPage] = useState(1);
+  const [kycTotalPages, setKycTotalPages] = useState(1);
+  const [selectedKyc, setSelectedKyc] = useState<KYCUser | null>(null);
+  const [showKycReviewModal, setShowKycReviewModal] = useState(false);
+  const [showKycSelfieModal, setShowKycSelfieModal] = useState(false);
+  const [showKycIdModal, setShowKycIdModal] = useState(false);
+  const [showKycApproveModal, setShowKycApproveModal] = useState(false);
+  const [showKycDeclineModal, setShowKycDeclineModal] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
 
+  useEffect(() => {
+    if (activeTab === "creators") {
+      fetchCreators();
+    } else {
+      fetchKycUsers();
+    }
+  }, [page, kycPage, activeTab, kycStatusFilter]);
+
+  // Fetch creators
   const fetchCreators = async () => {
     setIsLoading(true);
     try {
@@ -58,6 +82,25 @@ export default function CreatorsPage() {
     }
   };
 
+  // Fetch KYC users
+  const fetchKycUsers = async () => {
+    setKycIsLoading(true);
+    try {
+      const result = await api.kyc.getAll(kycPage, 10, kycStatusFilter);
+      setKycUsers(result.data);
+      setKycTotalPages(result.totalPages);
+    } catch {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to fetch KYC applications",
+      });
+    } finally {
+      setKycIsLoading(false);
+    }
+  };
+
+  // Creator handlers
   const handleApprove = async () => {
     if (!selectedCreator) return;
     try {
@@ -127,6 +170,50 @@ export default function CreatorsPage() {
     }
   };
 
+  // KYC handlers
+  const handleKycApprove = async () => {
+    if (!selectedKyc) return;
+    try {
+      await api.kyc.approve(selectedKyc.id);
+      addToast({
+        type: "success",
+        title: "Success",
+        message: "KYC application approved",
+      });
+      setShowKycApproveModal(false);
+      setSelectedKyc(null);
+      fetchKycUsers();
+    } catch {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to approve KYC",
+      });
+    }
+  };
+
+  const handleKycDecline = async () => {
+    if (!selectedKyc || !declineReason.trim()) return;
+    try {
+      await api.kyc.decline(selectedKyc.id, declineReason);
+      addToast({
+        type: "success",
+        title: "Success",
+        message: "KYC application declined",
+      });
+      setShowKycDeclineModal(false);
+      setDeclineReason("");
+      setSelectedKyc(null);
+      fetchKycUsers();
+    } catch {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to decline KYC",
+      });
+    }
+  };
+
   const openProfile = (creator: Creator) => {
     setSelectedCreator(creator);
     setShowProfileModal(true);
@@ -136,6 +223,21 @@ export default function CreatorsPage() {
     e.stopPropagation();
     setSelectedCreator(creator);
     setShowAvatarModal(true);
+  };
+
+  const getKycStatusVariant = (status: KYCStatus) => {
+    switch (status) {
+      case "approved":
+        return "success";
+      case "pending_approval":
+        return "warning";
+      case "declined":
+        return "danger";
+      case "pending":
+        return "neutral";
+      default:
+        return "neutral";
+    }
   };
 
   // Color tokens for consistent theming
@@ -161,22 +263,9 @@ export default function CreatorsPage() {
     focusRing: "focus:ring-[hsl(var(--focus-ring))]",
   };
 
-  if (isLoading && page === 1) {
-    return (
-      <div
-        className={cn(
-          "space-y-6 min-h-screen font-sans transition-colors duration-300",
-          colors.background,
-        )}
-      >
-        {viewMode === "list" ? (
-          <SkeletonTable rows={10} cols={6} />
-        ) : (
-          <SkeletonList count={8} />
-        )}
-      </div>
-    );
-  }
+  // Loading states
+  const isLoadingCreators = isLoading && page === 1;
+  const isLoadingKyc = kycIsLoading && kycPage === 1;
 
   return (
     <div
@@ -185,367 +274,691 @@ export default function CreatorsPage() {
         colors.background,
       )}
     >
+      {/* Tab Navigation */}
       <div className="flex items-center justify-between">
-        {/* Page Title */}
-        <div>
-          <h1 className="text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
-            Creators
-          </h1>
-          <p className="text-xs font-bold uppercase tracking-widest mt-1 text-[hsl(var(--text-muted))]">
-            Manage your content creators
-          </p>
+        <div className="flex items-center gap-6">
+          <div>
+            <h1 className="text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
+              {activeTab === "creators" ? "Creators" : "KYC Verification"}
+            </h1>
+            <p className="text-xs font-bold uppercase tracking-widest mt-1 text-[hsl(var(--text-muted))]">
+              {activeTab === "creators"
+                ? "Manage your content creators"
+                : "Verify user identity documents"}
+            </p>
+          </div>
+
+          {/* Tab Buttons */}
+          <div
+            className="flex p-1 rounded-xl border"
+            style={{
+              backgroundColor: "hsl(var(--surface))",
+              borderColor: "hsl(var(--surface-border))",
+            }}
+          >
+            <button
+              onClick={() => {
+                setActiveTab("creators");
+                setPage(1);
+              }}
+              className={cn(
+                "px-4 py-2 rounded-lg transition-all text-sm font-medium",
+                activeTab === "creators" ? "text-white shadow-lg" : "",
+              )}
+              style={{
+                backgroundColor:
+                  activeTab === "creators"
+                    ? "hsl(var(--primary))"
+                    : "transparent",
+                color:
+                  activeTab === "creators"
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--text-secondary))",
+              }}
+            >
+              <Icons.Users size={16} className="inline mr-2" />
+              Creators
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("kyc");
+                setKycPage(1);
+              }}
+              className={cn(
+                "px-4 py-2 rounded-lg transition-all text-sm font-medium",
+                activeTab === "kyc" ? "text-white shadow-lg" : "",
+              )}
+              style={{
+                backgroundColor:
+                  activeTab === "kyc" ? "hsl(var(--primary))" : "transparent",
+                color:
+                  activeTab === "kyc"
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--text-secondary))",
+              }}
+            >
+              <Icons.Shield size={16} className="inline mr-2" />
+              KYC
+            </button>
+          </div>
         </div>
 
-        {/* View Mode Toggle */}
-        <div
-          className="flex p-1 rounded-xl border"
-          style={{
-            backgroundColor: "hsl(var(--surface))",
-            borderColor: "hsl(var(--surface-border))",
-          }}
-        >
-          <button
-            onClick={() => setViewMode("list")}
-            className={cn(
-              "p-2.5 rounded-lg transition-all",
-              viewMode === "list" ? "text-white shadow-lg" : "",
-            )}
+        {activeTab === "creators" ? (
+          /* View Mode Toggle for Creators */
+          <div
+            className="flex p-1 rounded-xl border"
             style={{
-              backgroundColor:
-                viewMode === "list" ? "hsl(var(--primary))" : "transparent",
-              color:
-                viewMode === "list"
-                  ? "hsl(var(--primary-foreground))"
-                  : "hsl(var(--text-secondary))",
+              backgroundColor: "hsl(var(--surface))",
+              borderColor: "hsl(var(--surface-border))",
             }}
           >
-            <Icons.List size={18} />
-          </button>
-          <button
-            onClick={() => setViewMode("grid")}
-            className={cn(
-              "p-2.5 rounded-lg transition-all",
-              viewMode === "grid" ? "text-white shadow-lg" : "",
-            )}
-            style={{
-              backgroundColor:
-                viewMode === "grid" ? "hsl(var(--primary))" : "transparent",
-              color:
-                viewMode === "grid"
-                  ? "hsl(var(--primary-foreground))"
-                  : "hsl(var(--text-secondary))",
-            }}
-          >
-            <Icons.Grid size={18} />
-          </button>
-        </div>
+            <button
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "p-2.5 rounded-lg transition-all",
+                viewMode === "list" ? "text-white shadow-lg" : "",
+              )}
+              style={{
+                backgroundColor:
+                  viewMode === "list" ? "hsl(var(--primary))" : "transparent",
+                color:
+                  viewMode === "list"
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--text-secondary))",
+              }}
+            >
+              <Icons.List size={18} />
+            </button>
+            <button
+              onClick={() => setViewMode("grid")}
+              className={cn(
+                "p-2.5 rounded-lg transition-all",
+                viewMode === "grid" ? "text-white shadow-lg" : "",
+              )}
+              style={{
+                backgroundColor:
+                  viewMode === "grid" ? "hsl(var(--primary))" : "transparent",
+                color:
+                  viewMode === "grid"
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--text-secondary))",
+              }}
+            >
+              <Icons.Grid size={18} />
+            </button>
+          </div>
+        ) : (
+          /* Status Filter for KYC */
+          <div className="relative">
+            <select
+              value={kycStatusFilter}
+              onChange={(e) => {
+                setKycStatusFilter(e.target.value);
+                setKycPage(1);
+              }}
+              className="appearance-none w-full px-4 py-2 pr-10 rounded-lg text-sm h-10 cursor-pointer transition-all duration-200 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none"
+              style={{ border: '1px solid hsl(var(--surface-border))' }}
+            >
+              {KYC_STATUSES.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
+            </select>
+            <Icons.ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
+        )}
       </div>
 
-      {creators.length === 0 ? (
-        <Card
-          className={cn(
-            "p-12 rounded-[3rem] border-none shadow-xl text-center transition-colors duration-300",
-            colors.surface,
-          )}
-        >
-          <CardContent>
-            <Icons.Users
-              className={cn("mx-auto h-16 w-16 mb-4", colors.textMuted)}
-            />
-            <p className={cn("text-lg font-medium", colors.textSecondary)}>
-              No creators found
-            </p>
-          </CardContent>
-        </Card>
-      ) : viewMode === "list" ? (
-        <CreatorTable
-          creators={creators}
-          isLoading={isLoading}
-          onViewProfile={openProfile}
-          onToggleStatus={handleToggleStatus}
-        />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {creators.map((creator) => (
-            <Card
-              key={creator.id}
-              hover
+      {/* ==================== CREATORS TAB ==================== */}
+      {activeTab === "creators" && (
+        <>
+          {isLoadingCreators ? (
+            <div
               className={cn(
-                "rounded-2xl border transition-all duration-300",
-                colors.surfaceBorder,
+                "space-y-6 min-h-screen font-sans transition-colors duration-300",
+                colors.background,
+              )}
+            >
+              {viewMode === "list" ? (
+                <SkeletonTable rows={10} cols={6} />
+              ) : (
+                <SkeletonList count={8} />
+              )}
+            </div>
+          ) : creators.length === 0 ? (
+            <Card
+              className={cn(
+                "p-12 rounded-[3rem] border-none shadow-xl text-center transition-colors duration-300",
                 colors.surface,
               )}
             >
-              <CardContent className="p-5">
-                <div className="flex flex-col">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      {creator.avatar ? (
-                        <button
-                          onClick={(e) => openAvatarPreview(creator, e)}
-                          className="relative group"
-                        >
-                          <img
-                            src={creator.avatar}
-                            alt={`${creator.firstName} ${creator.lastName}`}
-                            className="w-10 h-10 rounded-xl object-cover group-hover:ring-2 ring-[hsl(var(--primary))] transition-all"
-                          />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity flex items-center justify-center">
-                            <Icons.Search size={14} className="text-white" />
-                          </div>
-                        </button>
-                      ) : (
-                        <div
-                          className={cn(
-                            "avatar font-bold text-xs",
-                            isDark
-                              ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
-                              : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
-                          )}
-                        >
-                          {getInitials(
-                            `${creator.firstName} ${creator.lastName}`,
-                          )}
-                        </div>
-                      )}
-                      <div>
-                        <h3
-                          className={cn(
-                            "text-sm font-semibold",
-                            colors.textPrimary,
-                          )}
-                        >
-                          {creator.firstName} {creator.lastName}
-                        </h3>
-                        <p
-                          className={cn(
-                            "text-xs font-medium uppercase tracking-wider",
-                            colors.textMuted,
-                          )}
-                        >
-                          {creator.channelName}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge
-                      variant={
-                        creator.status === "active"
-                          ? "success"
-                          : creator.status === "pending"
-                            ? "warning"
-                            : "danger"
-                      }
-                    >
-                      {creator.status}
-                    </Badge>
-                  </div>
-                  <div
-                    className={cn("mt-4 h-px w-full", colors.surfaceBorder)}
-                  />
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div
-                      className={cn(
-                        "rounded-lg p-3 transition-colors duration-300",
-                        isDark
-                          ? "bg-[hsl(var(--surface-hover))]/50"
-                          : "bg-[hsl(var(--surface-hover))]",
-                      )}
-                    >
-                      <p
-                        className={cn(
-                          "text-base font-bold",
-                          colors.textPrimary,
-                        )}
-                      >
-                        {formatNumber(creator.totalVideos)}
-                      </p>
-                      <p
-                        className={cn(
-                          "text-[10px] font-medium uppercase tracking-wider",
-                          colors.textMuted,
-                        )}
-                      >
-                        Videos
-                      </p>
-                    </div>
-                    <div
-                      className={cn(
-                        "rounded-lg p-3 transition-colors duration-300",
-                        isDark
-                          ? "bg-[hsl(var(--success))]/10"
-                          : "bg-[hsl(var(--success))]/10",
-                      )}
-                    >
-                      <p
-                        className={cn(
-                          "text-base font-bold",
-                          colors.successText,
-                        )}
-                      >
-                        {formatCurrency(creator.totalEarnings)}
-                      </p>
-                      <p
-                        className={cn(
-                          "text-[10px] font-medium uppercase tracking-wider",
-                          colors.successText,
-                        )}
-                      >
-                        Earnings
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={cn(
-                          "h-2.5 w-2.5 rounded-full",
-                          creator.onlineStatus === "online"
-                            ? "bg-[hsl(var(--success))]"
-                            : creator.onlineStatus === "away"
-                              ? "bg-[hsl(var(--warning))]"
-                              : colors.textMuted,
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "text-xs font-medium uppercase tracking-wider",
-                          colors.textMuted,
-                        )}
-                      >
-                        {creator.onlineStatus}
-                      </span>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "h-8 w-8 p-0 transition-colors duration-300",
-                          isDark
-                            ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
-                            : "",
-                        )}
-                        onClick={() => openProfile(creator)}
-                        title="View Profile"
-                      >
-                        <Icons.Eye size={14} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "h-8 w-8 p-0 transition-colors duration-300",
-                          isDark
-                            ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
-                            : "",
-                        )}
-                        onClick={() => handleToggleStatus(creator)}
-                        title={
-                          creator.status === "active"
-                            ? "Deactivate"
-                            : "Activate"
-                        }
-                      >
-                        {creator.status === "active" ? (
-                          <Icons.Lock size={14} />
-                        ) : (
-                          <Icons.Unlock size={14} />
-                        )}
-                      </Button>
-                      {creator.status === "pending" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={cn(
-                            "h-8 w-8 p-0 transition-colors duration-300",
-                            isDark
-                              ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
-                              : "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50",
-                          )}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedCreator(creator);
-                            setShowApproveModal(true);
-                          }}
-                          title="Approve"
-                        >
-                          <Icons.Check size={14} />
-                        </Button>
-                      )}
-                      {creator.status === "pending" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={cn(
-                            "h-8 w-8 p-0 transition-colors duration-300",
-                            isDark
-                              ? "text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                              : "text-red-500 hover:text-red-600 hover:bg-red-50",
-                          )}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedCreator(creator);
-                            setShowRejectModal(true);
-                          }}
-                          title="Reject"
-                        >
-                          <Icons.X size={14} />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              <CardContent>
+                <Icons.Users
+                  className={cn("mx-auto h-16 w-16 mb-4", colors.textMuted)}
+                />
+                <p className={cn("text-lg font-medium", colors.textSecondary)}>
+                  No creators found
+                </p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
-
-      {totalPages > 1 && (
-        <div
-          className={cn(
-            "flex items-center justify-center gap-4 py-4 transition-colors duration-300",
-            isDark ? "rounded-3xl" : "rounded-3xl shadow-xl",
-            colors.surface,
+          ) : viewMode === "list" ? (
+            <CreatorTable
+              creators={creators}
+              isLoading={isLoading}
+              onViewProfile={openProfile}
+              onToggleStatus={handleToggleStatus}
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {creators.map((creator) => (
+                <Card
+                  key={creator.id}
+                  hover
+                  className={cn(
+                    "rounded-2xl border transition-all duration-300",
+                    colors.surfaceBorder,
+                    colors.surface,
+                  )}
+                >
+                  <CardContent className="p-5">
+                    <div className="flex flex-col">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          {creator.avatar ? (
+                            <button
+                              onClick={(e) => openAvatarPreview(creator, e)}
+                              className="relative group"
+                            >
+                              <img
+                                src={creator.avatar}
+                                alt={`${creator.firstName} ${creator.lastName}`}
+                                className="w-10 h-10 rounded-xl object-cover group-hover:ring-2 ring-[hsl(var(--primary))] transition-all"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity flex items-center justify-center">
+                                <Icons.Search size={14} className="text-white" />
+                              </div>
+                            </button>
+                          ) : (
+                            <div
+                              className={cn(
+                                "avatar font-bold text-xs",
+                                isDark
+                                  ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                                  : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
+                              )}
+                            >
+                              {getInitials(
+                                `${creator.firstName} ${creator.lastName}`,
+                              )}
+                            </div>
+                          )}
+                          <div>
+                            <h3
+                              className={cn(
+                                "text-sm font-semibold",
+                                colors.textPrimary,
+                              )}
+                            >
+                              {creator.firstName} {creator.lastName}
+                            </h3>
+                            <p
+                              className={cn(
+                                "text-xs font-medium uppercase tracking-wider",
+                                colors.textMuted,
+                              )}
+                            >
+                              {creator.channelName}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge
+                          variant={
+                            creator.status === "active"
+                              ? "success"
+                              : creator.status === "pending"
+                                ? "warning"
+                                : "danger"
+                          }
+                        >
+                          {creator.status}
+                        </Badge>
+                      </div>
+                      <div
+                        className={cn("mt-4 h-px w-full", colors.surfaceBorder)}
+                      />
+                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        <div
+                          className={cn(
+                            "rounded-lg p-3 transition-colors duration-300",
+                            isDark
+                              ? "bg-[hsl(var(--surface-hover))]/50"
+                              : "bg-[hsl(var(--surface-hover))]",
+                          )}
+                        >
+                          <p
+                            className={cn(
+                              "text-base font-bold",
+                              colors.textPrimary,
+                            )}
+                          >
+                            {formatNumber(creator.totalVideos)}
+                          </p>
+                          <p
+                            className={cn(
+                              "text-[10px] font-medium uppercase tracking-wider",
+                              colors.textMuted,
+                            )}
+                          >
+                            Videos
+                          </p>
+                        </div>
+                        <div
+                          className={cn(
+                            "rounded-lg p-3 transition-colors duration-300",
+                            isDark
+                              ? "bg-[hsl(var(--success))]/10"
+                              : "bg-[hsl(var(--success))]/10",
+                          )}
+                        >
+                          <p
+                            className={cn(
+                              "text-base font-bold",
+                              colors.successText,
+                            )}
+                          >
+                            {formatCurrency(creator.totalEarnings)}
+                          </p>
+                          <p
+                            className={cn(
+                              "text-[10px] font-medium uppercase tracking-wider",
+                              colors.successText,
+                            )}
+                          >
+                            Earnings
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-4 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "h-2.5 w-2.5 rounded-full",
+                              creator.onlineStatus === "online"
+                                ? "bg-[hsl(var(--success))]"
+                                : creator.onlineStatus === "away"
+                                  ? "bg-[hsl(var(--warning))]"
+                                  : colors.textMuted,
+                            )}
+                          />
+                          <span
+                            className={cn(
+                              "text-xs font-medium uppercase tracking-wider",
+                              colors.textMuted,
+                            )}
+                          >
+                            {creator.onlineStatus}
+                          </span>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              "h-8 w-8 p-0 transition-colors duration-300",
+                              isDark
+                                ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
+                                : "",
+                            )}
+                            onClick={() => openProfile(creator)}
+                            title="View Profile"
+                          >
+                            <Icons.Eye size={14} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              "h-8 w-8 p-0 transition-colors duration-300",
+                              isDark
+                                ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
+                                : "",
+                            )}
+                            onClick={() => handleToggleStatus(creator)}
+                            title={
+                              creator.status === "active"
+                                ? "Deactivate"
+                                : "Activate"
+                            }
+                          >
+                            {creator.status === "active" ? (
+                              <Icons.Lock size={14} />
+                            ) : (
+                              <Icons.Unlock size={14} />
+                            )}
+                          </Button>
+                          {creator.status === "pending" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={cn(
+                                "h-8 w-8 p-0 transition-colors duration-300",
+                                isDark
+                                  ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                                  : "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50",
+                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCreator(creator);
+                                setShowApproveModal(true);
+                              }}
+                              title="Approve"
+                            >
+                              <Icons.Check size={14} />
+                            </Button>
+                          )}
+                          {creator.status === "pending" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={cn(
+                                "h-8 w-8 p-0 transition-colors duration-300",
+                                isDark
+                                  ? "text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                  : "text-red-500 hover:text-red-600 hover:bg-red-50",
+                              )}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCreator(creator);
+                                setShowRejectModal(true);
+                              }}
+                              title="Reject"
+                            >
+                              <Icons.X size={14} />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(page - 1)}
-            disabled={page === 1}
-            className={cn(
-              "transition-colors duration-300",
-              colors.surfaceBorder,
-              isDark ? `hover:${colors.surfaceHover}` : "",
-            )}
-          >
-            Previous
-          </Button>
-          <span
-            className={cn(
-              "text-sm font-black uppercase tracking-wider px-4",
-              colors.textSecondary,
-            )}
-          >
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(page + 1)}
-            disabled={page === totalPages}
-            className={cn(
-              "transition-colors duration-300",
-              colors.surfaceBorder,
-              isDark ? `hover:${colors.surfaceHover}` : "",
-            )}
-          >
-            Next
-          </Button>
-        </div>
+
+          {/* Creators Pagination */}
+          {totalPages > 1 && (
+            <div
+              className={cn(
+                "flex items-center justify-center gap-4 py-4 transition-colors duration-300",
+                isDark ? "rounded-3xl" : "rounded-3xl shadow-xl",
+                colors.surface,
+              )}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page - 1)}
+                disabled={page === 1}
+                className={cn(
+                  "transition-colors duration-300",
+                  colors.surfaceBorder,
+                  isDark ? `hover:${colors.surfaceHover}` : "",
+                )}
+              >
+                Previous
+              </Button>
+              <span
+                className={cn(
+                  "text-sm font-black uppercase tracking-wider px-4",
+                  colors.textSecondary,
+                )}
+              >
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page + 1)}
+                disabled={page === totalPages}
+                className={cn(
+                  "transition-colors duration-300",
+                  colors.surfaceBorder,
+                  isDark ? `hover:${colors.surfaceHover}` : "",
+                )}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
+      {/* ==================== KYC TAB ==================== */}
+      {activeTab === "kyc" && (
+        <>
+          {isLoadingKyc ? (
+            <div
+              className={cn(
+                "space-y-6 min-h-screen font-sans transition-colors duration-300",
+                colors.background,
+              )}
+            >
+              <SkeletonTable rows={10} cols={6} />
+            </div>
+          ) : (
+            <>
+              {/* KYC Stats Cards */}
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  {
+                    label: "Pending Upload",
+                    count: kycUsers.filter((k) => k.status === "pending").length,
+                    color: "bg-slate-500",
+                  },
+                  {
+                    label: "Pending Review",
+                    count: kycUsers.filter((k) => k.status === "pending_approval")
+                      .length,
+                    color: "bg-amber-500",
+                  },
+                  {
+                    label: "Approved",
+                    count: kycUsers.filter((k) => k.status === "approved").length,
+                    color: "bg-emerald-500",
+                  },
+                  {
+                    label: "Declined",
+                    count: kycUsers.filter((k) => k.status === "declined").length,
+                    color: "bg-red-500",
+                  },
+                ].map((stat, i) => (
+                  <Card key={i}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={cn("w-3 h-3 rounded-full", stat.color)} />
+                        <div>
+                          <p className="text-2xl font-bold">{stat.count}</p>
+                          <p className="text-xs text-slate-500">{stat.label}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* KYC Table */}
+              {kycUsers.length === 0 ? (
+                <Card
+                  className={cn(
+                    "p-12 rounded-[3rem] border-none shadow-xl text-center",
+                    colors.surface,
+                  )}
+                >
+                  <CardContent>
+                    <Icons.Shield
+                      className={cn(
+                        "mx-auto h-16 w-16 mb-4",
+                        colors.textMuted,
+                      )}
+                    />
+                    <p
+                      className={cn(
+                        "text-lg font-medium",
+                        colors.textSecondary,
+                      )}
+                    >
+                      No KYC applications found
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr
+                            className={cn(
+                              "border-b-2",
+                              colors.surfaceBorder,
+                            )}
+                          >
+                            <th className="text-left py-4 px-4 font-bold text-sm">
+                              User
+                            </th>
+                            <th className="text-left py-4 px-4 font-bold text-sm">
+                              ID Type
+                            </th>
+                            <th className="text-left py-4 px-4 font-bold text-sm">
+                              Submitted
+                            </th>
+                            <th className="text-left py-4 px-4 font-bold text-sm">
+                              Status
+                            </th>
+                            <th className="text-left py-4 px-4 font-bold text-sm">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {kycUsers.map((kyc) => (
+                            <tr
+                              key={kyc.id}
+                              className={cn(
+                                "border-b transition-colors",
+                                isDark
+                                  ? "border-slate-700 hover:bg-slate-800/50"
+                                  : "border-slate-100 hover:bg-slate-50",
+                              )}
+                            >
+                              <td className="py-4 px-4">
+                                <div className="flex items-center gap-3">
+                                  {kyc.selfieUrl ? (
+                                    <img
+                                      src={kyc.selfieUrl}
+                                      alt="Selfie"
+                                      className="w-10 h-10 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <div
+                                      className={cn(
+                                        "w-10 h-10 rounded-full flex items-center justify-center",
+                                        isDark ? "bg-slate-700" : "bg-slate-200",
+                                      )}
+                                    >
+                                      <Icons.User
+                                        size={20}
+                                        className={
+                                          isDark ? "text-slate-400" : "text-slate-500"
+                                        }
+                                      />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <p className="font-medium">
+                                      {kyc.firstName} {kyc.lastName}
+                                    </p>
+                                    <p className="text-sm text-slate-500">
+                                      {kyc.email}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-4 px-4">
+                                <span className="capitalize">
+                                  {kyc.idType.replace("_", " ")}
+                                </span>
+                              </td>
+                              <td className="py-4 px-4 text-sm">
+                                {formatDate(kyc.submittedAt)}
+                              </td>
+                              <td className="py-4 px-4">
+                                <Badge variant={getKycStatusVariant(kyc.status)}>
+                                  {kyc.status.replace("_", " ")}
+                                </Badge>
+                              </td>
+                              <td className="py-4 px-4">
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedKyc(kyc);
+                                      setShowKycReviewModal(true);
+                                    }}
+                                  >
+                                    <Icons.Eye size={16} />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* KYC Pagination */}
+              {kycTotalPages > 1 && (
+                <div
+                  className={cn(
+                    "flex items-center justify-center gap-4 py-4 rounded-3xl",
+                    colors.surface,
+                    isDark ? "" : "shadow-xl",
+                  )}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setKycPage(kycPage - 1)}
+                    disabled={kycPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-sm font-medium">
+                    Page {kycPage} of {kycTotalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setKycPage(kycPage + 1)}
+                    disabled={kycPage === kycTotalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ==================== CREATORS MODALS ==================== */}
+
+      {/* Creator Profile Modal */}
       <Modal
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
@@ -1096,6 +1509,7 @@ export default function CreatorsPage() {
         )}
       </Modal>
 
+      {/* Creator Approve Confirmation */}
       <ConfirmModal
         isOpen={showApproveModal}
         onClose={() => setShowApproveModal(false)}
@@ -1106,6 +1520,7 @@ export default function CreatorsPage() {
         variant="info"
       />
 
+      {/* Creator Reject Confirmation */}
       <ConfirmModal
         isOpen={showRejectModal}
         onClose={() => setShowRejectModal(false)}
@@ -1169,6 +1584,214 @@ export default function CreatorsPage() {
           </div>
         )}
       </Modal>
+
+      {/* ==================== KYC MODALS ==================== */}
+
+      {/* KYC Review Modal */}
+      <Modal
+        isOpen={showKycReviewModal}
+        onClose={() => setShowKycReviewModal(false)}
+        title="KYC Application Review"
+        size="lg"
+      >
+        {selectedKyc && (
+          <div className="space-y-6">
+            {/* User Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-slate-500">Full Name</p>
+                <p className="font-medium">
+                  {selectedKyc.firstName} {selectedKyc.lastName}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Email</p>
+                <p className="font-medium">{selectedKyc.email}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">ID Type</p>
+                <p className="font-medium capitalize">
+                  {selectedKyc.idType.replace("_", " ")}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">ID Number</p>
+                <p className="font-medium">{selectedKyc.idNumber}</p>
+              </div>
+            </div>
+
+            {/* Document Preview */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-slate-500 mb-2">Selfie Photo</p>
+                <div
+                  className={cn(
+                    "rounded-xl p-4 text-center cursor-pointer transition-colors",
+                    colors.surface,
+                  )}
+                  onClick={() => {
+                    setShowKycReviewModal(false);
+                    setShowKycSelfieModal(true);
+                  }}
+                >
+                  {selectedKyc.selfieUrl ? (
+                    <img
+                      src={selectedKyc.selfieUrl}
+                      alt="Selfie"
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                  ) : (
+                    <Icons.User className="w-12 h-12 mx-auto text-slate-400" />
+                  )}
+                  <p className="text-xs mt-2 text-slate-500">
+                    Click to enlarge
+                  </p>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 mb-2">ID Document</p>
+                <div
+                  className={cn(
+                    "rounded-xl p-4 text-center cursor-pointer transition-colors",
+                    colors.surface,
+                  )}
+                  onClick={() => {
+                    setShowKycReviewModal(false);
+                    setShowKycIdModal(true);
+                  }}
+                >
+                  {selectedKyc.idImageUrl ? (
+                    <img
+                      src={selectedKyc.idImageUrl}
+                      alt="ID Document"
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                  ) : (
+                    <Icons.FileText className="w-12 h-12 mx-auto text-slate-400" />
+                  )}
+                  <p className="text-xs mt-2 text-slate-500">
+                    Click to enlarge
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setShowKycReviewModal(false)}
+              >
+                Close
+              </Button>
+              {selectedKyc.status === "pending_approval" && (
+                <>
+                  <Button
+                    variant="danger"
+                    onClick={() => {
+                      setShowKycReviewModal(false);
+                      setShowKycDeclineModal(true);
+                    }}
+                  >
+                    Decline
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => {
+                      setShowKycReviewModal(false);
+                      setShowKycApproveModal(true);
+                    }}
+                  >
+                    Approve
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* KYC Selfie Modal */}
+      <Modal
+        isOpen={showKycSelfieModal}
+        onClose={() => {
+          setShowKycSelfieModal(false);
+          setShowKycReviewModal(true);
+        }}
+        title="Selfie Photo"
+        size="md"
+      >
+        {selectedKyc?.selfieUrl && (
+          <img
+            src={selectedKyc.selfieUrl}
+            alt="Selfie"
+            className="w-full rounded-lg"
+          />
+        )}
+      </Modal>
+
+      {/* KYC ID Modal */}
+      <Modal
+        isOpen={showKycIdModal}
+        onClose={() => {
+          setShowKycIdModal(false);
+          setShowKycReviewModal(true);
+        }}
+        title="ID Document"
+        size="lg"
+      >
+        {selectedKyc?.idImageUrl && (
+          <img
+            src={selectedKyc.idImageUrl}
+            alt="ID Document"
+            className="w-full rounded-lg"
+          />
+        )}
+      </Modal>
+
+      {/* KYC Approve Confirmation */}
+      <ConfirmModal
+        isOpen={showKycApproveModal}
+        onClose={() => setShowKycApproveModal(false)}
+        onConfirm={handleKycApprove}
+        title="Approve KYC"
+        message="Are you sure you want to approve this KYC application? This will grant the user full access to the platform."
+        confirmText="Approve"
+        variant="info"
+      />
+
+      {/* KYC Decline Confirmation */}
+      <ConfirmModal
+        isOpen={showKycDeclineModal}
+        onClose={() => {
+          setShowKycDeclineModal(false);
+          setDeclineReason("");
+        }}
+        onConfirm={handleKycDecline}
+        title="Decline KYC"
+        message={
+          <div className="space-y-3">
+            <p>Are you sure you want to decline this KYC application?</p>
+            <div>
+              <label className="text-xs font-medium">Reason for decline:</label>
+              <textarea
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+                placeholder="Enter the reason..."
+                className={cn(
+                  "w-full mt-1 p-3 rounded-xl text-sm border resize-none",
+                  colors.surface,
+                  colors.surfaceBorder,
+                  colors.textPrimary,
+                )}
+                rows={3}
+              />
+            </div>
+          </div>
+        }
+        confirmText="Decline"
+        variant="danger"
+      />
     </div>
   );
 }

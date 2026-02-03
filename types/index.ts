@@ -58,6 +58,8 @@ export interface Creator {
   idType?: "national_id" | "passport" | "drivers_license";
   idNumber?: string;
   idCopyUrl?: string;
+  idImageUrl?: string;
+  selfieUrl?: string;
   proofOfResidenceUrl?: string;
 
   // Banking Information
@@ -116,6 +118,8 @@ export interface Video {
 }
 
 export interface Category {
+  bannerUrl: string | undefined;
+  bannerUrl: any;
   id: string;
   name: string;
   slug: string;
