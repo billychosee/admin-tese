@@ -20,12 +20,20 @@ import type { Video } from "@/types";
 interface VideoTableProps {
   videos: Video[];
   isLoading?: boolean;
+  onToggleFeatured: (video: Video) => Promise<void>;
+  onToggleBanner: (video: Video) => Promise<void>;
+  onToggleSuspend: (video: Video) => Promise<void>;
+  onUpdateStatus: (video: Video, status: "pending" | "published" | "draft" | "suspended" | "deleted") => Promise<void>;
   onDelete: (video: Video) => void;
 }
 
 export function VideoTable({
   videos,
   isLoading,
+  onToggleFeatured,
+  onToggleBanner,
+  onToggleSuspend,
+  onUpdateStatus,
   onDelete,
 }: VideoTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -269,66 +277,11 @@ export function VideoTable({
                           <td className="py-4 px-4">
                             <div className="flex items-center gap-1">
                               <button
-                                onClick={() => onToggleFeatured(video)}
-                                className={cn(
-                                  "p-2 rounded-lg transition",
-                                  video.isFeatured
-                                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
-                                    : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400",
-                                )}
-                                title={
-                                  video.isFeatured
-                                    ? "Remove from featured"
-                                    : "Promote to featured"
-                                }
-                              >
-                                <Icons.Star size={16} />
-                              </button>
-                              <button
-                                onClick={() => onToggleBanner(video)}
-                                className={cn(
-                                  "p-2 rounded-lg transition",
-                                  video.isBanner
-                                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                                    : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400",
-                                )}
-                                title={
-                                  video.isBanner
-                                    ? "Remove from banner"
-                                    : "Promote to banner"
-                                }
-                              >
-                                <Icons.Image size={16} />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  onUpdateStatus(
-                                    video,
-                                    video.status === "published"
-                                      ? "draft"
-                                      : "published",
-                                  )
-                                }
+                                onClick={() => setPreviewVideo(video)}
                                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition"
-                                title="Toggle publish status"
+                                title="View video"
                               >
-                                <Icons.Send size={16} />
-                              </button>
-                              <button
-                                onClick={() => onToggleSuspend(video)}
-                                className={cn(
-                                  "p-2 rounded-lg transition",
-                                  video.status === "suspended"
-                                    ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
-                                    : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400",
-                                )}
-                                title={
-                                  video.status === "suspended"
-                                    ? "Unsuspend video"
-                                    : "Suspend video"
-                                }
-                              >
-                                <Icons.Ban size={16} />
+                                <Icons.Eye size={16} />
                               </button>
                               <button
                                 onClick={() => onDelete(video)}
@@ -547,18 +500,72 @@ export function VideoTable({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setPreviewVideo(null)}
+                onClick={() =>
+                  onToggleFeatured(previewVideo)
+                }
+                className={cn(
+                  previewVideo.isFeatured
+                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800"
+                    : ""
+                )}
               >
-                <Icons.Eye size={16} className="mr-1" />
-                View
+                <Icons.Star size={16} className="mr-1" />
+                {previewVideo.isFeatured ? "Featured" : "Feature"}
               </Button>
-              <button
-                onClick={() => onDelete(previewVideo)}
-                className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 transition"
-                title="Delete"
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  onToggleBanner(previewVideo)
+                }
+                className={cn(
+                  previewVideo.isBanner
+                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800"
+                    : ""
+                )}
               >
-                <Icons.Trash2 size={16} />
-              </button>
+                <Icons.Image size={16} className="mr-1" />
+                {previewVideo.isBanner ? "Banner" : "Add to Banner"}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  onUpdateStatus(
+                    previewVideo,
+                    previewVideo.status === "published"
+                      ? "draft"
+                      : "published",
+                  )
+                }
+              >
+                <Icons.Send size={16} className="mr-1" />
+                {previewVideo.status === "published" ? "Unpublish" : "Publish"}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => onToggleSuspend(previewVideo)}
+                className={cn(
+                  previewVideo.status === "suspended"
+                    ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800"
+                    : ""
+                )}
+              >
+                <Icons.Ban size={16} className="mr-1" />
+                {previewVideo.status === "suspended" ? "Unsuspend" : "Suspend"}
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => {
+                  onDelete(previewVideo);
+                  setPreviewVideo(null);
+                }}
+              >
+                <Icons.Trash2 size={16} className="mr-1" />
+                Delete
+              </Button>
             </div>
           </div>
         )}
