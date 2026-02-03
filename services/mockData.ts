@@ -354,6 +354,7 @@ export const mockVideos: Video[] = [
     title: "Complete React Tutorial for Beginners",
     description:
       "Learn React from scratch with this comprehensive tutorial covering hooks, components, and more.",
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=320&h=180&fit=crop",
     duration: 7200,
     creatorId: "cr_001",
@@ -367,6 +368,9 @@ export const mockVideos: Video[] = [
     views: 150000,
     likes: 8500,
     comments: 450,
+    shares: 1250,
+    watchTime: 5800,
+    engagementRate: 6.8,
     createdAt: new Date("2024-01-10"),
     updatedAt: new Date("2024-01-12"),
   },
@@ -375,6 +379,7 @@ export const mockVideos: Video[] = [
     title: "Italian Cooking Masterclass",
     description:
       "Master authentic Italian cuisine with professional chef techniques.",
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
     thumbnail: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=320&h=180&fit=crop",
     duration: 5400,
     creatorId: "cr_002",
@@ -389,6 +394,9 @@ export const mockVideos: Video[] = [
     views: 85000,
     likes: 4200,
     comments: 280,
+    shares: 890,
+    watchTime: 4100,
+    engagementRate: 5.5,
     createdAt: new Date("2024-01-08"),
     updatedAt: new Date("2024-01-09"),
   },
@@ -397,6 +405,7 @@ export const mockVideos: Video[] = [
     title: "30-Day Fitness Challenge",
     description:
       "Transform your body with this intensive 30-day workout program.",
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     thumbnail: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=320&h=180&fit=crop",
     duration: 3600,
     creatorId: "cr_003",
@@ -411,6 +420,9 @@ export const mockVideos: Video[] = [
     views: 0,
     likes: 0,
     comments: 0,
+    shares: 0,
+    watchTime: 0,
+    engagementRate: 0,
     createdAt: new Date("2024-01-14"),
     updatedAt: new Date("2024-01-14"),
   },
@@ -419,6 +431,7 @@ export const mockVideos: Video[] = [
     title: "Music Production Fundamentals",
     description:
       "Learn the basics of music production with professional software.",
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
     thumbnail: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=320&h=180&fit=crop",
     duration: 9000,
     creatorId: "cr_004",
@@ -432,6 +445,9 @@ export const mockVideos: Video[] = [
     views: 250000,
     likes: 12000,
     comments: 890,
+    shares: 3400,
+    watchTime: 7200,
+    engagementRate: 6.2,
     createdAt: new Date("2024-01-05"),
     updatedAt: new Date("2024-01-13"),
   },
@@ -440,6 +456,7 @@ export const mockVideos: Video[] = [
     title: "Pro Gaming Strategies",
     description:
       "Competitive gaming tips and strategies from professional players.",
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     thumbnail: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=320&h=180&fit=crop",
     duration: 2700,
     creatorId: "cr_005",
@@ -453,6 +470,9 @@ export const mockVideos: Video[] = [
     views: 500000,
     likes: 25000,
     comments: 1500,
+    shares: 8900,
+    watchTime: 2100,
+    engagementRate: 7.1,
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-11"),
   },
@@ -460,6 +480,7 @@ export const mockVideos: Video[] = [
     id: "vid_006",
     title: "Mathematics for Everyone",
     description: "Understanding complex mathematical concepts made simple.",
+    videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
     thumbnail: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=320&h=180&fit=crop",
     duration: 4500,
     creatorId: "cr_006",
@@ -474,6 +495,9 @@ export const mockVideos: Video[] = [
     views: 45000,
     likes: 2100,
     comments: 120,
+    shares: 560,
+    watchTime: 3800,
+    engagementRate: 5.2,
     createdAt: new Date("2024-01-12"),
     updatedAt: new Date("2024-01-13"),
   },
@@ -490,6 +514,7 @@ export const mockCategories: Category[] = [
     videoCount: 1250,
     isActive: true,
     createdAt: new Date("2023-01-01"),
+    bannerUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&h=400&fit=crop",
   },
   {
     id: "cat_002",
@@ -501,6 +526,7 @@ export const mockCategories: Category[] = [
     videoCount: 890,
     isActive: true,
     createdAt: new Date("2023-01-15"),
+    bannerUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=400&fit=crop",
   },
   {
     id: "cat_003",
@@ -512,6 +538,7 @@ export const mockCategories: Category[] = [
     videoCount: 720,
     isActive: true,
     createdAt: new Date("2023-02-01"),
+    bannerUrl: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&h=400&fit=crop",
   },
   {
     id: "cat_004",
@@ -523,6 +550,7 @@ export const mockCategories: Category[] = [
     videoCount: 1560,
     isActive: true,
     createdAt: new Date("2023-02-15"),
+    bannerUrl: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=1200&h=400&fit=crop",
   },
   {
     id: "cat_005",
@@ -534,6 +562,7 @@ export const mockCategories: Category[] = [
     videoCount: 2100,
     isActive: true,
     createdAt: new Date("2023-03-01"),
+    bannerUrl: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=400&fit=crop",
   },
   {
     id: "cat_006",
@@ -545,6 +574,7 @@ export const mockCategories: Category[] = [
     videoCount: 650,
     isActive: true,
     createdAt: new Date("2023-03-15"),
+    bannerUrl: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1200&h=400&fit=crop",
   },
   {
     id: "cat_007",
@@ -556,6 +586,7 @@ export const mockCategories: Category[] = [
     videoCount: 980,
     isActive: false,
     createdAt: new Date("2023-04-01"),
+    bannerUrl: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&h=400&fit=crop",
   },
 ];
 

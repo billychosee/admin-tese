@@ -98,6 +98,7 @@ export interface Video {
   id: string;
   title: string;
   description: string;
+  videoUrl?: string;
   thumbnail: string;
   duration: number;
   creatorId: string;
@@ -113,13 +114,15 @@ export interface Video {
   views: number;
   likes: number;
   comments: number;
+  shares: number;
+  watchTime: number;
+  engagementRate: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface Category {
-  bannerUrl: string | undefined;
-  bannerUrl: any;
+  bannerUrl?: string;
   id: string;
   name: string;
   slug: string;

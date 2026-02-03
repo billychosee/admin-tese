@@ -470,64 +470,140 @@ export default function VideosPage() {
           setShowPreviewModal(false);
           setPreviewVideo(null);
         }}
-        title={previewVideo?.title || "Video Preview"}
-        size="lg"
+        title="Video Preview & Metrics"
+        size="xl"
       >
         {previewVideo && (
-          <div className="space-y-4">
-            <div className="relative aspect-video bg-slate-900 rounded-lg overflow-hidden">
-              {previewVideo.thumbnail ? (
-                <img
-                  src={previewVideo.thumbnail}
-                  alt={previewVideo.title}
-                  className="w-full h-full object-cover"
+          <div className="space-y-6">
+            {/* Video Player */}
+            <div className="relative aspect-video bg-slate-900 rounded-xl overflow-hidden shadow-lg">
+              {previewVideo.videoUrl ? (
+                <video
+                  src={previewVideo.videoUrl}
+                  poster={previewVideo.thumbnail}
+                  controls
+                  className="w-full h-full object-contain"
+                  preload="metadata"
                 />
+              ) : previewVideo.thumbnail ? (
+                <div className="relative w-full h-full flex items-center justify-center group">
+                  <img
+                    src={previewVideo.thumbnail}
+                    alt={previewVideo.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors">
+                        <Icons.Play size={24} className="text-white ml-1" />
+                      </div>
+                      <div className="text-white">
+                        <p className="font-semibold text-lg">{formatDuration(previewVideo.duration)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <Icons.Play size={64} className="text-slate-600" />
+                  <Icons.Video size={48} className="text-slate-600" />
                 </div>
               )}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                  <Icons.Play size={40} className="text-slate-900 ml-2" />
+            </div>
+            
+            {/* Video Title & Status Badges */}
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
+                {previewVideo.title}
+              </h3>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <Badge variant={previewVideo.isFeatured ? "warning" : "neutral"}>
+                  {previewVideo.isFeatured ? "⭐ Featured" : "Not Featured"}
+                </Badge>
+                <Badge variant={previewVideo.isBanner ? "info" : "neutral"}>
+                  {previewVideo.isBanner ? "🖼️ Banner" : "Not Banner"}
+                </Badge>
+                <Badge 
+                  variant={
+                    previewVideo.status === "published" ? "success" :
+                    previewVideo.status === "pending" ? "warning" :
+                    previewVideo.status === "suspended" ? "danger" : "neutral"
+                  }
+                >
+                  {previewVideo.status.charAt(0).toUpperCase() + previewVideo.status.slice(1)}
+                </Badge>
+                {previewVideo.isPaid && (
+                  <Badge variant="info">
+                    💰 {previewVideo.currency || "USD"} {previewVideo.price?.toFixed(2)}
+                  </Badge>
+                )}
+              </div>
+            </div>
+            
+            {/* Performance Metrics */}
+            <div>
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                <Icons.BarChart size={16} />
+                Performance Metrics
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                  <Icons.Eye size={16} className="mx-auto mb-1 text-blue-500" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Views</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.views)}</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                  <Icons.Heart size={16} className="mx-auto mb-1 text-red-500" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Likes</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.likes)}</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                  <Icons.MessageCircle size={16} className="mx-auto mb-1 text-green-500" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Comments</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.comments)}</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                  <Icons.Share2 size={16} className="mx-auto mb-1 text-purple-500" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Shares</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.shares || 0)}</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                  <Icons.Clock size={16} className="mx-auto mb-1 text-amber-500" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Watch Time</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatDuration(previewVideo.watchTime || 0)}</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                  <Icons.TrendingUp size={16} className="mx-auto mb-1 text-emerald-500" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Engagement</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{previewVideo.engagementRate || 0}%</p>
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className={cn(
-                  "px-2 py-1 rounded text-xs font-bold uppercase",
-                  previewVideo.status === "published" ? "bg-green-100 text-green-700" :
-                  previewVideo.status === "pending" ? "bg-amber-100 text-amber-700" :
-                  "bg-red-100 text-red-700"
-                )}>
-                  {previewVideo.status}
-                </span>
-                <span className={isDark ? "text-slate-400" : "text-slate-500"}>
-                  {formatDuration(previewVideo.duration)}
-                </span>
-                <span className={isDark ? "text-slate-400" : "text-slate-500"}>
-                  {formatNumber(previewVideo.views)} views
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant={previewVideo.isFeatured ? "warning" : "neutral"}>
-                  <Icons.Star size={12} className="mr-1" />
-                  Featured
-                </Badge>
-                <Badge variant={previewVideo.isBanner ? "info" : "neutral"}>
-                  <Icons.Image size={12} className="mr-1" />
-                  Banner
-                </Badge>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            
+            {/* Video Details */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
               <div>
                 <p className={cn("text-xs uppercase tracking-wider font-medium", isDark ? "text-slate-500" : "text-slate-400")}>
                   Creator
                 </p>
                 <p className={isDark ? "text-white" : "text-slate-900"}>
                   {previewVideo.creatorName}
+                </p>
+              </div>
+              <div>
+                <p className={cn("text-xs uppercase tracking-wider font-medium", isDark ? "text-slate-500" : "text-slate-400")}>
+                  Category
+                </p>
+                <p className={isDark ? "text-white" : "text-slate-900"}>
+                  {previewVideo.categoryName}
+                </p>
+              </div>
+              <div>
+                <p className={cn("text-xs uppercase tracking-wider font-medium", isDark ? "text-slate-500" : "text-slate-400")}>
+                  Duration
+                </p>
+                <p className={isDark ? "text-white" : "text-slate-900"}>
+                  {formatDuration(previewVideo.duration)}
                 </p>
               </div>
               <div>
@@ -539,7 +615,9 @@ export default function VideosPage() {
                 </p>
               </div>
             </div>
-            <div className="flex gap-2 pt-4">
+            
+            {/* Actions */}
+            <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
               <Button
                 variant="outline"
                 size="sm"

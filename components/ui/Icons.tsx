@@ -225,6 +225,8 @@ import {
   Loader2,
   Banknote,
   Table,
+  MessageCircle,
+  BarChart,
 } from "lucide-react";
 
 interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -326,6 +328,7 @@ export const Icons = {
   Bookmark: (props: IconProps) => <Bookmark {...props} />,
   Star: (props: IconProps) => <Star {...props} />,
   Tag: (props: IconProps) => <Tag {...props} />,
+  MessageCircle: (props: IconProps) => <MessageCircle {...props} />,
 
   // Actions
   Search: (props: IconProps) => <Search {...props} />,
@@ -403,7 +406,8 @@ export const Icons = {
   // Charts & Stats
   TrendingUp: (props: IconProps) => <TrendingUp {...props} />,
   TrendingDown: (props: IconProps) => <TrendingDown {...props} />,
-  BarChart: (props: IconProps) => <BarChart3 {...props} />,
+  BarChart: (props: IconProps) => <BarChart {...props} />,
+  BarChart3: (props: IconProps) => <BarChart3 {...props} />,
   PieChart: (props: IconProps) => <PieChartIcon {...props} />,
   Activity: (props: IconProps) => <Activity {...props} />,
   DollarSign: (props: IconProps) => <DollarSign {...props} />,

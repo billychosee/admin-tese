@@ -401,14 +401,22 @@ export function VideoTable({
       <Modal
         isOpen={!!previewVideo}
         onClose={() => setPreviewVideo(null)}
-        title="Video Preview"
-        size="lg"
+        title="Video Preview & Metrics"
+        size="xl"
       >
         {previewVideo && (
           <div className="space-y-6 max-h-[85vh] overflow-y-auto">
-            {/* Thumbnail with Play Button */}
+            {/* Video Player */}
             <div className="relative aspect-video bg-slate-900 rounded-xl overflow-hidden shadow-lg">
-              {previewVideo.thumbnail ? (
+              {previewVideo.videoUrl ? (
+                <video
+                  src={previewVideo.videoUrl}
+                  poster={previewVideo.thumbnail}
+                  controls
+                  className="w-full h-full object-contain"
+                  preload="metadata"
+                />
+              ) : previewVideo.thumbnail ? (
                 <div className="relative w-full h-full flex items-center justify-center group">
                   <img
                     src={previewVideo.thumbnail}
@@ -440,7 +448,7 @@ export function VideoTable({
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
                   {previewVideo.title}
                 </h3>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
                   <Badge variant={previewVideo.isFeatured ? "warning" : "neutral"}>
                     {previewVideo.isFeatured ? "⭐ Featured" : "Not Featured"}
                   </Badge>
@@ -464,20 +472,61 @@ export function VideoTable({
                 </div>
               </div>
               
+              {/* Performance Metrics */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                  <Icons.BarChart size={16} />
+                  Performance Metrics
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                    <Icons.Eye size={16} className="mx-auto mb-1 text-blue-500" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Views</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.views)}</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                    <Icons.Heart size={16} className="mx-auto mb-1 text-red-500" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Likes</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.likes)}</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                    <Icons.MessageCircle size={16} className="mx-auto mb-1 text-green-500" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Comments</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.comments)}</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                    <Icons.Share2 size={16} className="mx-auto mb-1 text-purple-500" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Shares</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.shares || 0)}</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                    <Icons.Clock size={16} className="mx-auto mb-1 text-amber-500" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Watch Time</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatDuration(previewVideo.watchTime || 0)}</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                    <Icons.TrendingUp size={16} className="mx-auto mb-1 text-emerald-500" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Engagement</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{previewVideo.engagementRate || 0}%</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Video Details */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
+                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Creator</p>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{previewVideo.creatorName}</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
+                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Category</p>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{previewVideo.categoryName}</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Views</p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">{formatNumber(previewVideo.views)}</p>
+                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Duration</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">{formatDuration(previewVideo.duration)}</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
+                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Uploaded</p>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{formatDate(previewVideo.createdAt)}</p>
                 </div>
