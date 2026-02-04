@@ -1,17 +1,19 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Icons } from "@/components/ui/Icons";
 import type { Category } from "@/types";
+import { useMemo, useState } from "react";
 
 interface CategoryTableProps {
   categories: Category[];
   isLoading?: boolean;
   onEdit: (category: Category) => void;
   onDelete: (category: Category) => void;
+  onViewVideos?: (category: Category) => void;
 }
 
 export function CategoryTable({
@@ -19,7 +21,9 @@ export function CategoryTable({
   isLoading,
   onEdit,
   onDelete,
+  onViewVideos,
 }: CategoryTableProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -149,6 +153,15 @@ export function CategoryTable({
                         </td>
                         <td className="py-4 px-4 text-right">
                           <div className="flex items-center justify-end gap-1">
+                            {onViewVideos && (
+                              <button
+                                onClick={() => onViewVideos(category)}
+                                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-emerald-500 dark:text-emerald-400 transition"
+                                title="View Videos"
+                              >
+                                <Icons.Play size={16} />
+                              </button>
+                            )}
                             <button
                               onClick={() => onEdit(category)}
                               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition"

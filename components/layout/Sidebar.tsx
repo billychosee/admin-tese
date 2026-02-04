@@ -14,7 +14,7 @@ import { SIDEBAR_ITEMS, AUTH_TOKEN_KEY } from "@/constants";
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, isMobileOpen, toggleMobileSidebar, closeMobileSidebar } = useSidebar();
   const { theme } = useTheme();
   const { addToast } = useToast();
   const isDark = theme === "dark";
@@ -31,79 +31,99 @@ export function Sidebar() {
   const logoutHover =
     "hover:bg-[hsl(var(--danger)/0.1)] hover:text-[hsl(var(--danger))]";
 
+  const handleLogout = () => {
+    document.cookie = `${AUTH_TOKEN_KEY}=; path=/; max-age=0`;
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    addToast({
+      type: "info",
+      title: "Signed Out",
+      message: "You have been securely logged out",
+    });
+    router.push("/login");
+  };
+
+  const handleNavClick = () => {
+    closeMobileSidebar();
+  };
+
   return (
-    <aside
-      className={cn(
-        "fixed left-0 top-0 z-30 h-screen transition-all duration-300 ease-in-out flex flex-col border-r shadow-sm",
-        isCollapsed ? "w-[80px]" : "w-[260px]",
-        sidebarBg,
-        borderColor,
+    <>
+      {/* Mobile overlay backdrop */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={closeMobileSidebar}
+        />
       )}
-    >
-      {/* Header: TESE Logo */}
-      <div
+
+      {/* Mobile sidebar - slide-in drawer */}
+      <aside
         className={cn(
-          "flex h-20 items-center justify-center px-6 border-b transition-colors",
+          "fixed left-0 top-0 z-50 h-screen w-[260px] transition-transform duration-300 ease-in-out flex flex-col border-r shadow-sm lg:hidden",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
+          sidebarBg,
           borderColor,
         )}
       >
-        <div className="relative flex items-center justify-center">
-          {isCollapsed ? (
-            <Image
-              src="/Tese-Icon.png"
-              alt="TESE Icon"
-              width={32}
-              height={32}
-              className="rounded-lg"
-            />
-          ) : (
+        {/* Header: TESE Logo */}
+        <div
+          className={cn(
+            "flex h-16 items-center justify-between px-6 border-b transition-colors",
+            borderColor,
+          )}
+        >
+          <div className="relative flex items-center">
             <Image
               src={isDark ? "/Tese-Light-logo.png" : "/Tese-Dark-Logo.png"}
               alt="TESE Logo"
-              width={130}
-              height={35}
+              width={110}
+              height={30}
               className="object-contain"
             />
-          )}
+          </div>
+          <button
+            onClick={closeMobileSidebar}
+            className="p-2 rounded-lg hover:bg-[hsl(var(--surface-hover))]"
+          >
+            <Icons.X size={20} />
+          </button>
         </div>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 mt-6 px-4 overflow-y-auto max-h-[calc(100vh-180px)]">
-        <ul className="space-y-2" role="list">
-          {SIDEBAR_ITEMS.map((item) => {
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/");
-            const Icon = Icons[item.icon as keyof typeof Icons];
+        {/* Navigation */}
+        <nav className="flex-1 mt-4 px-4 overflow-y-auto">
+          <ul className="space-y-2" role="list">
+            {SIDEBAR_ITEMS.map((item) => {
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
+              const Icon = Icons[item.icon as keyof typeof Icons];
 
-            return (
-              <li key={item.id}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "group relative flex items-center gap-4 py-3 rounded-2xl transition-all duration-200",
-                    isActive ? cn(activeItemBackground, "shadow-sm") : hoverBg,
-                  )}
-                >
-                  {/* Left Accent Bar for Active State */}
-                  {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-[hsl(var(--primary))]" />
-                  )}
-
-                  <div
+              return (
+                <li key={item.id}>
+                  <Link
+                    href={item.href}
+                    onClick={handleNavClick}
                     className={cn(
-                      "flex items-center transition-colors",
-                      isCollapsed ? "w-full justify-center" : "pl-4",
-                      isActive ? activeIconColor : inactiveTextColor,
-                      "group-hover:text-[hsl(var(--primary))]",
+                      "group relative flex items-center gap-4 py-3 rounded-2xl transition-all duration-200",
+                      isActive ? cn(activeItemBackground, "shadow-sm") : hoverBg,
                     )}
                   >
-                    {Icon && (
-                      <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                    {/* Left Accent Bar for Active State */}
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-[hsl(var(--primary))]" />
                     )}
-                  </div>
 
-                  {!isCollapsed && (
+                    <div
+                      className={cn(
+                        "flex items-center pl-4 transition-colors",
+                        isActive ? activeIconColor : inactiveTextColor,
+                        "group-hover:text-[hsl(var(--primary))]",
+                      )}
+                    >
+                      {Icon && (
+                        <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                      )}
+                    </div>
+
                     <span
                       className={cn(
                         "text-xs font-semibold uppercase tracking-widest transition-colors",
@@ -115,42 +135,143 @@ export function Sidebar() {
                     >
                       {item.label}
                     </span>
-                  )}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-      {/* Footer: Logout */}
-      <div className={cn("p-4 mt-auto border-t", borderColor)}>
-        <button
-          onClick={() => {
-            document.cookie = `${AUTH_TOKEN_KEY}=; path=/; max-age=0`;
-            localStorage.removeItem(AUTH_TOKEN_KEY);
-            addToast({
-              type: "info",
-              title: "Signed Out",
-              message: "You have been securely logged out",
-            });
-            router.push("/login");
-          }}
-          className={cn(
-            "flex items-center gap-4 px-4 py-3 rounded-2xl w-full transition-all group",
-            "text-[hsl(var(--text-secondary))]",
-            logoutHover,
-            isCollapsed && "justify-center",
-          )}
-        >
-          <Icons.LogOut size={20} />
-          {!isCollapsed && (
+        {/* Footer: Logout */}
+        <div className={cn("p-4 mt-auto border-t", borderColor)}>
+          <button
+            onClick={handleLogout}
+            className={cn(
+              "flex items-center gap-4 px-4 py-3 rounded-2xl w-full transition-all group",
+              "text-[hsl(var(--text-secondary))]",
+              logoutHover,
+            )}
+          >
+            <Icons.LogOut size={20} />
             <span className="text-xs font-black uppercase tracking-widest text-[hsl(var(--text-secondary))]">
               Logout
             </span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Desktop sidebar - fixed */}
+      <aside
+        className={cn(
+          "hidden lg:fixed lg:left-0 lg:top-0 lg:z-30 lg:h-screen lg:transition-all lg:duration-300 lg:ease-in-out lg:flex lg:flex-col lg:border-r lg:shadow-sm",
+          isCollapsed ? "lg:w-[80px]" : "lg:w-[260px]",
+          sidebarBg,
+          borderColor,
+        )}
+      >
+        {/* Header: TESE Logo */}
+        <div
+          className={cn(
+            "flex h-20 items-center justify-center px-6 border-b transition-colors",
+            borderColor,
           )}
-        </button>
-      </div>
-    </aside>
+        >
+          <div className="relative flex items-center justify-center">
+            {isCollapsed ? (
+              <Image
+                src="/Tese-Icon.png"
+                alt="TESE Icon"
+                width={32}
+                height={32}
+                className="rounded-lg"
+              />
+            ) : (
+              <Image
+                src={isDark ? "/Tese-Light-logo.png" : "/Tese-Dark-Logo.png"}
+                alt="TESE Logo"
+                width={130}
+                height={35}
+                className="object-contain"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 mt-6 px-4 overflow-y-auto max-h-[calc(100vh-180px)]">
+          <ul className="space-y-2" role="list">
+            {SIDEBAR_ITEMS.map((item) => {
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
+              const Icon = Icons[item.icon as keyof typeof Icons];
+
+              return (
+                <li key={item.id}>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "group relative flex items-center gap-4 py-3 rounded-2xl transition-all duration-200",
+                      isActive ? cn(activeItemBackground, "shadow-sm") : hoverBg,
+                    )}
+                  >
+                    {/* Left Accent Bar for Active State */}
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-[hsl(var(--primary))]" />
+                    )}
+
+                    <div
+                      className={cn(
+                        "flex items-center transition-colors",
+                        isCollapsed ? "w-full justify-center" : "pl-4",
+                        isActive ? activeIconColor : inactiveTextColor,
+                        "group-hover:text-[hsl(var(--primary))]",
+                      )}
+                    >
+                      {Icon && (
+                        <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                      )}
+                    </div>
+
+                    {!isCollapsed && (
+                      <span
+                        className={cn(
+                          "text-xs font-semibold uppercase tracking-widest transition-colors",
+                          isActive
+                            ? "text-[hsl(var(--text-primary))]"
+                            : inactiveTextColor,
+                          "group-hover:text-[hsl(var(--primary))]",
+                        )}
+                      >
+                        {item.label}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Footer: Logout */}
+        <div className={cn("p-4 mt-auto border-t", borderColor)}>
+          <button
+            onClick={handleLogout}
+            className={cn(
+              "flex items-center gap-4 px-4 py-3 rounded-2xl w-full transition-all group",
+              "text-[hsl(var(--text-secondary))]",
+              logoutHover,
+              isCollapsed && "justify-center",
+            )}
+          >
+            <Icons.LogOut size={20} />
+            {!isCollapsed && (
+              <span className="text-xs font-black uppercase tracking-widest text-[hsl(var(--text-secondary))]">
+                Logout
+              </span>
+            )}
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

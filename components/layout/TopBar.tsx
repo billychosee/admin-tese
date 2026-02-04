@@ -7,6 +7,7 @@ import { cn } from "@/utils";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { Icons } from "@/components/ui/Icons";
 import { useToast } from "@/components/ui/Toast";
+import { useSidebar } from "@/components/providers/SidebarProvider";
 import { AUTH_TOKEN_KEY } from "@/constants";
 
 interface TopBarProps {
@@ -17,6 +18,7 @@ export function TopBar({ title }: TopBarProps) {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const { addToast } = useToast();
+  const { toggleMobileSidebar } = useSidebar();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,14 +61,28 @@ export function TopBar({ title }: TopBarProps) {
 
   return (
     <header
-      className="sticky top-0 z-20 flex h-16 items-center justify-between px-8 backdrop-blur-md transition-all duration-300"
+      className="sticky top-0 z-20 flex h-16 items-center justify-between px-4 lg:px-8 backdrop-blur-md transition-all duration-300"
       style={{
         backgroundColor: "hsl(var(--surface) / 0.85)",
         borderBottom: "1px solid hsl(var(--surface-border) / 0.5)",
       }}
     >
-      {/* Left side - Search only */}
-      <div className="flex items-center gap-6">
+      {/* Left side - Mobile menu button and search */}
+      <div className="flex items-center gap-4">
+        {/* Mobile menu button */}
+        <button
+          onClick={toggleMobileSidebar}
+          className="lg:hidden flex items-center justify-center p-2 rounded-lg hover:bg-[hsl(var(--surface-hover))]"
+        >
+          <Icons.Menu size={20} />
+        </button>
+
+        {/* Mobile page title */}
+        <h1 className="lg:hidden text-sm font-bold text-[hsl(var(--text-primary))]">
+          {title}
+        </h1>
+
+        {/* Desktop search */}
         <div className="relative hidden lg:block w-80">
           <Icons.Search
             className="absolute left-3 top-1/2 -translate-y-1/2 opacity-40"

@@ -42,14 +42,14 @@ export interface Creator {
   phone?: string;
   avatar?: string;
   coverImage?: string;
-  
+
   // Payout Information
   payoutType: "mobile_wallet" | "bank";
   bankName?: string;
   bankAccountNumber?: string;
   accountHolderName?: string;
   bankBranch?: string;
-  
+
   // Verification Images
   selfie?: string;
   idImage?: string;
@@ -57,43 +57,43 @@ export interface Creator {
   idNumber?: string;
   idCopyUrl?: string;
   proofOfResidenceUrl?: string;
-  
+
   // Channel Information
   channelName: string;
   channelId: string;
   channelUrl?: string;
   channelStatus: "active" | "deactivated";
-  
+
   // Playlist Information
   playlists: Playlist[];
-  
+
   // Video Information
   videos: Video[];
   totalVideos: number;
   totalViews: number;
   totalLikes: number;
-  
+
   // Financial Information
   totalEarnings: number;
   totalRevenue: number;
   totalPaidOut: number;
   currentBalance: number;
   withdrawRequest?: WithdrawRequest;
-  
+
   // Address Information
   address?: string;
   city?: string;
   province?: string;
   postalCode?: string;
   country?: string;
-  
+
   // SMatPay Information
   smatPayMerchantId?: string;
   smatPayStatus?: string;
-  
+
   // Content Categories
   contentCategories: ContentCategory[];
-  
+
   status: "active" | "pending" | "suspended";
   onlineStatus: "online" | "away" | "offline";
   lastSeen?: Date;
@@ -113,16 +113,16 @@ export interface Playlist {
   totalLikes: number;
   isActive: boolean;
   isDeactivated: boolean;
-  
+
   // Creator and Channel references
   creatorId: string;
   creatorName: string;
   channelId: string;
   channelName: string;
-  
+
   // Videos in playlist
   videos: Video[];
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -145,6 +145,13 @@ export interface Video {
   shares: number;
   watchTime: number;
   engagementRate: number;
+  salesAmount?: number;
+  viewsByPeriod?: {
+    daily: { date: string; views: number }[];
+    weekly: { week: string; views: number }[];
+    monthly: { month: string; views: number }[];
+    yearly: { year: string; views: number }[];
+  };
   tags?: string[];
   paymentType: PaymentType;
   price?: number;
@@ -153,16 +160,16 @@ export interface Video {
   isFeatured: boolean;
   isBanner: boolean;
   isPaid: boolean;
-  
+
   // Creator and Category references
   creatorId: string;
   creatorName: string;
   categoryId: string;
   categoryName: string;
-  
+
   // Video metadata
   duration: number;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -388,8 +395,11 @@ export interface ThemeContextType {
 
 export interface SidebarContextType {
   isCollapsed: boolean;
+  isMobileOpen: boolean;
   toggleSidebar: () => void;
   setCollapsed: (collapsed: boolean) => void;
+  toggleMobileSidebar: () => void;
+  closeMobileSidebar: () => void;
 }
 
 export interface BreadcrumbItem {
@@ -413,7 +423,13 @@ export interface Comment {
   likes: number;
   replies: number;
   likedBy?: { id: string; name: string; avatar?: string }[];
-  repliedBy?: { id: string; name: string; avatar?: string; content: string; createdAt: Date }[];
+  repliedBy?: {
+    id: string;
+    name: string;
+    avatar?: string;
+    content: string;
+    createdAt: Date;
+  }[];
   createdAt: Date;
   updatedAt?: Date;
 }

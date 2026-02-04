@@ -76,17 +76,53 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen flex">
       <Sidebar />
-      {/* Collapse Button - positioned at top, next to navbar */}
+
+      {/* Main content area */}
+      <div
+        className={cn(
+          "min-h-screen transition-all duration-300 w-full flex flex-col",
+          // Desktop: account for sidebar width
+          "lg:ml-[260px]",
+          isCollapsed && "lg:ml-[80px]",
+        )}
+      >
+        <TopBar title={title} />
+
+        <main
+          className="flex-1 p-4 lg:p-6 w-full overflow-auto"
+          style={{ backgroundColor: "hsl(var(--background))" }}
+        >
+          {children}
+        </main>
+
+        {/* Footer */}
+        <footer
+          className="px-4 lg:px-6 py-3 text-xs text-center lg:text-left border-t"
+          style={{
+            borderColor: "hsl(var(--surface-border))",
+            color: "hsl(var(--text-muted))",
+            backgroundColor: "hsl(var(--surface))",
+          }}
+        >
+          <span className="lg:hidden">TESE {displayYear} ©</span>
+          <span className="hidden lg:inline">
+            TESE {displayYear} © Copyright of TESE
+          </span>
+        </footer>
+      </div>
+
+      {/* Desktop collapse button - hidden on mobile */}
       <button
         onClick={toggleSidebar}
         className={cn(
-          "fixed top-5 z-40 rounded-full p-2 transition-all duration-300 border-2",
-          isCollapsed ? "left-[64px]" : "left-[244px]",
+          "hidden lg:fixed lg:top-5 lg:z-40 lg:rounded-full lg:p-2 lg:transition-all lg:duration-300 lg:border-2",
+          isCollapsed ? "lg:left-[64px]" : "lg:left-[244px]",
           collapseBtnBg,
           collapseBtnBorder,
           collapseBtnHover,
         )}
         style={{ color: "hsl(var(--text-secondary))" }}
+        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {isCollapsed ? (
           <Icons.ChevronRight size={18} />
@@ -94,31 +130,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <Icons.ChevronLeft size={18} />
         )}
       </button>
-      <div
-        className={cn(
-          "min-h-screen transition-all duration-300 w-full flex flex-col",
-          isCollapsed ? "ml-[80px]" : "ml-[260px]",
-        )}
-      >
-        <TopBar title={title} />
-        <main
-          className="flex-1 p-6 w-full overflow-auto"
-          style={{ backgroundColor: "hsl(var(--background))" }}
-        >
-          {children}
-        </main>
-        {/* Footer */}
-        <footer
-          className="px-6 py-3 text-xs text-center border-t"
-          style={{
-            borderColor: "hsl(var(--surface-border))",
-            color: "hsl(var(--text-muted))",
-            backgroundColor: "hsl(var(--surface))",
-          }}
-        >
-          TESE {displayYear} © Copyright of TESE
-        </footer>
-      </div>
     </div>
   );
 }

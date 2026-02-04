@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -20,6 +21,7 @@ type ViewMode = "grid" | "list";
 export default function CategoriesPage() {
   const { addToast } = useToast();
   const { theme } = useTheme();
+  const router = useRouter();
   const isDark = theme === "dark";
 
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -391,6 +393,15 @@ export default function CategoriesPage() {
                     className={cn("mt-0 h-px w-full", colors.surfaceBorder)}
                   />
                   <div className="mt-4 flex items-center justify-between">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg"
+                      onClick={() => router.push(`/categories/${category.id}`)}
+                    >
+                      <Icons.Play size={14} className="mr-2" />
+                      View Videos
+                    </Button>
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"
@@ -440,6 +451,7 @@ export default function CategoriesPage() {
         <CategoryTable
           categories={filteredCategories}
           isLoading={isLoading}
+          onViewVideos={(category) => router.push(`/categories/${category.id}`)}
           onEdit={(category) => {
             setSelectedCategory(category);
             setFormData({

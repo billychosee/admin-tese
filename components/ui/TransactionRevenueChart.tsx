@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -9,80 +9,167 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-
-// Daily data
-const dailyData = [
-  { name: "Mon", revenue: 1200, previous: 1000 },
-  { name: "Tue", revenue: 1500, previous: 1300 },
-  { name: "Wed", revenue: 1100, previous: 950 },
-  { name: "Thu", revenue: 1800, previous: 1500 },
-  { name: "Fri", revenue: 2100, previous: 1800 },
-  { name: "Sat", revenue: 2500, previous: 2200 },
-  { name: "Sun", revenue: 1900, previous: 1600 },
-];
-
-// Weekly data
-const weeklyData = [
-  { name: "Week 1", revenue: 8500, previous: 7800 },
-  { name: "Week 2", revenue: 9200, previous: 8500 },
-  { name: "Week 3", revenue: 7800, previous: 7200 },
-  { name: "Week 4", revenue: 10500, previous: 9200 },
-];
-
-// Monthly data
-const monthlyData = [
-  { name: "Jan", revenue: 45000, previous: 40000 },
-  { name: "Feb", revenue: 52000, previous: 45000 },
-  { name: "Mar", revenue: 48000, previous: 42000 },
-  { name: "Apr", revenue: 61000, previous: 55000 },
-  { name: "May", revenue: 55000, previous: 48000 },
-  { name: "Jun", revenue: 67000, previous: 60000 },
-  { name: "Jul", revenue: 72000, previous: 65000 },
-  { name: "Aug", revenue: 69000, previous: 62000 },
-  { name: "Sep", revenue: 75000, previous: 68000 },
-  { name: "Oct", revenue: 82000, previous: 75000 },
-  { name: "Nov", revenue: 78000, previous: 70000 },
-  { name: "Dec", revenue: 91000, previous: 82000 },
-];
-
-// Yearly data
-const yearlyData = [
-  { name: "2020", revenue: 450000, previous: 380000 },
-  { name: "2021", revenue: 520000, previous: 450000 },
-  { name: "2022", revenue: 680000, previous: 520000 },
-  { name: "2023", revenue: 820000, previous: 680000 },
-  { name: "2024", revenue: 950000, previous: 820000 },
-  { name: "2025", revenue: 1100000, previous: 950000 },
-];
+import { api } from "@/services/api";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import type { Transaction } from "@/types";
 
 type Period = "daily" | "weekly" | "monthly" | "yearly";
 
-const periodLabels: Record<Period, string> = {
+type PeriodLabel = Record<Period, string>;
+
+const periodLabels: PeriodLabel = {
   daily: "Daily",
   weekly: "Weekly",
   monthly: "Monthly",
   yearly: "Yearly",
 };
 
-export default function TransactionRevenueChart() {
-  const [period, setPeriod] = useState<Period>("monthly");
+interface RevenueData {
+  name: string;
+  revenue: number;
+  previous: number;
+}
 
-  const getData = () => {
-    switch (period) {
-      case "daily":
-        return dailyData;
-      case "weekly":
-        return weeklyData;
-      case "monthly":
-        return monthlyData;
-      case "yearly":
-        return yearlyData;
-      default:
-        return monthlyData;
+const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+export default function TransactionRevenueChart() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const [period, setPeriod] = useState<Period>("monthly");
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const fetchTransactions = async () => {
+    setIsLoading(true);
+    try {
+      const result = await api.transactions.getAll(1, 1000, "all");
+      setTransactions(result.data);
+    } catch (error) {
+      console.error("Failed to fetch transactions for chart:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const data = getData();
+  const data = useMemo((): RevenueData[] => {
+    if (transactions.length === 0) return [];
+
+    const completedTransactions = transactions.filter(
+      (t) => t.status === "completed",
+    );
+
+    const now = new Date();
+    const current: Date[] = [];
+    const previous: Date[] = [];
+
+    // Build date ranges based on period
+    if (period === "daily") {
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        current.push(date);
+      }
+      for (let i = 13; i >= 7; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        previous.push(date);
+      }
+    } else if (period === "weekly") {
+      for (let i = 3; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i * 7);
+        current.push(date);
+      }
+      for (let i = 7; i >= 4; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i * 7);
+        previous.push(date);
+      }
+    } else if (period === "monthly") {
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date(now);
+        date.setMonth(date.getMonth() - i);
+        current.push(date);
+      }
+    } else if (period === "yearly") {
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(now);
+        date.setFullYear(date.getFullYear() - i);
+        current.push(date);
+      }
+    }
+
+    // Calculate revenue for each period
+    const currentGrouped: Record<string, number> = {};
+    const previousGrouped: Record<string, number> = {};
+
+    const getLabel = (date: Date, index?: number): string => {
+      if (period === "daily") return days[date.getDay()];
+      if (period === "weekly") return `Week ${(index || 0) + 1}`;
+      if (period === "monthly") return months[date.getMonth()];
+      return date.getFullYear().toString();
+    };
+
+    // Initialize groups
+    current.forEach((date, index) => {
+      currentGrouped[getLabel(date, index)] = 0;
+    });
+    previous.forEach((date, index) => {
+      previousGrouped[getLabel(date, index)] = 0;
+    });
+
+    // Aggregate transaction amounts
+    completedTransactions.forEach((t) => {
+      const tDate = new Date(t.createdAt);
+
+      current.forEach((date, index) => {
+        const label = getLabel(date, index);
+        if (
+          tDate.getFullYear() === date.getFullYear() &&
+          tDate.getMonth() === date.getMonth() &&
+          tDate.getDate() === date.getDate()
+        ) {
+          currentGrouped[label] += t.amount;
+        }
+      });
+
+      previous.forEach((date, index) => {
+        const label = getLabel(date, index);
+        if (
+          tDate.getFullYear() === date.getFullYear() &&
+          tDate.getMonth() === date.getMonth() &&
+          tDate.getDate() === date.getDate()
+        ) {
+          previousGrouped[label] += t.amount;
+        }
+      });
+    });
+
+    // Build chart data
+    return current.map((date, index) => ({
+      name: getLabel(date, index),
+      revenue: currentGrouped[getLabel(date, index)] || 0,
+      previous: previousGrouped[getLabel(date, index)] || 0,
+    }));
+  }, [transactions, period]);
 
   return (
     <div className="w-full">
@@ -105,73 +192,85 @@ export default function TransactionRevenueChart() {
 
       {/* Chart */}
       <div className="h-72 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} barGap={10}>
-            {/* subtle horizontal lines */}
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-              opacity={0.15}
-            />
+        {isLoading ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
+          </div>
+        ) : data.length === 0 ? (
+          <div className="h-full flex items-center justify-center">
+            <p className="text-gray-500 dark:text-gray-400">
+              No transaction data available
+            </p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} barGap={10}>
+              {/* subtle horizontal lines */}
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                opacity={0.15}
+              />
 
-            <defs>
-              {/* striped pattern for previous period */}
-              <pattern
-                id="previousPattern"
-                width="6"
-                height="6"
-                patternUnits="userSpaceOnUse"
-                patternTransform="rotate(45)"
-              >
-                <line
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="6"
-                  stroke="#6b7280"
-                  strokeWidth="2"
-                />
-              </pattern>
-            </defs>
+              <defs>
+                {/* striped pattern for previous period */}
+                <pattern
+                  id="previousPattern"
+                  width="6"
+                  height="6"
+                  patternUnits="userSpaceOnUse"
+                  patternTransform="rotate(45)"
+                >
+                  <line
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="6"
+                    stroke="#6b7280"
+                    strokeWidth="2"
+                  />
+                </pattern>
+              </defs>
 
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              fontSize={12}
-            />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                fontSize={12}
+              />
 
-            <Tooltip
-              cursor={{ fill: "transparent" }}
-              contentStyle={{
-                borderRadius: 12,
-                border: "none",
-                background: "#fff",
-                boxShadow: "0 10px 30px rgba(0,0,0,.12)",
-              }}
-              labelStyle={{ fontWeight: 600 }}
-              formatter={(value: number | undefined) => [
-                `$${(value || 0).toLocaleString()}`,
-              ]}
-            />
+              <Tooltip
+                cursor={{ fill: "transparent" }}
+                contentStyle={{
+                  borderRadius: 12,
+                  border: "none",
+                  background: isDark ? "#1e293b" : "#fff",
+                  boxShadow: "0 10px 30px rgba(0,0,0,.12)",
+                }}
+                labelStyle={{ fontWeight: 600 }}
+                formatter={(value: number | undefined) => [
+                  `$${(value || 0).toLocaleString()}`,
+                ]}
+              />
 
-            {/* Previous Period Bar (background - striped) */}
-            <Bar
-              dataKey="previous"
-              fill="url(#previousPattern)"
-              radius={[12, 12, 12, 12]}
-              maxBarSize={40}
-            />
+              {/* Previous Period Bar (background - striped) */}
+              <Bar
+                dataKey="previous"
+                fill="url(#previousPattern)"
+                radius={[12, 12, 12, 12]}
+                maxBarSize={40}
+              />
 
-            {/* Revenue Bar (foreground) */}
-            <Bar
-              dataKey="revenue"
-              fill="#10b981"
-              radius={[12, 12, 12, 12]}
-              maxBarSize={40}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+              {/* Revenue Bar (foreground) */}
+              <Bar
+                dataKey="revenue"
+                fill="#10b981"
+                radius={[12, 12, 12, 12]}
+                maxBarSize={40}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -8,12 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { VideoComments } from "./VideoComments";
-import {
-  cn,
-  formatNumber,
-  formatDuration,
-  formatDate,
-} from "@/utils";
+import { cn, formatNumber, formatDuration, formatDate } from "@/utils";
 import { Icons } from "@/components/ui/Icons";
 import { VIDEO_STATUSES, VIDEO_FILTERS } from "@/constants";
 import type { Video } from "@/types";
@@ -22,11 +16,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 interface VideoTableProps {
   videos: Video[];
   isLoading?: boolean;
-  onToggleFeatured: (video: Video) => Promise<void>;
-  onToggleBanner: (video: Video) => Promise<void>;
-  onToggleSuspend: (video: Video) => Promise<void>;
-  onUpdateStatus: (video: Video, status: "pending" | "published" | "draft" | "suspended" | "deleted") => Promise<void>;
-  onDelete: (video: Video) => void;
+  onToggleFeatured?: (video: Video) => Promise<void>;
+  onToggleBanner?: (video: Video) => Promise<void>;
+  onToggleSuspend?: (video: Video) => Promise<void>;
+  onUpdateStatus?: (
+    video: Video,
+    status: "pending" | "published" | "draft" | "suspended" | "deleted",
+  ) => Promise<void>;
+  onDelete?: (video: Video) => void;
+  onView?: (video: Video) => void;
 }
 
 export function VideoTable({
@@ -37,20 +35,28 @@ export function VideoTable({
   onToggleSuspend,
   onUpdateStatus,
   onDelete,
+  onView,
 }: VideoTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [previewVideo, setPreviewVideo] = useState<Video | null>(null);
+  const [viewsTimePeriod, setViewsTimePeriod] = useState<
+    "daily" | "weekly" | "monthly" | "yearly"
+  >("weekly");
   const [showFeaturedModal, setShowFeaturedModal] = useState(false);
   const [featuredAction, setFeaturedAction] = useState<"add" | "remove">("add");
   const [showBannerModal, setShowBannerModal] = useState(false);
   const [bannerAction, setBannerAction] = useState<"add" | "remove">("add");
   const [showPublishModal, setShowPublishModal] = useState(false);
-  const [publishAction, setPublishAction] = useState<"publish" | "unpublish">("publish");
+  const [publishAction, setPublishAction] = useState<"publish" | "unpublish">(
+    "publish",
+  );
   const [showSuspendModal, setShowSuspendModal] = useState(false);
-  const [suspendAction, setSuspendAction] = useState<"suspend" | "unsuspend">("suspend");
+  const [suspendAction, setSuspendAction] = useState<"suspend" | "unsuspend">(
+    "suspend",
+  );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const itemsPerPage = 10;
 
@@ -104,7 +110,7 @@ export function VideoTable({
   );
 
   function fetchVideos() {
-    throw new Error("Function not implemented.");
+    // Optional callback for refreshing video data
   }
 
   return (
@@ -142,7 +148,10 @@ export function VideoTable({
                     </option>
                   ))}
                 </select>
-                <Icons.ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <Icons.ChevronDown
+                  size={16}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                />
               </div>
               <div className="relative">
                 <select
@@ -159,7 +168,10 @@ export function VideoTable({
                     </option>
                   ))}
                 </select>
-                <Icons.ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <Icons.ChevronDown
+                  size={16}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                />
               </div>
             </div>
           </div>
@@ -227,21 +239,36 @@ export function VideoTable({
                                     src={video.thumbnail}
                                     alt={video.title}
                                     className="w-20 h-20 object-cover rounded-lg cursor-pointer"
-                                    onClick={() => setPreviewVideo(video)}
+                                    onClick={() => {
+                                      setPreviewVideo(video);
+                                      onView?.(video);
+                                    }}
                                   />
                                 ) : (
                                   <div
                                     className="w-20 h-20 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center cursor-pointer flex-shrink-0"
-                                    onClick={() => setPreviewVideo(video)}
+                                    onClick={() => {
+                                      setPreviewVideo(video);
+                                      onView?.(video);
+                                    }}
                                   >
-                                    <Icons.Video size={24} className="text-slate-400" />
+                                    <Icons.Video
+                                      size={24}
+                                      className="text-slate-400"
+                                    />
                                   </div>
                                 )}
                                 <button
-                                  onClick={() => setPreviewVideo(video)}
+                                  onClick={() => {
+                                    setPreviewVideo(video);
+                                    onView?.(video);
+                                  }}
                                   className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
                                 >
-                                  <Icons.Play size={24} className="text-white" />
+                                  <Icons.Play
+                                    size={24}
+                                    className="text-white"
+                                  />
                                 </button>
                                 <span className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
                                   {formatDuration(video.duration)}
@@ -292,14 +319,17 @@ export function VideoTable({
                           <td className="py-4 px-4">
                             <div className="flex items-center gap-1">
                               <button
-                                onClick={() => setPreviewVideo(video)}
+                                onClick={() => {
+                                  setPreviewVideo(video);
+                                  onView?.(video);
+                                }}
                                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition"
                                 title="View video"
                               >
                                 <Icons.Eye size={16} />
                               </button>
                               <button
-                                onClick={() => onDelete(video)}
+                                onClick={() => onDelete?.(video)}
                                 className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 transition"
                                 title="Delete"
                               >
@@ -324,7 +354,10 @@ export function VideoTable({
                       filteredVideos.length,
                     )}{" "}
                     to{" "}
-                    {Math.min(currentPage * itemsPerPage, filteredVideos.length)}{" "}
+                    {Math.min(
+                      currentPage * itemsPerPage,
+                      filteredVideos.length,
+                    )}{" "}
                     of {filteredVideos.length} results
                   </p>
                   <div className="flex gap-2">
@@ -372,7 +405,7 @@ export function VideoTable({
               poster={previewVideo.thumbnail}
               title={previewVideo.title}
             />
-            
+
             {/* Video Info */}
             <div className="space-y-4">
               <div>
@@ -380,29 +413,37 @@ export function VideoTable({
                   {previewVideo.title}
                 </h3>
                 <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <Badge variant={previewVideo.isFeatured ? "warning" : "neutral"}>
+                  <Badge
+                    variant={previewVideo.isFeatured ? "warning" : "neutral"}
+                  >
                     {previewVideo.isFeatured ? "⭐ Featured" : "Not Featured"}
                   </Badge>
                   <Badge variant={previewVideo.isBanner ? "info" : "neutral"}>
                     {previewVideo.isBanner ? "🖼️ Banner" : "Not Banner"}
                   </Badge>
-                  <Badge 
+                  <Badge
                     variant={
-                      previewVideo.status === "published" ? "success" :
-                      previewVideo.status === "pending" ? "warning" :
-                      previewVideo.status === "suspended" ? "danger" : "neutral"
+                      previewVideo.status === "published"
+                        ? "success"
+                        : previewVideo.status === "pending"
+                          ? "warning"
+                          : previewVideo.status === "suspended"
+                            ? "danger"
+                            : "neutral"
                     }
                   >
-                    {previewVideo.status.charAt(0).toUpperCase() + previewVideo.status.slice(1)}
+                    {previewVideo.status.charAt(0).toUpperCase() +
+                      previewVideo.status.slice(1)}
                   </Badge>
                   {previewVideo.isPaid && (
                     <Badge variant="info">
-                      💰 {previewVideo.currency || "USD"} {previewVideo.price?.toFixed(2)}
+                      💰 {previewVideo.currency || "USD"}{" "}
+                      {previewVideo.price?.toFixed(2)}
                     </Badge>
                   )}
                 </div>
               </div>
-              
+
               {/* Performance Metrics */}
               <div>
                 <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
@@ -411,54 +452,194 @@ export function VideoTable({
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.Eye size={16} className="mx-auto mb-1 text-blue-500" />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Views</p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.views)}</p>
+                    <Icons.Eye
+                      size={16}
+                      className="mx-auto mb-1 text-blue-500"
+                    />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Views
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {formatNumber(previewVideo.views)}
+                    </p>
                   </div>
                   <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.Heart size={16} className="mx-auto mb-1 text-red-500" />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Likes</p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.likes)}</p>
+                    <Icons.Heart
+                      size={16}
+                      className="mx-auto mb-1 text-red-500"
+                    />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Likes
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {formatNumber(previewVideo.likes)}
+                    </p>
                   </div>
                   <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.MessageCircle size={16} className="mx-auto mb-1 text-green-500" />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Comments</p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.comments)}</p>
+                    <Icons.MessageCircle
+                      size={16}
+                      className="mx-auto mb-1 text-green-500"
+                    />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Comments
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {formatNumber(previewVideo.comments)}
+                    </p>
                   </div>
                   <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.Share2 size={16} className="mx-auto mb-1 text-purple-500" />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Shares</p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.shares || 0)}</p>
+                    <Icons.Clock
+                      size={16}
+                      className="mx-auto mb-1 text-amber-500"
+                    />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Watch Time
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {formatDuration(previewVideo.watchTime || 0)}
+                    </p>
                   </div>
                   <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.Clock size={16} className="mx-auto mb-1 text-amber-500" />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Watch Time</p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatDuration(previewVideo.watchTime || 0)}</p>
+                    <Icons.DollarSign
+                      size={16}
+                      className="mx-auto mb-1 text-emerald-500"
+                    />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Sales
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      ${formatNumber(previewVideo.salesAmount || 0)}
+                    </p>
                   </div>
                   <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.TrendingUp size={16} className="mx-auto mb-1 text-emerald-500" />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Engagement</p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">{previewVideo.engagementRate || 0}%</p>
+                    <Icons.TrendingUp
+                      size={16}
+                      className="mx-auto mb-1 text-purple-500"
+                    />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Engagement
+                    </p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {previewVideo.engagementRate || 0}%
+                    </p>
                   </div>
                 </div>
               </div>
-              
+
+              {/* Views by Time Period */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                  <Icons.TrendingUp size={16} />
+                  Views Over Time
+                </h4>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                  {/* Time Period Selector */}
+                  <div className="flex gap-2 mb-4">
+                    {(["daily", "weekly", "monthly", "yearly"] as const).map(
+                      (period) => (
+                        <button
+                          key={period}
+                          onClick={() => setViewsTimePeriod(period)}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                            viewsTimePeriod === period
+                              ? "bg-emerald-500 text-white"
+                              : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                          }`}
+                        >
+                          {period.charAt(0).toUpperCase() + period.slice(1)}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                  {/* Views Chart */}
+                  <div className="space-y-2">
+                    {previewVideo.viewsByPeriod &&
+                    previewVideo.viewsByPeriod[viewsTimePeriod]?.length > 0 ? (
+                      <div className="space-y-2">
+                        {previewVideo.viewsByPeriod[viewsTimePeriod].map(
+                          (item, index) => {
+                            const maxViews = Math.max(
+                              ...previewVideo.viewsByPeriod![
+                                viewsTimePeriod
+                              ].map((d) => d.views),
+                            );
+                            const percentage =
+                              maxViews > 0
+                                ? (("views" in item ? item.views : 0) /
+                                    maxViews) *
+                                  100
+                                : 0;
+                            return (
+                              <div
+                                key={index}
+                                className="flex items-center gap-3"
+                              >
+                                <span className="text-xs text-slate-500 dark:text-slate-400 w-20">
+                                  {"date" in item
+                                    ? item.date
+                                    : "week" in item
+                                      ? item.week
+                                      : "month" in item
+                                        ? item.month
+                                        : "year" in item
+                                          ? item.year
+                                          : ""}
+                                </span>
+                                <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium text-slate-700 dark:text-slate-300 w-16 text-right">
+                                  {formatNumber(
+                                    "views" in item ? item.views : 0,
+                                  )}
+                                </span>
+                              </div>
+                            );
+                          },
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
+                        No views data available for this period
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {/* Video Details */}
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Creator</p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">{previewVideo.creatorName}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    Creator
+                  </p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    {previewVideo.creatorName}
+                  </p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Category</p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">{previewVideo.categoryName}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    Category
+                  </p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    {previewVideo.categoryName}
+                  </p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Duration</p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">{formatDuration(previewVideo.duration)}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    Duration
+                  </p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    {formatDuration(previewVideo.duration)}
+                  </p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Price</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    Price
+                  </p>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">
                     {previewVideo.isPaid && previewVideo.price
                       ? `${previewVideo.currency || "USD"} ${previewVideo.price.toFixed(2)}`
@@ -466,11 +647,15 @@ export function VideoTable({
                   </p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Uploaded</p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">{formatDate(previewVideo.createdAt)}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    Uploaded
+                  </p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    {formatDate(previewVideo.createdAt)}
+                  </p>
                 </div>
               </div>
-              
+
               {/* Comments Section */}
               <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                 <VideoComments
@@ -482,17 +667,19 @@ export function VideoTable({
                   }}
                 />
               </div>
-              
+
               {previewVideo.description && (
                 <div className="pt-2">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white mb-2">Description</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white mb-2">
+                    Description
+                  </p>
                   <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                     {previewVideo.description}
                   </p>
                 </div>
               )}
             </div>
-            
+
             {/* Actions */}
             <div className="flex flex-wrap items-center justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
               <Button
@@ -505,7 +692,7 @@ export function VideoTable({
                 className={cn(
                   previewVideo.isFeatured
                     ? "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800"
-                    : ""
+                    : "",
                 )}
               >
                 <Icons.Star size={16} className="mr-1" />
@@ -521,7 +708,7 @@ export function VideoTable({
                 className={cn(
                   previewVideo.isBanner
                     ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800"
-                    : ""
+                    : "",
                 )}
               >
                 <Icons.Image size={16} className="mr-1" />
@@ -531,7 +718,11 @@ export function VideoTable({
                 variant="secondary"
                 size="sm"
                 onClick={() => {
-                  setPublishAction(previewVideo.status === "published" ? "unpublish" : "publish");
+                  setPublishAction(
+                    previewVideo.status === "published"
+                      ? "unpublish"
+                      : "publish",
+                  );
                   setShowPublishModal(true);
                 }}
               >
@@ -542,13 +733,17 @@ export function VideoTable({
                 variant="secondary"
                 size="sm"
                 onClick={() => {
-                  setSuspendAction(previewVideo.status === "suspended" ? "unsuspend" : "suspend");
+                  setSuspendAction(
+                    previewVideo.status === "suspended"
+                      ? "unsuspend"
+                      : "suspend",
+                  );
                   setShowSuspendModal(true);
                 }}
                 className={cn(
                   previewVideo.status === "suspended"
                     ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800"
-                    : ""
+                    : "",
                 )}
               >
                 <Icons.Ban size={16} className="mr-1" />
@@ -571,10 +766,12 @@ export function VideoTable({
         isOpen={showFeaturedModal}
         onClose={() => setShowFeaturedModal(false)}
         onConfirm={() => {
-          onToggleFeatured(previewVideo!);
+          onToggleFeatured?.(previewVideo!);
           setShowFeaturedModal(false);
         }}
-        title={featuredAction === "add" ? "Add to Featured" : "Remove from Featured"}
+        title={
+          featuredAction === "add" ? "Add to Featured" : "Remove from Featured"
+        }
         message={
           featuredAction === "add"
             ? `Are you sure you want to add "${previewVideo?.title}" to featured? This will highlight the video on the platform.`
@@ -588,7 +785,7 @@ export function VideoTable({
         isOpen={showBannerModal}
         onClose={() => setShowBannerModal(false)}
         onConfirm={() => {
-          onToggleBanner(previewVideo!);
+          onToggleBanner?.(previewVideo!);
           setShowBannerModal(false);
         }}
         title={bannerAction === "add" ? "Add to Banner" : "Remove from Banner"}
@@ -605,13 +802,15 @@ export function VideoTable({
         isOpen={showPublishModal}
         onClose={() => setShowPublishModal(false)}
         onConfirm={() => {
-          onUpdateStatus(
+          onUpdateStatus?.(
             previewVideo!,
             publishAction === "unpublish" ? "draft" : "published",
           );
           setShowPublishModal(false);
         }}
-        title={publishAction === "publish" ? "Publish Video" : "Unpublish Video"}
+        title={
+          publishAction === "publish" ? "Publish Video" : "Unpublish Video"
+        }
         message={
           publishAction === "publish"
             ? `Are you sure you want to publish "${previewVideo?.title}"? This will make the video visible to users.`
@@ -625,10 +824,12 @@ export function VideoTable({
         isOpen={showSuspendModal}
         onClose={() => setShowSuspendModal(false)}
         onConfirm={() => {
-          onToggleSuspend(previewVideo!);
+          onToggleSuspend?.(previewVideo!);
           setShowSuspendModal(false);
         }}
-        title={suspendAction === "suspend" ? "Suspend Video" : "Unsuspend Video"}
+        title={
+          suspendAction === "suspend" ? "Suspend Video" : "Unsuspend Video"
+        }
         message={
           suspendAction === "suspend"
             ? `Are you sure you want to suspend "${previewVideo?.title}"? This will make the video unavailable to users.`
@@ -642,7 +843,9 @@ export function VideoTable({
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={() => {
-          onDelete(previewVideo!);
+          if (onDelete) {
+            onDelete(previewVideo!);
+          }
           setShowDeleteModal(false);
           setPreviewVideo(null);
         }}

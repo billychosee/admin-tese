@@ -8,6 +8,7 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,8 +32,25 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(SIDEBAR_KEY, String(collapsed));
   }, []);
 
+  const toggleMobileSidebar = useCallback(() => {
+    setIsMobileOpen((prev) => !prev);
+  }, []);
+
+  const closeMobileSidebar = useCallback(() => {
+    setIsMobileOpen(false);
+  }, []);
+
   return (
-    <SidebarContext.Provider value={{ isCollapsed, toggleSidebar, setCollapsed }}>
+    <SidebarContext.Provider
+      value={{
+        isCollapsed,
+        isMobileOpen,
+        toggleSidebar,
+        setCollapsed,
+        toggleMobileSidebar,
+        closeMobileSidebar,
+      }}
+    >
       {children}
     </SidebarContext.Provider>
   );

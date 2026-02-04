@@ -5,11 +5,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
-import {
-  cn,
-  formatNumber,
-  formatDate,
-} from "@/utils";
+import { cn, formatNumber, formatDate } from "@/utils";
 import { Icons } from "@/components/ui/Icons";
 import type { Comment, UserProfile } from "@/types";
 
@@ -38,7 +34,9 @@ export function CommentTable({
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
-  const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(
+    null,
+  );
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showFlagModal, setShowFlagModal] = useState(false);
@@ -83,11 +81,14 @@ export function CommentTable({
     currentPage * itemsPerPage,
   );
 
-  const handleViewProfile = async (commentOrUser: Comment | { id: string; userId: string }) => {
+  const handleViewProfile = async (
+    commentOrUser: Comment | { id: string; userId: string },
+  ) => {
     // Use type guard to safely extract userId
-    const userId = 'userId' in commentOrUser 
-      ? (commentOrUser as { userId: string }).userId 
-      : (commentOrUser as Comment).userId;
+    const userId =
+      "userId" in commentOrUser
+        ? (commentOrUser as { userId: string }).userId
+        : (commentOrUser as Comment).userId;
     try {
       const profile = await onViewProfile(userId);
       setSelectedProfile(profile);
@@ -138,7 +139,10 @@ export function CommentTable({
         {isLoading ? (
           <div className="p-6 space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+              <div
+                key={i}
+                className="h-16 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"
+              />
             ))}
           </div>
         ) : (
@@ -178,7 +182,10 @@ export function CommentTable({
                         className="text-center py-12 text-slate-500 dark:text-slate-400"
                       >
                         <div className="flex flex-col items-center gap-2">
-                          <Icons.MessageCircle size={48} className="text-slate-300 dark:text-slate-600" />
+                          <Icons.MessageCircle
+                            size={48}
+                            className="text-slate-300 dark:text-slate-600"
+                          />
                           <p>No comments found</p>
                         </div>
                       </td>
@@ -204,12 +211,18 @@ export function CommentTable({
                                 />
                               ) : (
                                 <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                                  <Icons.User size={20} className="text-emerald-600 dark:text-emerald-400" />
+                                  <Icons.User
+                                    size={20}
+                                    className="text-emerald-600 dark:text-emerald-400"
+                                  />
                                 </div>
                               )}
                               {comment.isFlagged && (
                                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center">
-                                  <Icons.Flag size={10} className="text-white" />
+                                  <Icons.Flag
+                                    size={10}
+                                    className="text-white"
+                                  />
                                 </span>
                               )}
                             </div>
@@ -312,7 +325,10 @@ export function CommentTable({
                     filteredComments.length,
                   )}{" "}
                   to{" "}
-                  {Math.min(currentPage * itemsPerPage, filteredComments.length)}{" "}
+                  {Math.min(
+                    currentPage * itemsPerPage,
+                    filteredComments.length,
+                  )}{" "}
                   of {filteredComments.length} results
                 </p>
                 <div className="flex gap-2">
@@ -368,7 +384,10 @@ export function CommentTable({
                   />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                    <Icons.User size={20} className="text-emerald-600 dark:text-emerald-400" />
+                    <Icons.User
+                      size={20}
+                      className="text-emerald-600 dark:text-emerald-400"
+                    />
                   </div>
                 )}
                 <div>
@@ -441,48 +460,6 @@ export function CommentTable({
                 </span>
                 <span>{formatDate(selectedComment.createdAt)}</span>
               </div>
-
-              {/* People Who Liked (Compact) */}
-              {selectedComment.likedBy && selectedComment.likedBy.length > 0 && (
-                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                    Liked by ({selectedComment.likedBy.length})
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedComment.likedBy.slice(0, 10).map((liker) => (
-                      <button
-                        key={liker.id}
-                        onClick={() => handleViewProfile({ id: liker.id, userId: liker.id })}
-                        className="flex items-center gap-2 bg-white dark:bg-slate-900 rounded-full px-2 py-1 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition"
-                        title={`View ${liker.name}'s profile`}
-                      >
-                        {liker.avatar ? (
-                          <img
-                            src={liker.avatar}
-                            alt={liker.name}
-                            className="w-5 h-5 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                            <Icons.User size={12} className="text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                        )}
-                        <span className="text-xs text-slate-600 dark:text-slate-300">
-                          {liker.name}
-                        </span>
-                      </button>
-                    ))}
-                    {selectedComment.likedBy.length > 10 && (
-                      <button
-                        onClick={() => setShowLikesModal(true)}
-                        className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline"
-                      >
-                        +{selectedComment.likedBy.length - 10} more
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Actions */}
@@ -646,9 +623,12 @@ export function CommentTable({
             {selectedComment.likedBy && selectedComment.likedBy.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {selectedComment.likedBy.map((liker) => (
-                  <div
+                  <button
                     key={liker.id}
-                    className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 rounded-full px-3 py-1.5 border border-slate-200 dark:border-slate-700"
+                    onClick={() =>
+                      handleViewProfile({ id: liker.id, userId: liker.id })
+                    }
+                    className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 rounded-full px-3 py-1.5 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition"
                   >
                     {liker.avatar ? (
                       <img
@@ -658,13 +638,16 @@ export function CommentTable({
                       />
                     ) : (
                       <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                        <Icons.User size={14} className="text-emerald-600 dark:text-emerald-400" />
+                        <Icons.User
+                          size={14}
+                          className="text-emerald-600 dark:text-emerald-400"
+                        />
                       </div>
                     )}
                     <span className="text-sm text-slate-700 dark:text-slate-300">
                       {liker.name}
                     </span>
-                  </div>
+                  </button>
                 ))}
               </div>
             ) : (
@@ -685,7 +668,8 @@ export function CommentTable({
       >
         {selectedComment && (
           <div className="space-y-4 max-h-96 overflow-y-auto">
-            {selectedComment.repliedBy && selectedComment.repliedBy.length > 0 ? (
+            {selectedComment.repliedBy &&
+            selectedComment.repliedBy.length > 0 ? (
               <div className="space-y-3">
                 {selectedComment.repliedBy.map((reply) => (
                   <div
@@ -701,7 +685,10 @@ export function CommentTable({
                         />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                          <Icons.User size={16} className="text-emerald-600 dark:text-emerald-400" />
+                          <Icons.User
+                            size={16}
+                            className="text-emerald-600 dark:text-emerald-400"
+                          />
                         </div>
                       )}
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -749,7 +736,10 @@ export function CommentTable({
                 />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                  <Icons.User size={40} className="text-emerald-600 dark:text-emerald-400" />
+                  <Icons.User
+                    size={40}
+                    className="text-emerald-600 dark:text-emerald-400"
+                  />
                 </div>
               )}
               <div>
@@ -764,8 +754,8 @@ export function CommentTable({
                     selectedProfile.status === "active"
                       ? "success"
                       : selectedProfile.status === "suspended"
-                      ? "warning"
-                      : "danger"
+                        ? "warning"
+                        : "danger"
                   }
                   className="mt-1 capitalize"
                 >
@@ -863,7 +853,9 @@ export function CommentTable({
             <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400 pt-4 border-t border-slate-200 dark:border-slate-700">
               <span>Joined: {formatDate(selectedProfile.joinedAt)}</span>
               {selectedProfile.lastActive && (
-                <span>Last active: {formatDate(selectedProfile.lastActive)}</span>
+                <span>
+                  Last active: {formatDate(selectedProfile.lastActive)}
+                </span>
               )}
             </div>
 
