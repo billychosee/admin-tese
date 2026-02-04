@@ -83,11 +83,18 @@ export function CommentTable({
     currentPage * itemsPerPage,
   );
 
-  const handleViewProfile = async (comment: Comment) => {
-    setSelectedComment(comment);
-    const profile = await onViewProfile(comment.userId);
-    setSelectedProfile(profile);
-    setShowProfileModal(true);
+  const handleViewProfile = async (commentOrUser: Comment | { id: string; userId: string }) => {
+    // Use type guard to safely extract userId
+    const userId = 'userId' in commentOrUser 
+      ? (commentOrUser as { userId: string }).userId 
+      : (commentOrUser as Comment).userId;
+    try {
+      const profile = await onViewProfile(userId);
+      setSelectedProfile(profile);
+      setShowProfileModal(true);
+    } catch {
+      console.error("Failed to fetch profile");
+    }
   };
 
   return (
@@ -435,18 +442,19 @@ export function CommentTable({
                 <span>{formatDate(selectedComment.createdAt)}</span>
               </div>
 
-              {/* People Who Liked */}
+              {/* People Who Liked (Compact) */}
               {selectedComment.likedBy && selectedComment.likedBy.length > 0 && (
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
-                    <Icons.Heart size={12} className="text-red-500" />
-                    People who liked ({selectedComment.likedBy.length})
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                    Liked by ({selectedComment.likedBy.length})
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {selectedComment.likedBy.map((liker) => (
-                      <div
+                    {selectedComment.likedBy.slice(0, 10).map((liker) => (
+                      <button
                         key={liker.id}
-                        className="flex items-center gap-2 bg-white dark:bg-slate-900 rounded-full px-3 py-1.5 border border-slate-200 dark:border-slate-700"
+                        onClick={() => handleViewProfile({ id: liker.id, userId: liker.id })}
+                        className="flex items-center gap-2 bg-white dark:bg-slate-900 rounded-full px-2 py-1 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 transition"
+                        title={`View ${liker.name}'s profile`}
                       >
                         {liker.avatar ? (
                           <img
@@ -462,49 +470,16 @@ export function CommentTable({
                         <span className="text-xs text-slate-600 dark:text-slate-300">
                           {liker.name}
                         </span>
-                      </div>
+                      </button>
                     ))}
-                  </div>
-                </div>
-              )}
-
-              {/* People Who Replied */}
-              {selectedComment.repliedBy && selectedComment.repliedBy.length > 0 && (
-                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
-                    <Icons.MessageCircle size={12} className="text-green-500" />
-                    People who replied ({selectedComment.repliedBy.length})
-                  </p>
-                  <div className="space-y-2">
-                    {selectedComment.repliedBy.map((reply) => (
-                      <div
-                        key={reply.id}
-                        className="bg-white dark:bg-slate-900 rounded-lg p-3 border border-slate-200 dark:border-slate-700"
+                    {selectedComment.likedBy.length > 10 && (
+                      <button
+                        onClick={() => setShowLikesModal(true)}
+                        className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline"
                       >
-                        <div className="flex items-center gap-2 mb-2">
-                          {reply.avatar ? (
-                            <img
-                              src={reply.avatar}
-                              alt={reply.name}
-                              className="w-6 h-6 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                              <Icons.User size={14} className="text-emerald-600 dark:text-emerald-400" />
-                            </div>
-                          )}
-                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                            {reply.name}
-                          </span>
-                          <span className="text-xs text-slate-400 dark:text-slate-500">
-                            {formatDate(reply.createdAt)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          {reply.content}
-                        </p>
-                      </div>
-                    ))}
+                        +{selectedComment.likedBy.length - 10} more
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
