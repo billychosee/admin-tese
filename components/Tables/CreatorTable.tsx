@@ -16,6 +16,8 @@ interface CreatorTableProps {
   isLoading?: boolean;
   onViewProfile: (creator: Creator) => void;
   onToggleStatus: (creator: Creator) => void;
+  onDeactivateChannel?: (creator: Creator) => void;
+  onPayout?: (creator: Creator) => void;
 }
 
 export function CreatorTable({
@@ -23,6 +25,8 @@ export function CreatorTable({
   isLoading,
   onViewProfile,
   onToggleStatus,
+  onDeactivateChannel,
+  onPayout,
 }: CreatorTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -33,9 +37,8 @@ export function CreatorTable({
 
   const filteredCreators = useMemo(() => {
     return creators.filter((creator) => {
-      const fullName = `${creator.firstName} ${creator.lastName}`.toLowerCase();
       const matchesSearch =
-        fullName.includes(searchTerm.toLowerCase()) ||
+        creator.creatorFullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         creator.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         creator.channelName.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -61,6 +64,11 @@ export function CreatorTable({
     online: "bg-green-500",
     away: "bg-yellow-500",
     offline: "bg-slate-400",
+  };
+
+  const payoutTypeColors = {
+    mobile_wallet: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+    bank: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
   };
 
   return (
@@ -129,10 +137,13 @@ export function CreatorTable({
                         Online
                       </th>
                       <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
+                        Payout Type
+                      </th>
+                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                         Videos
                       </th>
                       <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
-                        Earnings
+                        Revenue
                       </th>
                       <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
                         Actions
@@ -142,7 +153,7 @@ export function CreatorTable({
                   <tbody>
                     {paginatedCreators.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="text-center py-8 text-slate-500 dark:text-slate-400">
+                        <td colSpan={8} className="text-center py-8 text-slate-500 dark:text-slate-400">
                           No creators found
                         </td>
                       </tr>
@@ -161,22 +172,27 @@ export function CreatorTable({
                                 {creator.avatar ? (
                                   <img
                                     src={creator.avatar}
-                                    alt={`${creator.firstName} ${creator.lastName}`}
+                                    alt={creator.creatorFullName}
                                     className="w-10 h-10 rounded-full object-cover"
                                   />
                                 ) : (
                                   <div className="avatar avatar-md font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
-                                    {getInitials(`${creator.firstName} ${creator.lastName}`)}
+                                    {getInitials(creator.creatorFullName)}
                                   </div>
                                 )}
                               </div>
                               <div>
                                 <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                                  {creator.firstName} {creator.lastName}
+                                  {creator.creatorFullName}
                                 </p>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">
                                   {creator.email}
                                 </p>
+                                {creator.isCompany && (
+                                  <p className="text-xs text-blue-500 dark:text-blue-400">
+                                    {creator.companyName}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -200,20 +216,31 @@ export function CreatorTable({
                             <div className="flex items-center gap-2">
                               <span
                                 className={cn(
-                                  "h-2 w-2 rounded-full",
+                                  "h-2.5 w-2.5 rounded-full",
                                   onlineStatusColors[creator.onlineStatus]
                                 )}
                               />
-                              <span className="text-xs text-slate-500 dark:text-slate-400">
-                                {formatRelativeTime(creator.lastSeen)}
+                              <span className="text-sm capitalize text-slate-600 dark:text-slate-300">
+                                {creator.onlineStatus}
                               </span>
                             </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <Badge
+                              variant={
+                                creator.payoutType === "mobile_wallet"
+                                  ? "info"
+                                  : "neutral"
+                              }
+                            >
+                              {creator.payoutType === "mobile_wallet" ? "Mobile Wallet" : "Bank"}
+                            </Badge>
                           </td>
                           <td className="py-4 px-4 text-sm font-medium text-slate-600 dark:text-slate-300">
                             {formatNumber(creator.totalVideos)}
                           </td>
                           <td className="py-4 px-4 text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                            {formatCurrency(creator.totalEarnings)}
+                            {formatCurrency(creator.totalRevenue)}
                           </td>
                           <td className="py-4 px-4">
                             <div className="flex items-center gap-1">
@@ -223,17 +250,6 @@ export function CreatorTable({
                                 title="View profile"
                               >
                                 <Icons.Eye size={16} />
-                              </button>
-                              <button
-                                onClick={() => onToggleStatus(creator)}
-                                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition"
-                                title={creator.status === "active" ? "Deactivate" : "Activate"}
-                              >
-                                {creator.status === "active" ? (
-                                  <Icons.Lock size={16} />
-                                ) : (
-                                  <Icons.Unlock size={16} />
-                                )}
                               </button>
                             </div>
                           </td>
@@ -299,34 +315,28 @@ export function CreatorTable({
       >
         {previewCreator && (
           <div className="space-y-6 max-h-[85vh] overflow-y-auto">
-            {/* Profile Header with Large Image */}
+            {/* Profile Header */}
             <div className="flex items-center gap-6 pb-6 border-b border-slate-200 dark:border-slate-700">
               <div className="relative flex-shrink-0">
                 {previewCreator.avatar ? (
                   <img
                     src={previewCreator.avatar}
-                    alt={`${previewCreator.firstName} ${previewCreator.lastName}`}
+                    alt={previewCreator.creatorFullName}
                     className="w-24 h-24 rounded-full object-cover shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => previewCreator.avatar && setImagePreview(previewCreator.avatar)}
                   />
                 ) : (
                   <div className="w-24 h-24 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shadow-lg">
                     <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-                      {getInitials(`${previewCreator.firstName} ${previewCreator.lastName}`)}
+                      {getInitials(previewCreator.creatorFullName)}
                     </span>
                   </div>
                 )}
-                <span
-                  className={cn(
-                    "absolute bottom-0 right-0 h-5 w-5 rounded-full border-4 border-white dark:border-slate-800",
-                    onlineStatusColors[previewCreator.onlineStatus],
-                  )}
-                />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {previewCreator.firstName} {previewCreator.lastName}
+                    {previewCreator.creatorFullName}
                   </h3>
                   <Badge
                     variant={
@@ -343,9 +353,15 @@ export function CreatorTable({
                 <p className="text-lg text-slate-600 dark:text-slate-300 mb-2">
                   {previewCreator.channelName}
                 </p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {previewCreator.onlineStatus} - Last seen {formatRelativeTime(previewCreator.lastSeen)}
-                </p>
+                <div className="flex items-center gap-2">
+                  <span className={cn(
+                    "h-2 w-2 rounded-full",
+                    onlineStatusColors[previewCreator.onlineStatus]
+                  )} />
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {previewCreator.onlineStatus}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -365,17 +381,71 @@ export function CreatorTable({
               </div>
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                  {formatCurrency(previewCreator.totalEarnings)}
+                  {formatCurrency(previewCreator.totalRevenue)}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Earnings</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Revenue</p>
               </div>
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                <p className="text-sm font-bold text-slate-900 dark:text-white">
-                  {formatDate(previewCreator.createdAt)}
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {formatNumber(previewCreator.totalLikes)}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Joined</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Likes</p>
               </div>
             </div>
+
+            {/* Financial Overview */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 text-center">
+                <p className="text-sm text-emerald-600 dark:text-emerald-400 mb-1">Total Revenue</p>
+                <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
+                  {formatCurrency(previewCreator.totalRevenue)}
+                </p>
+              </div>
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
+                <p className="text-sm text-blue-600 dark:text-blue-400 mb-1">Current Balance</p>
+                <p className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                  {formatCurrency(previewCreator.currentBalance)}
+                </p>
+              </div>
+              <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 text-center">
+                <p className="text-sm text-purple-600 dark:text-purple-400 mb-1">Paid Out</p>
+                <p className="text-xl font-bold text-purple-700 dark:text-purple-300">
+                  {formatCurrency(previewCreator.totalPaidOut)}
+                </p>
+              </div>
+            </div>
+
+            {/* Company Information */}
+            {previewCreator.isCompany && (
+              <div className="space-y-3">
+                <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Icons.Briefcase size={18} className="text-emerald-500" />
+                  Company Information
+                </h4>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Company Name</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                        {previewCreator.companyName || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">VAT Number</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                        {previewCreator.VAT || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">TIN Number</p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                        {previewCreator.tinNumber || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Personal Information */}
             <div className="space-y-3">
@@ -386,9 +456,9 @@ export function CreatorTable({
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Name</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Full Name</p>
                     <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.firstName} {previewCreator.lastName}
+                      {previewCreator.creatorFullName}
                     </p>
                   </div>
                   <div>
@@ -398,83 +468,20 @@ export function CreatorTable({
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Phone</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Mobile Number</p>
                     <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.phone}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Address */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <Icons.MapPin size={18} className="text-emerald-500" />
-                Address
-              </h4>
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Full Address</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.address}
+                      {previewCreator.mobileNumber}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">City</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Payout Type</p>
                     <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.city}, {previewCreator.province}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Country</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.country} {previewCreator.postalCode}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Identity Verification */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <Icons.Shield size={18} className="text-emerald-500" />
-                Identity Verification
-              </h4>
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">ID Type</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white capitalize">
-                      {previewCreator.idType?.replace("_", " ") || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">ID Number</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.idNumber || "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">ID Copy</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.idCopyUrl ? (
-                        <a href={previewCreator.idCopyUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">
-                          View Document
-                        </a>
-                      ) : "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Proof of Residence</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.proofOfResidenceUrl ? (
-                        <a href={previewCreator.proofOfResidenceUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">
-                          View Document
-                        </a>
-                      ) : "N/A"}
+                      <span className={cn(
+                        "px-2 py-1 rounded-full text-xs",
+                        payoutTypeColors[previewCreator.payoutType]
+                      )}>
+                        {previewCreator.payoutType === "mobile_wallet" ? "Mobile Wallet" : "Bank"}
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -485,7 +492,7 @@ export function CreatorTable({
             <div className="space-y-3">
               <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                 <Icons.CreditCard size={18} className="text-emerald-500" />
-                Banking Details
+                Payout Details
               </h4>
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -496,21 +503,47 @@ export function CreatorTable({
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Account Holder</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.accountHolderName || "N/A"}
-                    </p>
-                  </div>
-                  <div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Account Number</p>
                     <p className="text-sm font-medium text-slate-900 dark:text-white">
                       {previewCreator.bankAccountNumber || "N/A"}
                     </p>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Verification Images */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Icons.Shield size={18} className="text-emerald-500" />
+                Verification Documents
+              </h4>
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Branch</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Selfie</p>
                     <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.bankBranch || "N/A"}
+                      {previewCreator.selfie ? (
+                        <button
+                          onClick={() => previewCreator.selfie && setImagePreview(previewCreator.selfie)}
+                          className="text-emerald-600 hover:underline"
+                        >
+                          View Selfie
+                        </button>
+                      ) : "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">ID Image</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      {previewCreator.idImage ? (
+                        <button
+                          onClick={() => previewCreator.idImage && setImagePreview(previewCreator.idImage)}
+                          className="text-emerald-600 hover:underline"
+                        >
+                          View ID
+                        </button>
+                      ) : "N/A"}
                     </p>
                   </div>
                 </div>
@@ -532,47 +565,42 @@ export function CreatorTable({
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Channel URL</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.channelUrl ? (
-                        <a href={previewCreator.channelUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">
-                          {previewCreator.channelUrl}
-                        </a>
-                      ) : "N/A"}
-                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Channel Status</p>
+                    <Badge
+                      variant={previewCreator.channelStatus === "active" ? "success" : "danger"}
+                    >
+                      {previewCreator.channelStatus}
+                    </Badge>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* SmatPay Integration */}
+            {/* Admin Actions */}
             <div className="space-y-3">
               <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <Icons.DollarSign size={18} className="text-emerald-500" />
-                SmatPay Integration
+                <Icons.Settings size={18} className="text-emerald-500" />
+                Admin Actions
               </h4>
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Status</p>
-                    <Badge
-                      variant={
-                        previewCreator.smatPayStatus === "verified"
-                          ? "success"
-                          : previewCreator.smatPayStatus === "pending"
-                            ? "warning"
-                            : "danger"
-                      }
-                    >
-                      {previewCreator.smatPayStatus || "Not Integrated"}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Merchant ID</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.smatPayMerchantId || "N/A"}
-                    </p>
-                  </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={previewCreator.channelStatus === "active" ? "danger" : "secondary"}
+                    size="sm"
+                    onClick={() => onDeactivateChannel && onDeactivateChannel(previewCreator)}
+                  >
+                    <Icons.Lock size={14} className="mr-1" />
+                    {previewCreator.channelStatus === "active" ? "Deactivate Channel" : "Activate Channel"}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => onPayout && onPayout(previewCreator)}
+                    disabled={previewCreator.currentBalance <= 0}
+                  >
+                    <Icons.DollarSign size={14} className="mr-1" />
+                    Process Payout
+                  </Button>
                 </div>
               </div>
             </div>

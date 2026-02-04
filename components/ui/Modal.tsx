@@ -125,7 +125,7 @@ export function ConfirmModal({
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="px-4 py-2 rounded-xl text-sm font-medium transition-colors bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600"
+            className="px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50"
           >
             {cancelText}
           </button>
@@ -134,10 +134,10 @@ export function ConfirmModal({
             disabled={isLoading}
             className={
               variant === "danger"
-                ? "px-4 py-2 rounded-xl text-sm font-medium transition-colors bg-red-500 hover:bg-red-600 text-white"
+                ? "px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
                 : variant === "warning"
                   ? "px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-amber-500 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-                  : "px-4 py-2 rounded-xl text-sm font-medium transition-colors bg-emerald-500 hover:bg-emerald-600 text-white"
+                  : "px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-emerald-500 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
             }
           >
             {isLoading ? "Loading..." : confirmText}

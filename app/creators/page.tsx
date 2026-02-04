@@ -170,6 +170,51 @@ export default function CreatorsPage() {
     }
   };
 
+  const handleDeactivateChannel = async (creator: Creator) => {
+    try {
+      if (creator.channelStatus === "active") {
+        await api.creators.deactivateChannel(creator.id);
+        addToast({
+          type: "success",
+          title: "Success",
+          message: "Channel deactivated",
+        });
+      } else {
+        await api.creators.activateChannel(creator.id);
+        addToast({
+          type: "success",
+          title: "Success",
+          message: "Channel activated",
+        });
+      }
+      fetchCreators();
+    } catch {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to update channel status",
+      });
+    }
+  };
+
+  const handlePayout = async (creator: Creator) => {
+    try {
+      await api.creators.processPayout(creator.id);
+      addToast({
+        type: "success",
+        title: "Success",
+        message: "Payout processed successfully",
+      });
+      fetchCreators();
+    } catch {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to process payout",
+      });
+    }
+  };
+
   // KYC handlers
   const handleKycApprove = async () => {
     if (!selectedKyc) return;
@@ -397,7 +442,7 @@ export default function CreatorsPage() {
                 setKycPage(1);
               }}
               className="appearance-none w-full px-4 py-2 pr-10 rounded-lg text-sm h-10 cursor-pointer transition-all duration-200 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none"
-              style={{ border: '1px solid hsl(var(--surface-border))' }}
+              style={{ border: "1px solid hsl(var(--surface-border))" }}
             >
               {KYC_STATUSES.map((status) => (
                 <option key={status.value} value={status.value}>
@@ -405,7 +450,10 @@ export default function CreatorsPage() {
                 </option>
               ))}
             </select>
-            <Icons.ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Icons.ChevronDown
+              size={16}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            />
           </div>
         )}
       </div>
@@ -448,6 +496,8 @@ export default function CreatorsPage() {
               isLoading={isLoading}
               onViewProfile={openProfile}
               onToggleStatus={handleToggleStatus}
+              onDeactivateChannel={handleDeactivateChannel}
+              onPayout={handlePayout}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -456,81 +506,83 @@ export default function CreatorsPage() {
                   key={creator.id}
                   hover
                   className={cn(
-                    "rounded-2xl border transition-all duration-300",
+                    "rounded-2xl border transition-all duration-300 cursor-pointer",
                     colors.surfaceBorder,
                     colors.surface,
                   )}
+                  onClick={() => openProfile(creator)}
                 >
                   <CardContent className="p-5">
-                    <div className="flex flex-col">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          {creator.avatar ? (
-                            <button
-                              onClick={(e) => openAvatarPreview(creator, e)}
-                              className="relative group"
-                            >
-                              <img
-                                src={creator.avatar}
-                                alt={`${creator.firstName} ${creator.lastName}`}
-                                className="w-10 h-10 rounded-xl object-cover group-hover:ring-2 ring-[hsl(var(--primary))] transition-all"
-                              />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity flex items-center justify-center">
-                                <Icons.Search size={14} className="text-white" />
-                              </div>
-                            </button>
-                          ) : (
-                            <div
-                              className={cn(
-                                "avatar font-bold text-xs",
-                                isDark
-                                  ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
-                                  : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
-                              )}
-                            >
-                              {getInitials(
-                                `${creator.firstName} ${creator.lastName}`,
-                              )}
-                            </div>
-                          )}
-                          <div>
-                            <h3
-                              className={cn(
-                                "text-sm font-semibold",
-                                colors.textPrimary,
-                              )}
-                            >
-                              {creator.firstName} {creator.lastName}
-                            </h3>
-                            <p
-                              className={cn(
-                                "text-xs font-medium uppercase tracking-wider",
-                                colors.textMuted,
-                              )}
-                            >
-                              {creator.channelName}
-                            </p>
+                    <div className="flex flex-col items-center text-center">
+                      {/* Avatar */}
+                      <div className="relative mb-3">
+                        {creator.avatar ? (
+                          <img
+                            src={creator.avatar}
+                            alt={creator.creatorFullName}
+                            className="w-16 h-16 rounded-full object-cover ring-2 ring-[hsl(var(--primary))]/20"
+                          />
+                        ) : (
+                          <div
+                            className={cn(
+                              "w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold",
+                              isDark
+                                ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                                : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
+                            )}
+                          >
+                            {getInitials(creator.creatorFullName)}
                           </div>
-                        </div>
-                        <Badge
-                          variant={
-                            creator.status === "active"
-                              ? "success"
-                              : creator.status === "pending"
-                                ? "warning"
-                                : "danger"
-                          }
-                        >
-                          {creator.status}
-                        </Badge>
-                      </div>
-                      <div
-                        className={cn("mt-4 h-px w-full", colors.surfaceBorder)}
-                      />
-                      <div className="mt-4 grid grid-cols-2 gap-3">
+                        )}
                         <div
                           className={cn(
-                            "rounded-lg p-3 transition-colors duration-300",
+                            "absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white dark:border-slate-800",
+                            creator.onlineStatus === "online"
+                              ? "bg-green-500"
+                              : creator.onlineStatus === "away"
+                                ? "bg-yellow-500"
+                                : "bg-slate-400",
+                          )}
+                        />
+                      </div>
+
+                      {/* Name and Channel */}
+                      <h3
+                        className={cn(
+                          "text-base font-semibold",
+                          colors.textPrimary,
+                        )}
+                      >
+                        {creator.creatorFullName}
+                      </h3>
+                      <p
+                        className={cn(
+                          "text-xs font-medium uppercase tracking-wider mt-1",
+                          colors.textMuted,
+                        )}
+                      >
+                        {creator.channelName}
+                      </p>
+
+                      {/* Status Badge */}
+                      <Badge
+                        variant={
+                          creator.status === "active"
+                            ? "success"
+                            : creator.status === "pending"
+                              ? "warning"
+                              : "danger"
+                        }
+                        className="mt-3"
+                      >
+                        {creator.status}
+                      </Badge>
+
+                      {/* Stats Grid */}
+                      <div className="mt-4 w-full grid grid-cols-2 gap-3">
+                        <div
+                          className={cn(
+                            "rounded-xl p-3 transition-colors duration-300 text-center",
                             isDark
                               ? "bg-[hsl(var(--surface-hover))]/50"
                               : "bg-[hsl(var(--surface-hover))]",
@@ -538,7 +590,7 @@ export default function CreatorsPage() {
                         >
                           <p
                             className={cn(
-                              "text-base font-bold",
+                              "text-lg font-bold",
                               colors.textPrimary,
                             )}
                           >
@@ -555,7 +607,7 @@ export default function CreatorsPage() {
                         </div>
                         <div
                           className={cn(
-                            "rounded-lg p-3 transition-colors duration-300",
+                            "rounded-xl p-3 transition-colors duration-300 text-center",
                             isDark
                               ? "bg-[hsl(var(--success))]/10"
                               : "bg-[hsl(var(--success))]/10",
@@ -563,11 +615,11 @@ export default function CreatorsPage() {
                         >
                           <p
                             className={cn(
-                              "text-base font-bold",
+                              "text-lg font-bold",
                               colors.successText,
                             )}
                           >
-                            {formatCurrency(creator.totalEarnings)}
+                            {formatCurrency(creator.totalRevenue)}
                           </p>
                           <p
                             className={cn(
@@ -575,109 +627,25 @@ export default function CreatorsPage() {
                               colors.successText,
                             )}
                           >
-                            Earnings
+                            Revenue
                           </p>
                         </div>
                       </div>
-                      <div className="mt-4 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={cn(
-                              "h-2.5 w-2.5 rounded-full",
-                              creator.onlineStatus === "online"
-                                ? "bg-[hsl(var(--success))]"
-                                : creator.onlineStatus === "away"
-                                  ? "bg-[hsl(var(--warning))]"
-                                  : colors.textMuted,
-                            )}
-                          />
-                          <span
-                            className={cn(
-                              "text-xs font-medium uppercase tracking-wider",
-                              colors.textMuted,
-                            )}
-                          >
-                            {creator.onlineStatus}
-                          </span>
-                        </div>
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                              "h-8 w-8 p-0 transition-colors duration-300",
-                              isDark
-                                ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
-                                : "",
-                            )}
-                            onClick={() => openProfile(creator)}
-                            title="View Profile"
-                          >
-                            <Icons.Eye size={14} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                              "h-8 w-8 p-0 transition-colors duration-300",
-                              isDark
-                                ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
-                                : "",
-                            )}
-                            onClick={() => handleToggleStatus(creator)}
-                            title={
-                              creator.status === "active"
-                                ? "Deactivate"
-                                : "Activate"
-                            }
-                          >
-                            {creator.status === "active" ? (
-                              <Icons.Lock size={14} />
-                            ) : (
-                              <Icons.Unlock size={14} />
-                            )}
-                          </Button>
-                          {creator.status === "pending" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className={cn(
-                                "h-8 w-8 p-0 transition-colors duration-300",
-                                isDark
-                                  ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
-                                  : "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50",
-                              )}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedCreator(creator);
-                                setShowApproveModal(true);
-                              }}
-                              title="Approve"
-                            >
-                              <Icons.Check size={14} />
-                            </Button>
-                          )}
-                          {creator.status === "pending" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className={cn(
-                                "h-8 w-8 p-0 transition-colors duration-300",
-                                isDark
-                                  ? "text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                                  : "text-red-500 hover:text-red-600 hover:bg-red-50",
-                              )}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedCreator(creator);
-                                setShowRejectModal(true);
-                              }}
-                              title="Reject"
-                            >
-                              <Icons.X size={14} />
-                            </Button>
-                          )}
-                        </div>
+
+                      {/* Payout Type */}
+                      <div className="mt-3">
+                        <Badge
+                          variant={
+                            creator.payoutType === "mobile_wallet"
+                              ? "info"
+                              : "neutral"
+                          }
+                          className="text-[10px] px-2 py-0.5"
+                        >
+                          {creator.payoutType === "mobile_wallet"
+                            ? "Mobile Wallet"
+                            : "Bank"}
+                        </Badge>
                       </div>
                     </div>
                   </CardContent>
@@ -753,30 +721,36 @@ export default function CreatorsPage() {
                 {[
                   {
                     label: "Pending Upload",
-                    count: kycUsers.filter((k) => k.status === "pending").length,
+                    count: kycUsers.filter((k) => k.status === "pending")
+                      .length,
                     color: "bg-slate-500",
                   },
                   {
                     label: "Pending Review",
-                    count: kycUsers.filter((k) => k.status === "pending_approval")
-                      .length,
+                    count: kycUsers.filter(
+                      (k) => k.status === "pending_approval",
+                    ).length,
                     color: "bg-amber-500",
                   },
                   {
                     label: "Approved",
-                    count: kycUsers.filter((k) => k.status === "approved").length,
+                    count: kycUsers.filter((k) => k.status === "approved")
+                      .length,
                     color: "bg-emerald-500",
                   },
                   {
                     label: "Declined",
-                    count: kycUsers.filter((k) => k.status === "declined").length,
+                    count: kycUsers.filter((k) => k.status === "declined")
+                      .length,
                     color: "bg-red-500",
                   },
                 ].map((stat, i) => (
                   <Card key={i}>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className={cn("w-3 h-3 rounded-full", stat.color)} />
+                        <div
+                          className={cn("w-3 h-3 rounded-full", stat.color)}
+                        />
                         <div>
                           <p className="text-2xl font-bold">{stat.count}</p>
                           <p className="text-xs text-slate-500">{stat.label}</p>
@@ -797,10 +771,7 @@ export default function CreatorsPage() {
                 >
                   <CardContent>
                     <Icons.Shield
-                      className={cn(
-                        "mx-auto h-16 w-16 mb-4",
-                        colors.textMuted,
-                      )}
+                      className={cn("mx-auto h-16 w-16 mb-4", colors.textMuted)}
                     />
                     <p
                       className={cn(
@@ -819,10 +790,7 @@ export default function CreatorsPage() {
                       <table className="w-full">
                         <thead>
                           <tr
-                            className={cn(
-                              "border-b-2",
-                              colors.surfaceBorder,
-                            )}
+                            className={cn("border-b-2", colors.surfaceBorder)}
                           >
                             <th className="text-left py-4 px-4 font-bold text-sm">
                               User
@@ -864,13 +832,17 @@ export default function CreatorsPage() {
                                     <div
                                       className={cn(
                                         "w-10 h-10 rounded-full flex items-center justify-center",
-                                        isDark ? "bg-slate-700" : "bg-slate-200",
+                                        isDark
+                                          ? "bg-slate-700"
+                                          : "bg-slate-200",
                                       )}
                                     >
                                       <Icons.User
                                         size={20}
                                         className={
-                                          isDark ? "text-slate-400" : "text-slate-500"
+                                          isDark
+                                            ? "text-slate-400"
+                                            : "text-slate-500"
                                         }
                                       />
                                     </div>
@@ -894,7 +866,9 @@ export default function CreatorsPage() {
                                 {formatDate(kyc.submittedAt)}
                               </td>
                               <td className="py-4 px-4">
-                                <Badge variant={getKycStatusVariant(kyc.status)}>
+                                <Badge
+                                  variant={getKycStatusVariant(kyc.status)}
+                                >
                                   {kyc.status.replace("_", " ")}
                                 </Badge>
                               </td>
@@ -966,508 +940,314 @@ export default function CreatorsPage() {
         size="xl"
       >
         {selectedCreator && (
-          <div className="max-h-[70vh] overflow-y-auto pr-2 space-y-4">
-            {/* Creator Header Card */}
-            <div
-              className={cn(
-                "p-4 rounded-xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--primary))] text-white relative overflow-hidden",
-              )}
-            >
-              <div className="relative z-10 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold">
-                  {selectedCreator.avatar ? (
-                    <img
-                      src={selectedCreator.avatar}
-                      alt={selectedCreator.firstName}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    getInitials(
-                      `${selectedCreator.firstName} ${selectedCreator.lastName}`,
-                    )
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold truncate">
-                    {selectedCreator.firstName} {selectedCreator.lastName}
+          <div className="space-y-6 max-h-[85vh] overflow-y-auto">
+            {/* Profile Header */}
+            <div className="flex items-center gap-6 pb-6 border-b border-slate-200 dark:border-slate-700">
+              <div className="relative flex-shrink-0">
+                {selectedCreator.avatar ? (
+                  <img
+                    src={selectedCreator.avatar}
+                    alt={selectedCreator.creatorFullName}
+                    className="w-24 h-24 rounded-full object-cover shadow-lg"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shadow-lg">
+                    <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                      {getInitials(selectedCreator.creatorFullName)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {selectedCreator.creatorFullName}
                   </h3>
-                  <p className="text-xs opacity-80 truncate">
-                    {selectedCreator.email}
-                  </p>
-                </div>
-                <Badge
-                  variant={
-                    selectedCreator.status === "active"
-                      ? "success"
-                      : selectedCreator.status === "pending"
-                        ? "warning"
-                        : "danger"
-                  }
-                  className={cn(
-                    "text-[10px] font-bold uppercase tracking-wider flex-shrink-0",
-                    selectedCreator.status === "active"
-                      ? "bg-white/20 text-white border-white/30"
-                      : "",
-                  )}
-                >
-                  {selectedCreator.status}
-                </Badge>
-              </div>
-            </div>
-
-            {/* Personal Information Table */}
-            <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-              <div
-                className={cn(
-                  "px-4 py-2 text-[10px] font-bold uppercase tracking-wider",
-                  colors.textSecondary,
-                )}
-              >
-                Personal Information
-              </div>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  <tr
-                    className={cn(
-                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
-                      isDark ? "" : "bg-slate-50",
-                    )}
-                  >
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium w-32",
-                        colors.textSecondary,
-                      )}
-                    >
-                      Name
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.firstName} {selectedCreator.lastName}
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium",
-                        colors.textSecondary,
-                      )}
-                    >
-                      Email
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold truncate",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.email}
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium",
-                        colors.textSecondary,
-                      )}
-                    >
-                      Phone
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold font-mono",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.phone}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {/* Address Table */}
-            <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-              <div
-                className={cn(
-                  "px-4 py-2 text-[10px] font-bold uppercase tracking-wider",
-                  colors.textSecondary,
-                )}
-              >
-                Address
-              </div>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  <tr
-                    className={cn(
-                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
-                      isDark ? "" : "bg-slate-50",
-                    )}
-                  >
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium w-32",
-                        colors.textSecondary,
-                      )}
-                    >
-                      Full Address
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.address}
-                      <br />
-                      <span className={cn("text-xs", colors.textSecondary)}>
-                        {selectedCreator.city}, {selectedCreator.province}{" "}
-                        {selectedCreator.postalCode}
-                      </span>
-                      <br />
-                      <span className={cn("text-xs", colors.textSecondary)}>
-                        {selectedCreator.country}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {/* Identity Verification Table */}
-            <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-              <div
-                className={cn(
-                  "px-4 py-2 text-[10px] font-bold uppercase tracking-wider",
-                  colors.textSecondary,
-                )}
-              >
-                Identity Verification
-              </div>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  <tr
-                    className={cn(
-                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
-                      isDark ? "" : "bg-slate-50",
-                    )}
-                  >
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium w-32",
-                        colors.textSecondary,
-                      )}
-                    >
-                      ID Type
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold capitalize",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.idType?.replace("_", " ") || "N/A"}
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium",
-                        colors.textSecondary,
-                      )}
-                    >
-                      ID Number
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold font-mono",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.idNumber || "N/A"}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div className="px-4 py-2 flex gap-2">
-                {selectedCreator.idCopyUrl && (
-                  <a
-                    href={selectedCreator.idCopyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(
-                      "flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                      isDark
-                        ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/30"
-                        : "bg-emerald-100 text-emerald-600 hover:bg-emerald-200",
-                    )}
-                  >
-                    <Icons.File size={14} />
-                    ID Copy
-                  </a>
-                )}
-                {selectedCreator.proofOfResidenceUrl && (
-                  <a
-                    href={selectedCreator.proofOfResidenceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(
-                      "flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                      isDark
-                        ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/30"
-                        : "bg-blue-100 text-blue-600 hover:bg-blue-200",
-                    )}
-                  >
-                    <Icons.Home size={14} />
-                    Proof of Residence
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Banking Details Table */}
-            <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-              <div
-                className={cn(
-                  "px-4 py-2 text-[10px] font-bold uppercase tracking-wider",
-                  colors.textSecondary,
-                )}
-              >
-                Banking Details
-              </div>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  <tr
-                    className={cn(
-                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
-                      isDark ? "" : "bg-slate-50",
-                    )}
-                  >
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium w-32",
-                        colors.textSecondary,
-                      )}
-                    >
-                      Bank Name
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.bankName || "N/A"}
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium",
-                        colors.textSecondary,
-                      )}
-                    >
-                      Account Holder
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.accountHolderName || "N/A"}
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium",
-                        colors.textSecondary,
-                      )}
-                    >
-                      Account Number
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold font-mono",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.bankAccountNumber || "N/A"}
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium",
-                        colors.textSecondary,
-                      )}
-                    >
-                      Branch
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.bankBranch || "N/A"}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {/* Channel Information Table */}
-            <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-              <div
-                className={cn(
-                  "px-4 py-2 text-[10px] font-bold uppercase tracking-wider",
-                  colors.textSecondary,
-                )}
-              >
-                Channel Information
-              </div>
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  <tr
-                    className={cn(
-                      "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
-                      isDark ? "" : "bg-slate-50",
-                    )}
-                  >
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-medium w-32",
-                        colors.textSecondary,
-                      )}
-                    >
-                      Channel Name
-                    </td>
-                    <td
-                      className={cn(
-                        "px-4 py-2 font-semibold",
-                        colors.textPrimary,
-                      )}
-                    >
-                      {selectedCreator.channelName}
-                    </td>
-                  </tr>
-                  {selectedCreator.channelUrl && (
-                    <tr className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                      <td
-                        className={cn(
-                          "px-4 py-2 font-medium",
-                          colors.textSecondary,
-                        )}
-                      >
-                        Channel URL
-                      </td>
-                      <td
-                        className={cn(
-                          "px-4 py-2 font-semibold truncate",
-                          colors.primaryText,
-                        )}
-                      >
-                        <a
-                          href={selectedCreator.channelUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {selectedCreator.channelUrl}
-                        </a>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* SmatPay Section */}
-            {selectedCreator.smatPayMerchantId && (
-              <div className={cn("rounded-lg overflow-hidden", colors.surface)}>
-                <div
-                  className={cn(
-                    "px-4 py-2 text-[10px] font-bold uppercase tracking-wider flex items-center justify-between",
-                    colors.textSecondary,
-                  )}
-                >
-                  <span>SmatPay Integration</span>
                   <Badge
                     variant={
-                      selectedCreator.smatPayStatus === "verified"
+                      selectedCreator.status === "active"
                         ? "success"
-                        : selectedCreator.smatPayStatus === "pending"
+                        : selectedCreator.status === "pending"
                           ? "warning"
                           : "danger"
                     }
-                    className="text-[10px] font-bold uppercase tracking-wider"
                   >
-                    {selectedCreator.smatPayStatus}
+                    {selectedCreator.status}
                   </Badge>
                 </div>
-                <table className="w-full text-sm">
-                  <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                    <tr
-                      className={cn(
-                        "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors",
-                        isDark ? "" : "bg-slate-50",
-                      )}
-                    >
-                      <td
-                        className={cn(
-                          "px-4 py-2 font-medium w-32",
-                          colors.textSecondary,
-                        )}
-                      >
-                        Merchant ID
-                      </td>
-                      <td
-                        className={cn(
-                          "px-4 py-2 font-semibold font-mono text-xs",
-                          colors.textPrimary,
-                        )}
-                      >
-                        {selectedCreator.smatPayMerchantId}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <p className="text-lg text-slate-600 dark:text-slate-300 mb-2">
+                  {selectedCreator.channelName}
+                </p>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "h-2 w-2 rounded-full",
+                      selectedCreator.onlineStatus === "online"
+                        ? "bg-green-500"
+                        : selectedCreator.onlineStatus === "away"
+                          ? "bg-yellow-500"
+                          : "bg-slate-400",
+                    )}
+                  />
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    {selectedCreator.onlineStatus}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {formatNumber(selectedCreator.totalVideos)}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Videos
+                </p>
+              </div>
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {formatNumber(selectedCreator.totalViews)}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Views
+                </p>
+              </div>
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                  {formatCurrency(selectedCreator.totalRevenue)}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Revenue
+                </p>
+              </div>
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {formatNumber(selectedCreator.totalLikes)}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Likes
+                </p>
+              </div>
+            </div>
+
+            {/* Financial Overview */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 text-center">
+                <p className="text-sm text-emerald-600 dark:text-emerald-400 mb-1">
+                  Total Revenue
+                </p>
+                <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
+                  {formatCurrency(selectedCreator.totalRevenue)}
+                </p>
+              </div>
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
+                <p className="text-sm text-blue-600 dark:text-blue-400 mb-1">
+                  Current Balance
+                </p>
+                <p className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                  {formatCurrency(selectedCreator.currentBalance)}
+                </p>
+              </div>
+              <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 text-center">
+                <p className="text-sm text-purple-600 dark:text-purple-400 mb-1">
+                  Paid Out
+                </p>
+                <p className="text-xl font-bold text-purple-700 dark:text-purple-300">
+                  {formatCurrency(selectedCreator.totalPaidOut)}
+                </p>
+              </div>
+            </div>
+
+            {/* Company Information */}
+            {selectedCreator.isCompany && (
+              <div className="space-y-3">
+                <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Icons.Briefcase size={18} className="text-emerald-500" />
+                  Company Information
+                </h4>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                        Company Name
+                      </p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                        {selectedCreator.companyName || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                        VAT Number
+                      </p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                        {selectedCreator.VAT || "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                        TIN Number
+                      </p>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                        {selectedCreator.tinNumber || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Online Status */}
-            <div
-              className={cn(
-                "p-3 rounded-lg flex items-center gap-3 transition-colors duration-300",
-                isDark
-                  ? "bg-[hsl(var(--surface-hover))]/30"
-                  : "bg-[hsl(var(--surface-hover))]",
-              )}
-            >
-              <span
-                className={cn(
-                  "h-2 w-2 rounded-full flex-shrink-0",
-                  selectedCreator.onlineStatus === "online"
-                    ? "bg-[hsl(var(--success))]"
-                    : selectedCreator.onlineStatus === "away"
-                      ? "bg-[hsl(var(--warning))]"
-                      : colors.textMuted,
-                )}
-              />
-              <span
-                className={cn(
-                  "text-xs font-bold uppercase tracking-wider flex-1",
-                  colors.textSecondary,
-                )}
-              >
-                {selectedCreator.onlineStatus} - Last seen{" "}
-                {formatRelativeTime(selectedCreator.lastSeen)}
-              </span>
+            {/* Personal Information */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Icons.User size={18} className="text-emerald-500" />
+                Personal Information
+              </h4>
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Full Name
+                    </p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      {selectedCreator.creatorFullName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Email
+                    </p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      {selectedCreator.email}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Mobile Number
+                    </p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      {selectedCreator.mobileNumber}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Payout Type
+                    </p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <span
+                        className={cn(
+                          "px-2 py-1 rounded-full text-xs",
+                          selectedCreator.payoutType === "mobile_wallet"
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                            : "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+                        )}
+                      >
+                        {selectedCreator.payoutType === "mobile_wallet"
+                          ? "Mobile Wallet"
+                          : "Bank"}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Payout Details */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Icons.CreditCard size={18} className="text-emerald-500" />
+                Payout Details
+              </h4>
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Bank Name
+                    </p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      {selectedCreator.bankName || "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Account Number
+                    </p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      {selectedCreator.bankAccountNumber || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Channel Information */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Icons.Video size={18} className="text-emerald-500" />
+                Channel Information
+              </h4>
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Channel Name
+                    </p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      {selectedCreator.channelName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Channel Status
+                    </p>
+                    <Badge
+                      variant={
+                        selectedCreator.channelStatus === "active"
+                          ? "success"
+                          : "danger"
+                      }
+                    >
+                      {selectedCreator.channelStatus}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Admin Actions */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Icons.Settings size={18} className="text-emerald-500" />
+                Admin Actions
+              </h4>
+              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={
+                      selectedCreator.channelStatus === "active"
+                        ? "danger"
+                        : "secondary"
+                    }
+                    size="sm"
+                    onClick={() => handleDeactivateChannel(selectedCreator)}
+                  >
+                    <Icons.Lock size={14} className="mr-1" />
+                    {selectedCreator.channelStatus === "active"
+                      ? "Deactivate Channel"
+                      : "Activate Channel"}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handlePayout(selectedCreator)}
+                    disabled={selectedCreator.currentBalance <= 0}
+                  >
+                    <Icons.DollarSign size={14} className="mr-1" />
+                    Process Payout
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Approval Actions for Pending Creators */}
@@ -1505,6 +1285,16 @@ export default function CreatorsPage() {
                 </button>
               </div>
             )}
+
+            {/* Actions */}
+            <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+              <Button
+                variant="secondary"
+                onClick={() => setShowProfileModal(false)}
+              >
+                Close
+              </Button>
+            </div>
           </div>
         )}
       </Modal>

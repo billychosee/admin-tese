@@ -220,13 +220,19 @@ import {
   AtSign,
   XSquare,
   CircleDot,
-  HashIcon,
-  GripHorizontal,
-  Loader2,
-  Banknote,
-  Table,
+  ThumbsUp,
+  Globe,
+  Twitter,
+  Instagram,
+  Youtube,
+  FlagOff,
   MessageCircle,
   BarChart,
+  GripHorizontal,
+  Table,
+  HashIcon,
+  Loader2,
+  Banknote,
 } from "lucide-react";
 
 interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -554,4 +560,36 @@ export const Icons = {
   ClipboardPaste: (props: IconProps) => <ClipboardPaste {...props} />,
   FunctionSquare: (props: IconProps) => <FunctionSquare {...props} />,
   CircleDot: (props: IconProps) => <CircleDot {...props} />,
+
+  // Social & Actions
+  ThumbsUp: (props: IconProps) => <ThumbsUp {...props} />,
+  Globe: (props: IconProps) => <Globe {...props} />,
+  Twitter: (props: IconProps) => <Twitter {...props} />,
+  Instagram: (props: IconProps) => <Instagram {...props} />,
+  Youtube: (props: IconProps) => <Youtube {...props} />,
+  FlagOff: (props: IconProps) => <FlagOff {...props} />,
+
+  // Playlist
+  Playlist: (props: IconProps) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" />
+      <line x1="3" y1="12" x2="3.01" y2="12" />
+      <line x1="3" y1="18" x2="3.01" y2="18" />
+      <circle cx="7" cy="18" r="1" fill="currentColor" />
+      <circle cx="7" cy="12" r="1" fill="currentColor" />
+      <circle cx="7" cy="6" r="1" fill="currentColor" />
+    </svg>
+  ),
 };

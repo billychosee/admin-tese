@@ -12,7 +12,6 @@ import type { FeaturedCreator } from "@/types";
 interface FeaturedTableProps {
   featured: FeaturedCreator[];
   isLoading?: boolean;
-  onToggleStatus: (id: string) => void;
   onReorder: (startIndex: number, endIndex: number) => void;
   onRemove: (id: string) => void;
 }
@@ -20,7 +19,6 @@ interface FeaturedTableProps {
 export function FeaturedTable({
   featured,
   isLoading,
-  onToggleStatus,
   onReorder,
   onRemove,
 }: FeaturedTableProps) {
@@ -211,17 +209,6 @@ export function FeaturedTable({
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => onToggleStatus(item.id)}
-                              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition"
-                              title={item.isActive ? "Deactivate" : "Activate"}
-                            >
-                              {item.isActive ? (
-                                <Icons.Lock size={16} />
-                              ) : (
-                                <Icons.Unlock size={16} />
-                              )}
-                            </button>
                             <button
                               onClick={() => onRemove(item.id)}
                               className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 transition"

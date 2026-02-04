@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/Card";
+import { VideoPlayer } from "@/components/ui/VideoPlayer";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
@@ -21,6 +21,7 @@ import {
 } from "@/utils";
 import { VIDEO_STATUSES, VIDEO_FILTERS } from "@/constants";
 import type { Video } from "@/types";
+import { Card, CardContent } from "@/components/ui/Card";
 
 type ViewMode = "grid" | "list";
 
@@ -38,6 +39,14 @@ export default function VideosPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewVideo, setPreviewVideo] = useState<Video | null>(null);
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [suspendAction, setSuspendAction] = useState<"suspend" | "unsuspend">("suspend");
+  const [showFeaturedModal, setShowFeaturedModal] = useState(false);
+  const [featuredAction, setFeaturedAction] = useState<"add" | "remove">("add");
+  const [showBannerModal, setShowBannerModal] = useState(false);
+  const [bannerAction, setBannerAction] = useState<"add" | "remove">("add");
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [publishAction, setPublishAction] = useState<"publish" | "unpublish">("publish");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -145,21 +154,87 @@ export default function VideosPage() {
     }
   };
 
-  const handleToggleSuspend = async (video: Video) => {
+  const handleToggleSuspend = async () => {
+    if (!selectedVideo) return;
     try {
-      if (video.status === "suspended") {
-        await api.videos.updateStatus(video.id, "published");
+      if (suspendAction === "unsuspend") {
+        await api.videos.updateStatus(selectedVideo.id, "published");
         addToast({ type: "success", title: "Video unsuspended" });
       } else {
-        await api.videos.updateStatus(video.id, "suspended");
+        await api.videos.updateStatus(selectedVideo.id, "suspended");
         addToast({ type: "success", title: "Video suspended" });
       }
+      setShowSuspendModal(false);
+      setSelectedVideo(null);
       fetchVideos();
     } catch {
       addToast({
         type: "error",
         title: "Error",
         message: "Failed to update suspension status",
+      });
+    }
+  };
+
+  const handleConfirmFeatured = async () => {
+    if (!previewVideo) return;
+    try {
+      if (featuredAction === "remove") {
+        await api.videos.removeFromFeatured(previewVideo.id);
+        addToast({ type: "success", title: "Removed from featured" });
+      } else {
+        await api.videos.promoteToFeatured(previewVideo.id);
+        addToast({ type: "success", title: "Added to featured" });
+      }
+      setShowFeaturedModal(false);
+      fetchVideos();
+    } catch {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to update featured status",
+      });
+    }
+  };
+
+  const handleConfirmBanner = async () => {
+    if (!previewVideo) return;
+    try {
+      if (bannerAction === "remove") {
+        await api.videos.removeFromBanner(previewVideo.id);
+        addToast({ type: "success", title: "Removed from banner" });
+      } else {
+        await api.videos.promoteToBanner(previewVideo.id);
+        addToast({ type: "success", title: "Added to banner" });
+      }
+      setShowBannerModal(false);
+      fetchVideos();
+    } catch {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to update banner status",
+      });
+    }
+  };
+
+  const handleConfirmPublish = async () => {
+    if (!previewVideo) return;
+    try {
+      if (publishAction === "unpublish") {
+        await api.videos.updateStatus(previewVideo.id, "pending");
+        addToast({ type: "success", title: "Video unpublished" });
+      } else {
+        await api.videos.updateStatus(previewVideo.id, "published");
+        addToast({ type: "success", title: "Video published" });
+      }
+      setShowPublishModal(false);
+      fetchVideos();
+    } catch {
+      addToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to update publish status",
       });
     }
   };
@@ -406,7 +481,11 @@ export default function VideosPage() {
           isLoading={isLoading}
           onToggleFeatured={handleToggleFeatured}
           onToggleBanner={handleToggleBanner}
-          onToggleSuspend={handleToggleSuspend}
+          onToggleSuspend={async (video) => {
+            setSelectedVideo(video);
+            setSuspendAction(video.status === "suspended" ? "unsuspend" : "suspend");
+            setShowSuspendModal(true);
+          }}
           onUpdateStatus={handleUpdateStatus}
           onDelete={(video) => {
             setSelectedVideo(video);
@@ -463,6 +542,62 @@ export default function VideosPage() {
         variant="danger"
       />
 
+      <ConfirmModal
+        isOpen={showSuspendModal}
+        onClose={() => setShowSuspendModal(false)}
+        onConfirm={handleToggleSuspend}
+        title={suspendAction === "suspend" ? "Suspend Video" : "Unsuspend Video"}
+        message={
+          suspendAction === "suspend"
+            ? `Are you sure you want to suspend "${selectedVideo?.title}"? This will make the video unavailable to users.`
+            : `Are you sure you want to unsuspend "${selectedVideo?.title}"? This will make the video visible to users again.`
+        }
+        confirmText={suspendAction === "suspend" ? "Suspend" : "Unsuspend"}
+        variant={suspendAction === "suspend" ? "warning" : "info"}
+      />
+
+      <ConfirmModal
+        isOpen={showFeaturedModal}
+        onClose={() => setShowFeaturedModal(false)}
+        onConfirm={handleConfirmFeatured}
+        title={featuredAction === "add" ? "Add to Featured" : "Remove from Featured"}
+        message={
+          featuredAction === "add"
+            ? `Are you sure you want to add "${previewVideo?.title}" to featured? This will highlight the video on the platform.`
+            : `Are you sure you want to remove "${previewVideo?.title}" from featured?`
+        }
+        confirmText={featuredAction === "add" ? "Add to Featured" : "Remove"}
+        variant="info"
+      />
+
+      <ConfirmModal
+        isOpen={showBannerModal}
+        onClose={() => setShowBannerModal(false)}
+        onConfirm={handleConfirmBanner}
+        title={bannerAction === "add" ? "Add to Banner" : "Remove from Banner"}
+        message={
+          bannerAction === "add"
+            ? `Are you sure you want to add "${previewVideo?.title}" to banner? This will display the video on the homepage banner.`
+            : `Are you sure you want to remove "${previewVideo?.title}" from banner?`
+        }
+        confirmText={bannerAction === "add" ? "Add to Banner" : "Remove"}
+        variant="info"
+      />
+
+      <ConfirmModal
+        isOpen={showPublishModal}
+        onClose={() => setShowPublishModal(false)}
+        onConfirm={handleConfirmPublish}
+        title={publishAction === "publish" ? "Publish Video" : "Unpublish Video"}
+        message={
+          publishAction === "publish"
+            ? `Are you sure you want to publish "${previewVideo?.title}"? This will make the video visible to users.`
+            : `Are you sure you want to unpublish "${previewVideo?.title}"? This will hide the video from users.`
+        }
+        confirmText={publishAction === "publish" ? "Publish" : "Unpublish"}
+        variant={publishAction === "publish" ? "info" : "warning"}
+      />
+
       {/* Video Preview Modal */}
       <Modal
         isOpen={showPreviewModal}
@@ -476,40 +611,11 @@ export default function VideosPage() {
         {previewVideo && (
           <div className="space-y-6">
             {/* Video Player */}
-            <div className="relative aspect-video bg-slate-900 rounded-xl overflow-hidden shadow-lg">
-              {previewVideo.videoUrl ? (
-                <video
-                  src={previewVideo.videoUrl}
-                  poster={previewVideo.thumbnail}
-                  controls
-                  className="w-full h-full object-contain"
-                  preload="metadata"
-                />
-              ) : previewVideo.thumbnail ? (
-                <div className="relative w-full h-full flex items-center justify-center group">
-                  <img
-                    src={previewVideo.thumbnail}
-                    alt={previewVideo.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors">
-                        <Icons.Play size={24} className="text-white ml-1" />
-                      </div>
-                      <div className="text-white">
-                        <p className="font-semibold text-lg">{formatDuration(previewVideo.duration)}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Icons.Video size={48} className="text-slate-600" />
-                </div>
-              )}
-            </div>
+            <VideoPlayer
+              src={previewVideo.videoUrl || ""}
+              poster={previewVideo.thumbnail}
+              title={previewVideo.title}
+            />
             
             {/* Video Title & Status Badges */}
             <div>
@@ -622,8 +728,8 @@ export default function VideosPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setShowPreviewModal(false);
-                  handleToggleFeatured(previewVideo);
+                  setFeaturedAction(previewVideo.isFeatured ? "remove" : "add");
+                  setShowFeaturedModal(true);
                 }}
                 className="flex-1"
               >
@@ -634,8 +740,8 @@ export default function VideosPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setShowPreviewModal(false);
-                  handleToggleBanner(previewVideo);
+                  setBannerAction(previewVideo.isBanner ? "remove" : "add");
+                  setShowBannerModal(true);
                 }}
                 className="flex-1"
               >
@@ -646,8 +752,8 @@ export default function VideosPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setShowPreviewModal(false);
-                  handleUpdateStatus(previewVideo, previewVideo.status === "published" ? "pending" : "published");
+                  setPublishAction(previewVideo.status === "published" ? "unpublish" : "publish");
+                  setShowPublishModal(true);
                 }}
                 className="flex-1"
               >
@@ -661,7 +767,9 @@ export default function VideosPage() {
                 size="sm"
                 onClick={() => {
                   setShowPreviewModal(false);
-                  handleToggleSuspend(previewVideo);
+                  setSelectedVideo(previewVideo);
+                  setSuspendAction(previewVideo.status === "suspended" ? "unsuspend" : "suspend");
+                  setShowSuspendModal(true);
                 }}
                 className="flex-1"
               >

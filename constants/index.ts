@@ -57,10 +57,28 @@ export const SIDEBAR_ITEMS = [
     icon: "Users",
   },
   {
+    id: "channels",
+    label: "Channels",
+    href: "/channels",
+    icon: "Radio",
+  },
+  {
     id: "videos",
     label: "Videos",
     href: "/videos",
     icon: "Video",
+  },
+  {
+    id: "comments",
+    label: "Comments",
+    href: "/comments",
+    icon: "MessageCircle",
+  },
+  {
+    id: "playlists",
+    label: "Playlists",
+    href: "/playlists",
+    icon: "ListOrdered",
   },
   {
     id: "featured",

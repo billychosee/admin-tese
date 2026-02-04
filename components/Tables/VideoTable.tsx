@@ -2,11 +2,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { VideoPlayer } from "@/components/ui/VideoPlayer";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Modal } from "@/components/ui/Modal";
+import { Modal, ConfirmModal } from "@/components/ui/Modal";
+import { VideoComments } from "./VideoComments";
 import {
   cn,
   formatNumber,
@@ -16,6 +17,7 @@ import {
 import { Icons } from "@/components/ui/Icons";
 import { VIDEO_STATUSES, VIDEO_FILTERS } from "@/constants";
 import type { Video } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/Card";
 
 interface VideoTableProps {
   videos: Video[];
@@ -41,6 +43,15 @@ export function VideoTable({
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [previewVideo, setPreviewVideo] = useState<Video | null>(null);
+  const [showFeaturedModal, setShowFeaturedModal] = useState(false);
+  const [featuredAction, setFeaturedAction] = useState<"add" | "remove">("add");
+  const [showBannerModal, setShowBannerModal] = useState(false);
+  const [bannerAction, setBannerAction] = useState<"add" | "remove">("add");
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [publishAction, setPublishAction] = useState<"publish" | "unpublish">("publish");
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [suspendAction, setSuspendAction] = useState<"suspend" | "unsuspend">("suspend");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const itemsPerPage = 10;
 
   const getStatusVariant = (status: string) => {
@@ -91,6 +102,10 @@ export function VideoTable({
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
+
+  function fetchVideos() {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <>
@@ -352,40 +367,11 @@ export function VideoTable({
         {previewVideo && (
           <div className="space-y-6 max-h-[85vh] overflow-y-auto">
             {/* Video Player */}
-            <div className="relative aspect-video bg-slate-900 rounded-xl overflow-hidden shadow-lg">
-              {previewVideo.videoUrl ? (
-                <video
-                  src={previewVideo.videoUrl}
-                  poster={previewVideo.thumbnail}
-                  controls
-                  className="w-full h-full object-contain"
-                  preload="metadata"
-                />
-              ) : previewVideo.thumbnail ? (
-                <div className="relative w-full h-full flex items-center justify-center group">
-                  <img
-                    src={previewVideo.thumbnail}
-                    alt={previewVideo.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors">
-                        <Icons.Play size={24} className="text-white ml-1" />
-                      </div>
-                      <div className="text-white">
-                        <p className="font-semibold text-lg">{formatDuration(previewVideo.duration)}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Icons.Video size={48} className="text-slate-600" />
-                </div>
-              )}
-            </div>
+            <VideoPlayer
+              src={previewVideo.videoUrl || ""}
+              poster={previewVideo.thumbnail}
+              title={previewVideo.title}
+            />
             
             {/* Video Info */}
             <div className="space-y-4">
@@ -485,6 +471,18 @@ export function VideoTable({
                 </div>
               </div>
               
+              {/* Comments Section */}
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                <VideoComments
+                  videoId={previewVideo.id}
+                  videoTitle={previewVideo.title}
+                  onCommentUpdate={() => {
+                    // Refresh video data to update comment count
+                    fetchVideos();
+                  }}
+                />
+              </div>
+              
               {previewVideo.description && (
                 <div className="pt-2">
                   <p className="text-sm font-medium text-slate-900 dark:text-white mb-2">Description</p>
@@ -500,9 +498,10 @@ export function VideoTable({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() =>
-                  onToggleFeatured(previewVideo)
-                }
+                onClick={() => {
+                  setFeaturedAction(previewVideo.isFeatured ? "remove" : "add");
+                  setShowFeaturedModal(true);
+                }}
                 className={cn(
                   previewVideo.isFeatured
                     ? "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800"
@@ -515,9 +514,10 @@ export function VideoTable({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() =>
-                  onToggleBanner(previewVideo)
-                }
+                onClick={() => {
+                  setBannerAction(previewVideo.isBanner ? "remove" : "add");
+                  setShowBannerModal(true);
+                }}
                 className={cn(
                   previewVideo.isBanner
                     ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800"
@@ -530,14 +530,10 @@ export function VideoTable({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() =>
-                  onUpdateStatus(
-                    previewVideo,
-                    previewVideo.status === "published"
-                      ? "draft"
-                      : "published",
-                  )
-                }
+                onClick={() => {
+                  setPublishAction(previewVideo.status === "published" ? "unpublish" : "publish");
+                  setShowPublishModal(true);
+                }}
               >
                 <Icons.Send size={16} className="mr-1" />
                 {previewVideo.status === "published" ? "Unpublish" : "Publish"}
@@ -545,7 +541,10 @@ export function VideoTable({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => onToggleSuspend(previewVideo)}
+                onClick={() => {
+                  setSuspendAction(previewVideo.status === "suspended" ? "unsuspend" : "suspend");
+                  setShowSuspendModal(true);
+                }}
                 className={cn(
                   previewVideo.status === "suspended"
                     ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800"
@@ -558,10 +557,7 @@ export function VideoTable({
               <Button
                 variant="danger"
                 size="sm"
-                onClick={() => {
-                  onDelete(previewVideo);
-                  setPreviewVideo(null);
-                }}
+                onClick={() => setShowDeleteModal(true)}
               >
                 <Icons.Trash2 size={16} className="mr-1" />
                 Delete
@@ -570,6 +566,91 @@ export function VideoTable({
           </div>
         )}
       </Modal>
+
+      <ConfirmModal
+        isOpen={showFeaturedModal}
+        onClose={() => setShowFeaturedModal(false)}
+        onConfirm={() => {
+          onToggleFeatured(previewVideo!);
+          setShowFeaturedModal(false);
+        }}
+        title={featuredAction === "add" ? "Add to Featured" : "Remove from Featured"}
+        message={
+          featuredAction === "add"
+            ? `Are you sure you want to add "${previewVideo?.title}" to featured? This will highlight the video on the platform.`
+            : `Are you sure you want to remove "${previewVideo?.title}" from featured?`
+        }
+        confirmText={featuredAction === "add" ? "Add to Featured" : "Remove"}
+        variant="info"
+      />
+
+      <ConfirmModal
+        isOpen={showBannerModal}
+        onClose={() => setShowBannerModal(false)}
+        onConfirm={() => {
+          onToggleBanner(previewVideo!);
+          setShowBannerModal(false);
+        }}
+        title={bannerAction === "add" ? "Add to Banner" : "Remove from Banner"}
+        message={
+          bannerAction === "add"
+            ? `Are you sure you want to add "${previewVideo?.title}" to banner? This will display the video on the homepage banner.`
+            : `Are you sure you want to remove "${previewVideo?.title}" from banner?`
+        }
+        confirmText={bannerAction === "add" ? "Add to Banner" : "Remove"}
+        variant="info"
+      />
+
+      <ConfirmModal
+        isOpen={showPublishModal}
+        onClose={() => setShowPublishModal(false)}
+        onConfirm={() => {
+          onUpdateStatus(
+            previewVideo!,
+            publishAction === "unpublish" ? "draft" : "published",
+          );
+          setShowPublishModal(false);
+        }}
+        title={publishAction === "publish" ? "Publish Video" : "Unpublish Video"}
+        message={
+          publishAction === "publish"
+            ? `Are you sure you want to publish "${previewVideo?.title}"? This will make the video visible to users.`
+            : `Are you sure you want to unpublish "${previewVideo?.title}"? This will hide the video from users.`
+        }
+        confirmText={publishAction === "publish" ? "Publish" : "Unpublish"}
+        variant={publishAction === "publish" ? "info" : "warning"}
+      />
+
+      <ConfirmModal
+        isOpen={showSuspendModal}
+        onClose={() => setShowSuspendModal(false)}
+        onConfirm={() => {
+          onToggleSuspend(previewVideo!);
+          setShowSuspendModal(false);
+        }}
+        title={suspendAction === "suspend" ? "Suspend Video" : "Unsuspend Video"}
+        message={
+          suspendAction === "suspend"
+            ? `Are you sure you want to suspend "${previewVideo?.title}"? This will make the video unavailable to users.`
+            : `Are you sure you want to unsuspend "${previewVideo?.title}"? This will make the video visible to users again.`
+        }
+        confirmText={suspendAction === "suspend" ? "Suspend" : "Unsuspend"}
+        variant={suspendAction === "suspend" ? "warning" : "info"}
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={() => {
+          onDelete(previewVideo!);
+          setShowDeleteModal(false);
+          setPreviewVideo(null);
+        }}
+        title="Delete Video"
+        message={`Are you sure you want to delete "${previewVideo?.title}"? This action cannot be undone and the video will be permanently removed.`}
+        confirmText="Delete"
+        variant="danger"
+      />
     </>
   );
 }

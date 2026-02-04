@@ -16,6 +16,9 @@ import type {
   Role,
   Permission,
   FeeConfiguration,
+  Playlist,
+  Comment,
+  UserProfile,
 } from "@/types";
 import {
   mockTransactions,
@@ -34,6 +37,9 @@ import {
   mockFeeConfigurations,
   mockPermissions,
   mockRoles,
+  mockPlaylists,
+  mockComments,
+  mockUserProfiles,
 } from "./mockData";
 import { generateId } from "@/utils";
 
@@ -194,7 +200,7 @@ export const api = {
         const s = search.toLowerCase();
         filtered = filtered.filter(
           (c) =>
-            `${c.firstName} ${c.lastName}`.toLowerCase().includes(s) ||
+            c.creatorFullName.toLowerCase().includes(s) ||
             c.email.toLowerCase().includes(s) ||
             c.channelName.toLowerCase().includes(s),
         );
@@ -243,6 +249,47 @@ export const api = {
 
     async deactivate(id: string): Promise<Creator> {
       return this.updateStatus(id, "suspended");
+    },
+
+    async deactivateChannel(id: string): Promise<Creator> {
+      await simulateApiDelay();
+      const creator = mockCreators.find((c) => c.id === id);
+      if (!creator) throw new Error("Creator not found");
+      return { ...creator, channelStatus: "deactivated" };
+    },
+
+    async activateChannel(id: string): Promise<Creator> {
+      await simulateApiDelay();
+      const creator = mockCreators.find((c) => c.id === id);
+      if (!creator) throw new Error("Creator not found");
+      return { ...creator, channelStatus: "active" };
+    },
+
+    async toggleChannelStatus(id: string): Promise<Creator> {
+      await simulateApiDelay();
+      const creator = mockCreators.find((c) => c.id === id);
+      if (!creator) throw new Error("Creator not found");
+      const newStatus = creator.channelStatus === "active" ? "deactivated" : "active";
+      return { ...creator, channelStatus: newStatus };
+    },
+
+    async processPayout(id: string): Promise<Creator> {
+      await simulateApiDelay();
+      const creator = mockCreators.find((c) => c.id === id);
+      if (!creator) throw new Error("Creator not found");
+      const amount = creator.currentBalance;
+      return {
+        ...creator,
+        currentBalance: 0,
+        totalPaidOut: creator.totalPaidOut + amount,
+        withdrawRequest: {
+          id: "wr_" + generateId(),
+          amount,
+          status: "completed",
+          requestedAt: new Date(),
+          processedAt: new Date(),
+        },
+      };
     },
   },
 
@@ -333,6 +380,63 @@ export const api = {
       const video = mockVideos.find((v) => v.id === id);
       if (!video) throw new Error("Video not found");
       return { ...video, isBanner: false };
+    },
+
+    async deactivate(id: string): Promise<Video> {
+      await simulateApiDelay();
+      const video = mockVideos.find((v) => v.id === id);
+      if (!video) throw new Error("Video not found");
+      return { ...video, status: "suspended" };
+    },
+
+    async activate(id: string): Promise<Video> {
+      await simulateApiDelay();
+      const video = mockVideos.find((v) => v.id === id);
+      if (!video) throw new Error("Video not found");
+      return { ...video, status: "published" };
+    },
+
+    async toggleVideoStatus(id: string): Promise<Video> {
+      await simulateApiDelay();
+      const video = mockVideos.find((v) => v.id === id);
+      if (!video) throw new Error("Video not found");
+      const newStatus = video.status === "published" ? "suspended" : "published";
+      return { ...video, status: newStatus };
+    },
+
+    async deactivateTrailer(id: string): Promise<Video> {
+      await simulateApiDelay();
+      const video = mockVideos.find((v) => v.id === id);
+      if (!video) throw new Error("Video not found");
+      return { ...video, videoTrailer: undefined };
+    },
+
+    async toggleTrailer(id: string): Promise<Video> {
+      await simulateApiDelay();
+      const video = mockVideos.find((v) => v.id === id);
+      if (!video) throw new Error("Video not found");
+      return { ...video, videoTrailer: video.videoTrailer ? undefined : video.videoTrailer };
+    },
+
+    async hideComments(id: string): Promise<Video> {
+      await simulateApiDelay();
+      const video = mockVideos.find((v) => v.id === id);
+      if (!video) throw new Error("Video not found");
+      return { ...video, commentsHidden: true };
+    },
+
+    async showComments(id: string): Promise<Video> {
+      await simulateApiDelay();
+      const video = mockVideos.find((v) => v.id === id);
+      if (!video) throw new Error("Video not found");
+      return { ...video, commentsHidden: false };
+    },
+
+    async toggleComments(id: string): Promise<Video> {
+      await simulateApiDelay();
+      const video = mockVideos.find((v) => v.id === id);
+      if (!video) throw new Error("Video not found");
+      return { ...video, commentsHidden: !video.commentsHidden };
     },
   },
 
@@ -717,6 +821,254 @@ export const api = {
       fee.isActive = !fee.isActive;
       fee.updatedAt = new Date();
       return fee;
+    },
+  },
+
+  playlists: {
+    async getAll(
+      page: number = 1,
+      pageSize: number = 10,
+      status?: string,
+      search?: string,
+    ): Promise<PaginatedResponse<Playlist>> {
+      await simulateApiDelay();
+
+      let filtered = [...mockPlaylists];
+      if (status && status !== "all") {
+        if (status === "active") {
+          filtered = filtered.filter((p) => p.isActive && !p.isDeactivated);
+        } else if (status === "deactivated") {
+          filtered = filtered.filter((p) => p.isDeactivated);
+        } else if (status === "inactive") {
+          filtered = filtered.filter((p) => !p.isActive);
+        }
+      }
+      if (search) {
+        const s = search.toLowerCase();
+        filtered = filtered.filter(
+          (p) =>
+            p.playlistName.toLowerCase().includes(s) ||
+            p.creatorName.toLowerCase().includes(s) ||
+            p.channelName.toLowerCase().includes(s),
+        );
+      }
+
+      const start = (page - 1) * pageSize;
+      const data = filtered.slice(start, start + pageSize);
+
+      return {
+        data,
+        total: filtered.length,
+        page,
+        pageSize,
+        totalPages: Math.ceil(filtered.length / pageSize),
+      };
+    },
+
+    async getById(id: string): Promise<Playlist> {
+      await simulateApiDelay();
+      const playlist = mockPlaylists.find((p) => p.id === id);
+      if (!playlist) throw new Error("Playlist not found");
+      return playlist;
+    },
+
+    async deactivate(id: string): Promise<Playlist> {
+      await simulateApiDelay();
+      const playlist = mockPlaylists.find((p) => p.id === id);
+      if (!playlist) throw new Error("Playlist not found");
+      playlist.isDeactivated = true;
+      playlist.isActive = false;
+      playlist.updatedAt = new Date();
+      return playlist;
+    },
+
+    async activate(id: string): Promise<Playlist> {
+      await simulateApiDelay();
+      const playlist = mockPlaylists.find((p) => p.id === id);
+      if (!playlist) throw new Error("Playlist not found");
+      playlist.isDeactivated = false;
+      playlist.isActive = true;
+      playlist.updatedAt = new Date();
+      return playlist;
+    },
+
+    async togglePlaylistStatus(id: string): Promise<Playlist> {
+      await simulateApiDelay();
+      const playlist = mockPlaylists.find((p) => p.id === id);
+      if (!playlist) throw new Error("Playlist not found");
+      playlist.isDeactivated = !playlist.isDeactivated;
+      playlist.isActive = !playlist.isDeactivated;
+      playlist.updatedAt = new Date();
+      return playlist;
+    },
+
+    async getByChannelId(channelId: string): Promise<Playlist[]> {
+      await simulateApiDelay();
+      const playlists = mockPlaylists.filter((p) => p.channelId === channelId);
+      return playlists;
+    },
+  },
+
+  comments: {
+    async getAll(
+      page: number = 1,
+      pageSize: number = 10,
+      status?: string,
+      videoId?: string,
+      search?: string,
+    ): Promise<PaginatedResponse<Comment>> {
+      await simulateApiDelay();
+
+      let filtered = [...mockComments];
+      if (status && status !== "all") {
+        filtered = filtered.filter((c) => c.status === status);
+      }
+      if (videoId && videoId !== "all") {
+        filtered = filtered.filter((c) => c.videoId === videoId);
+      }
+      if (search) {
+        const s = search.toLowerCase();
+        filtered = filtered.filter(
+          (c) =>
+            c.userName.toLowerCase().includes(s) ||
+            c.content.toLowerCase().includes(s) ||
+            c.videoTitle.toLowerCase().includes(s),
+        );
+      }
+
+      const start = (page - 1) * pageSize;
+      const data = filtered.slice(start, start + pageSize);
+
+      return {
+        data,
+        total: filtered.length,
+        page,
+        pageSize,
+        totalPages: Math.ceil(filtered.length / pageSize),
+      };
+    },
+
+    async getById(id: string): Promise<Comment> {
+      await simulateApiDelay();
+      const comment = mockComments.find((c) => c.id === id);
+      if (!comment) throw new Error("Comment not found");
+      return comment;
+    },
+
+    async getByVideoId(videoId: string): Promise<Comment[]> {
+      await simulateApiDelay();
+      const comments = mockComments.filter((c) => c.videoId === videoId);
+      return comments;
+    },
+
+    async getByUserId(userId: string): Promise<Comment[]> {
+      await simulateApiDelay();
+      const comments = mockComments.filter((c) => c.userId === userId);
+      return comments;
+    },
+
+    async flag(id: string): Promise<Comment> {
+      await simulateApiDelay();
+      const comment = mockComments.find((c) => c.id === id);
+      if (!comment) throw new Error("Comment not found");
+      comment.isFlagged = true;
+      comment.status = "flagged";
+      comment.flags = (comment.flags || 0) + 1;
+      comment.updatedAt = new Date();
+      return comment;
+    },
+
+    async unflag(id: string): Promise<Comment> {
+      await simulateApiDelay();
+      const comment = mockComments.find((c) => c.id === id);
+      if (!comment) throw new Error("Comment not found");
+      comment.isFlagged = false;
+      comment.status = comment.flags && comment.flags > 0 ? "flagged" : "active";
+      comment.updatedAt = new Date();
+      return comment;
+    },
+
+    async hide(id: string): Promise<Comment> {
+      await simulateApiDelay();
+      const comment = mockComments.find((c) => c.id === id);
+      if (!comment) throw new Error("Comment not found");
+      comment.isHidden = true;
+      comment.status = "hidden";
+      comment.updatedAt = new Date();
+      return comment;
+    },
+
+    async unhide(id: string): Promise<Comment> {
+      await simulateApiDelay();
+      const comment = mockComments.find((c) => c.id === id);
+      if (!comment) throw new Error("Comment not found");
+      comment.isHidden = false;
+      comment.status = comment.isFlagged ? "flagged" : "active";
+      comment.updatedAt = new Date();
+      return comment;
+    },
+
+    async delete(id: string): Promise<void> {
+      await simulateApiDelay();
+      const index = mockComments.findIndex((c) => c.id === id);
+      if (index === -1) throw new Error("Comment not found");
+      mockComments.splice(index, 1);
+    },
+
+    async getStats(): Promise<{
+      total: number;
+      active: number;
+      flagged: number;
+      hidden: number;
+    }> {
+      await simulateApiDelay();
+      return {
+        total: mockComments.length,
+        active: mockComments.filter((c) => c.status === "active").length,
+        flagged: mockComments.filter((c) => c.status === "flagged").length,
+        hidden: mockComments.filter((c) => c.status === "hidden").length,
+      };
+    },
+  },
+
+  userProfiles: {
+    async getById(id: string): Promise<UserProfile> {
+      await simulateApiDelay();
+      const profile = mockUserProfiles.find((p) => p.id === id);
+      if (!profile) throw new Error("User profile not found");
+      return profile;
+    },
+
+    async getByCommentId(commentId: string): Promise<UserProfile | null> {
+      await simulateApiDelay();
+      const comment = mockComments.find((c) => c.id === commentId);
+      if (!comment) return null;
+      const profile = mockUserProfiles.find((p) => p.id === comment.userId);
+      return profile || null;
+    },
+
+    async suspend(id: string): Promise<UserProfile> {
+      await simulateApiDelay();
+      const profile = mockUserProfiles.find((p) => p.id === id);
+      if (!profile) throw new Error("User profile not found");
+      profile.status = "suspended";
+      return profile;
+    },
+
+    async activate(id: string): Promise<UserProfile> {
+      await simulateApiDelay();
+      const profile = mockUserProfiles.find((p) => p.id === id);
+      if (!profile) throw new Error("User profile not found");
+      profile.status = "active";
+      return profile;
+    },
+
+    async ban(id: string): Promise<UserProfile> {
+      await simulateApiDelay();
+      const profile = mockUserProfiles.find((p) => p.id === id);
+      if (!profile) throw new Error("User profile not found");
+      profile.status = "banned";
+      return profile;
     },
   },
 };

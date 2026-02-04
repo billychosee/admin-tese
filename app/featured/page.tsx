@@ -215,7 +215,6 @@ export default function FeaturedPage() {
         <FeaturedTable
           featured={featured}
           isLoading={isLoading}
-          onToggleStatus={handleToggleStatus}
           onReorder={handleReorder}
           onRemove={(id) => {
             setSelectedId(id);
