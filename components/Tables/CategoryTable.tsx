@@ -111,12 +111,21 @@ export function CategoryTable({
                       >
                         {/* Banner Image Cell */}
                         <td className="py-4 px-4">
-                          <div className="w-20 h-12 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                          <div
+                            className="rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 aspect-square"
+                            style={{
+                              width: category.imageWidth
+                                ? `${category.imageWidth}px`
+                                : "80px",
+                            }}
+                          >
                             {category.bannerUrl ? (
                               <img
                                 src={category.bannerUrl}
                                 alt={category.name}
                                 className="w-full h-full object-cover"
+                                width={category.imageWidth}
+                                height={category.imageWidth}
                                 onError={(e) => {
                                   // Fallback for broken links
                                   (e.target as HTMLImageElement).src =

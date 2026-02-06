@@ -217,7 +217,7 @@ export default function CategoriesPage() {
           <h1 className="text-2xl lg:text-3xl font-black uppercase tracking-tighter lg:tracking-tight text-[hsl(var(--text-primary))]">
             Categories
           </h1>
-          <p className="text-xs font-bold uppercase tracking-widest mt-1 text-[hsl(var(--text-muted))]">
+          <p className="text-xs font-normal tracking-widest mt-1 text-[hsl(var(--text-muted))]">
             Manage your content library
           </p>
         </div>
@@ -322,134 +322,121 @@ export default function CategoriesPage() {
               key={category.id}
               hover
               className={cn(
-                "rounded-2xl border transition-all duration-300",
+                "rounded-2xl border transition-all duration-300 overflow-hidden",
                 colors.surfaceBorder,
                 colors.surface,
               )}
             >
-              <CardContent className="p-5">
-                <div className="flex flex-col">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="p-3 rounded-xl"
-                        style={{ backgroundColor: `${category.color}15` }}
-                      >
-                        <Icons.FolderOpen
-                          size={20}
-                          style={{ color: category.color }}
-                        />
-                      </div>
-                      <div>
-                        <h3
-                          className={cn(
-                            "text-sm font-semibold",
-                            colors.textPrimary,
-                          )}
-                        >
-                          {category.name}
-                        </h3>
-                        <p
-                          className={cn(
-                            "text-xs font-medium uppercase tracking-wider",
-                            colors.textMuted,
-                          )}
-                        >
-                          {category.videoCount} Videos
-                        </p>
-                      </div>
+              <div className="relative aspect-[4/3] w-full">
+                {category.bannerUrl ? (
+                  <img
+                    src={category.bannerUrl}
+                    alt={category.name}
+                    className="w-full h-full object-cover"
+                    style={category.imagePosition ? { objectPosition: category.imagePosition } : {}}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                      (e.target as HTMLImageElement).parentElement!.style.background = `linear-gradient(135deg, ${category.color}40 0%, ${category.color}10 100%)`;
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full"
+                    style={{
+                      background: `linear-gradient(135deg, ${category.color}40 0%, ${category.color}10 100%)`,
+                    }}
+                  />
+                )}
+                {/* Category Name Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div
+                      className="p-1.5 rounded-lg"
+                      style={{ backgroundColor: `${category.color}30` }}
+                    >
+                      <Icons.FolderOpen
+                        size={14}
+                        style={{ color: category.color }}
+                      />
                     </div>
                     <Badge
                       className={cn(
-                        "rounded-lg font-black text-[8px] uppercase px-2 py-1",
+                        "rounded font-black text-[8px] uppercase px-1.5 py-0.5",
                       )}
                       style={{
-                        backgroundColor: `${category.color}20`,
-                        color: category.color,
-                        border: `1px solid ${category.color}40`,
+                        backgroundColor: `${category.color}40`,
+                        color: '#fff',
+                        border: `1px solid ${category.color}60`,
                       }}
                     >
                       {category.videoCount} Videos
                     </Badge>
                   </div>
-                  {/* Category Banner Image */}
-                  <div
-                    className={cn("mt-4 h-24 -mx-5 rounded-t-2xl overflow-hidden")}
-                  >
-                    {category.bannerUrl ? (
-                      <img
-                        src={category.bannerUrl}
-                        alt={category.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                          (e.target as HTMLImageElement).parentElement!.style.background = `linear-gradient(135deg, ${category.color}40 0%, ${category.color}10 100%)`;
-                        }}
-                      />
-                    ) : (
-                      <div
-                        className="w-full h-full"
-                        style={{
-                          background: `linear-gradient(135deg, ${category.color}40 0%, ${category.color}10 100%)`,
-                        }}
-                      />
+                  <h3
+                    className={cn(
+                      "text-base font-semibold text-white",
                     )}
-                  </div>
-                  <div
-                    className={cn("mt-0 h-px w-full", colors.surfaceBorder)}
-                  />
-                  <div className="mt-4 flex items-center justify-between">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-lg"
-                      onClick={() => router.push(`/categories/${category.id}`)}
-                    >
-                      <Icons.Play size={14} className="mr-2" />
-                      View Videos
-                    </Button>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "h-8 w-8 p-0 transition-colors duration-300",
-                          isDark
-                            ? `${colors.textSecondary} hover:${colors.textPrimary} hover:${colors.surfaceHover}`
-                            : "",
-                        )}
-                        onClick={() => {
-                          setSelectedCategory(category);
-                          setFormData({
-                            name: category.name,
-                            description: category.description,
-                            color: category.color,
-                            bannerUrl: category.bannerUrl || "",
-                          });
-                          setShowEditModal(true);
-                        }}
-                      >
-                        <Icons.Edit size={14} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={cn(
-                          "h-8 w-8 p-0 transition-colors duration-300",
-                          "hover:bg-[hsl(var(--danger)/0.1)]",
-                          colors.dangerText,
-                        )}
-                        onClick={() => {
-                          setSelectedCategory(category);
-                          setShowDeleteModal(true);
-                        }}
-                      >
-                        <Icons.Trash2 size={14} />
-                      </Button>
-                    </div>
-                  </div>
+                  >
+                    {category.name}
+                  </h3>
+                  <p
+                    className={cn(
+                      "text-xs font-medium text-white/70 line-clamp-2",
+                    )}
+                  >
+                    {category.description}
+                  </p>
                 </div>
-              </CardContent>
+                {/* Actions Overlay */}
+                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "h-7 w-7 p-0 bg-white/20 hover:bg-white/30 backdrop-blur-sm",
+                      "text-white",
+                    )}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setFormData({
+                        name: category.name,
+                        description: category.description,
+                        color: category.color,
+                        bannerUrl: category.bannerUrl || "",
+                      });
+                      setShowEditModal(true);
+                    }}
+                  >
+                    <Icons.Edit size={12} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "h-7 w-7 p-0 bg-white/20 hover:bg-red-400/50 backdrop-blur-sm",
+                      "text-white",
+                    )}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    <Icons.Trash2 size={12} />
+                  </Button>
+                </div>
+              </div>
+              {/* View Videos Button */}
+              <div className="p-3 border-t" style={{ borderColor: 'hsl(var(--surface-border))' }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full rounded-lg"
+                  onClick={() => router.push(`/categories/${category.id}`)}
+                >
+                  <Icons.Play size={14} className="mr-2" />
+                  View Videos
+                </Button>
+              </div>
             </Card>
           ))}
         </div>

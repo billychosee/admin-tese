@@ -212,7 +212,7 @@ export default function ChannelsPage() {
           <h1 className="text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
             Channels
           </h1>
-          <p className="text-xs font-bold uppercase tracking-widest mt-1 text-[hsl(var(--text-muted))]">
+          <p className="text-xs font-normal tracking-widest mt-1 text-[hsl(var(--text-muted))]">
             Manage your content channels
           </p>
         </div>

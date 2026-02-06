@@ -224,7 +224,7 @@ export default function CreatorsPage() {
           <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
             Creators
           </h1>
-          <p className="text-xs sm:text-sm font-bold uppercase tracking-widest mt-1 text-[hsl(var(--text-muted))]">
+          <p className="text-xs sm:text-sm font-normal tracking-widest mt-1 text-[hsl(var(--text-muted))]">
             Manage your content creators
           </p>
         </div>

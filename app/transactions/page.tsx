@@ -263,7 +263,7 @@ export default function TransactionsPage() {
           <h1 className="text-xl sm:text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
             Transactions
           </h1>
-          <p className="text-xs font-bold uppercase tracking-widest text-[hsl(var(--text-muted))]">
+          <p className="text-xs font-normal tracking-widest text-[hsl(var(--text-muted))]">
             View and manage all transactions
           </p>
         </div>

@@ -161,7 +161,7 @@ export default function FeaturedPage() {
           >
             Featured Creators
           </h2>
-          <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest mt-1">
+          <p className="text-xs font-normal  tracking-widest mt-1">
             Manage creators displayed on the homepage
           </p>
         </div>

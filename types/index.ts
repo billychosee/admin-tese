@@ -216,6 +216,9 @@ export interface PayoutRequest {
 
 export interface Category {
   bannerUrl?: string;
+  imageHeight?: number;
+  imageWidth?: number;
+  imagePosition?: string;
   id: string;
   name: string;
   slug: string;
