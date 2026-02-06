@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { VideoPlayer } from "@/components/ui/VideoPlayer";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Modal, ConfirmModal } from "@/components/ui/Modal";
-import { VideoComments } from "./VideoComments";
+import { ConfirmModal } from "@/components/ui/Modal";
 import { cn, formatNumber, formatDuration, formatDate } from "@/utils";
 import { Icons } from "@/components/ui/Icons";
 import { VIDEO_STATUSES, VIDEO_FILTERS } from "@/constants";
@@ -37,14 +36,11 @@ export function VideoTable({
   onDelete,
   onView,
 }: VideoTableProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [previewVideo, setPreviewVideo] = useState<Video | null>(null);
-  const [viewsTimePeriod, setViewsTimePeriod] = useState<
-    "daily" | "weekly" | "monthly" | "yearly"
-  >("weekly");
   const [showFeaturedModal, setShowFeaturedModal] = useState(false);
   const [featuredAction, setFeaturedAction] = useState<"add" | "remove">("add");
   const [showBannerModal, setShowBannerModal] = useState(false);
@@ -58,6 +54,7 @@ export function VideoTable({
     "suspend",
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const itemsPerPage = 10;
 
   const getStatusVariant = (status: string) => {
@@ -103,757 +100,648 @@ export function VideoTable({
     });
   }, [videos, searchTerm, statusFilter, filter]);
 
-  const totalPages = Math.ceil(filteredVideos.length / itemsPerPage);
-  const paginatedVideos = filteredVideos.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  const paginatedVideos = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredVideos.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredVideos, currentPage]);
 
-  function fetchVideos() {
-    // Optional callback for refreshing video data
+  const totalPages = Math.ceil(filteredVideos.length / itemsPerPage);
+
+  const handleViewVideo = (video: Video) => {
+    onView?.(video);
+    router.push(`/videos/${video.id}`);
+  };
+
+  const handleAction = (
+    action: "featured" | "banner" | "publish" | "suspend" | "delete",
+    video: Video,
+  ) => {
+    setSelectedVideo(video);
+    switch (action) {
+      case "featured":
+        setFeaturedAction(video.isFeatured ? "remove" : "add");
+        setShowFeaturedModal(true);
+        break;
+      case "banner":
+        setBannerAction(video.isBanner ? "remove" : "add");
+        setShowBannerModal(true);
+        break;
+      case "publish":
+        setPublishAction(video.status === "published" ? "unpublish" : "publish");
+        setShowPublishModal(true);
+        break;
+      case "suspend":
+        setSuspendAction(
+          video.status === "suspended" ? "unsuspend" : "suspend",
+        );
+        setShowSuspendModal(true);
+        break;
+      case "delete":
+        setShowDeleteModal(true);
+        break;
+    }
+  };
+
+  const handleConfirmFeatured = async () => {
+    if (!selectedVideo) return;
+    await onToggleFeatured?.(selectedVideo);
+    setShowFeaturedModal(false);
+    setSelectedVideo(null);
+  };
+
+  const handleConfirmBanner = async () => {
+    if (!selectedVideo) return;
+    await onToggleBanner?.(selectedVideo);
+    setShowBannerModal(false);
+    setSelectedVideo(null);
+  };
+
+  const handleConfirmPublish = async () => {
+    if (!selectedVideo) return;
+    await onUpdateStatus?.(
+      selectedVideo,
+      publishAction === "unpublish" ? "draft" : "published",
+    );
+    setShowPublishModal(false);
+    setSelectedVideo(null);
+  };
+
+  const handleConfirmSuspend = async () => {
+    if (!selectedVideo) return;
+    await onToggleSuspend?.(selectedVideo);
+    setShowSuspendModal(false);
+    setSelectedVideo(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedVideo) {
+      onDelete?.(selectedVideo);
+    }
+    setShowDeleteModal(false);
+    setSelectedVideo(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex gap-4">
+          <div className="h-10 w-64 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+          <div className="h-10 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+          <div className="h-10 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+        </div>
+        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-20 bg-slate-100 dark:bg-slate-700/50 rounded animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <div className="space-y-4">
-            <div>
-              <CardTitle>Videos</CardTitle>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1">
-                <Input
-                  placeholder="Search videos..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="h-10"
-                />
-              </div>
-              <div className="relative">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="appearance-none w-full px-4 py-2 pr-10 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 h-10 cursor-pointer"
-                >
-                  {VIDEO_STATUSES.map((status) => (
-                    <option key={status.value} value={status.value}>
-                      {status.label}
-                    </option>
-                  ))}
-                </select>
-                <Icons.ChevronDown
-                  size={16}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                />
-              </div>
-              <div className="relative">
-                <select
-                  value={filter}
-                  onChange={(e) => {
-                    setFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="appearance-none w-full px-4 py-2 pr-10 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 h-10 cursor-pointer"
-                >
-                  {VIDEO_FILTERS.map((f) => (
-                    <option key={f.value} value={f.value}>
-                      {f.label}
-                    </option>
-                  ))}
-                </select>
-                <Icons.ChevronDown
-                  size={16}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                />
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="space-y-3">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-12 bg-muted rounded animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b-2 border-slate-300 dark:border-slate-600">
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
-                        Video
-                      </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
-                        Creator
-                      </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
-                        Category
-                      </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
-                        Status
-                      </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
-                        Views
-                      </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
-                        Duration
-                      </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
-                        Price
-                      </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedVideos.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={8}
-                          className="text-center py-8 text-slate-500 dark:text-slate-400"
-                        >
-                          No videos found
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedVideos.map((video) => (
-                        <tr
-                          key={video.id}
-                          className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition"
-                        >
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="relative group flex-shrink-0">
-                                {video.thumbnail ? (
-                                  <img
-                                    src={video.thumbnail}
-                                    alt={video.title}
-                                    className="w-20 h-20 object-cover rounded-lg cursor-pointer"
-                                    onClick={() => {
-                                      setPreviewVideo(video);
-                                      onView?.(video);
-                                    }}
-                                  />
-                                ) : (
-                                  <div
-                                    className="w-20 h-20 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center cursor-pointer flex-shrink-0"
-                                    onClick={() => {
-                                      setPreviewVideo(video);
-                                      onView?.(video);
-                                    }}
-                                  >
-                                    <Icons.Video
-                                      size={24}
-                                      className="text-slate-400"
-                                    />
-                                  </div>
-                                )}
-                                <button
-                                  onClick={() => {
-                                    setPreviewVideo(video);
-                                    onView?.(video);
-                                  }}
-                                  className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
-                                >
-                                  <Icons.Play
-                                    size={24}
-                                    className="text-white"
-                                  />
-                                </button>
-                                <span className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
-                                  {formatDuration(video.duration)}
-                                </span>
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-slate-900 dark:text-white break-words">
-                                  {video.title}
-                                </p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 break-words">
-                                  {formatDate(video.createdAt)}
-                                </p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-300">
-                            {video.creatorName}
-                          </td>
-                          <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-300">
-                            {video.categoryName}
-                          </td>
-                          <td className="py-4 px-4">
-                            <Badge
-                              variant={
-                                getStatusVariant(video.status) as
-                                  | "success"
-                                  | "warning"
-                                  | "danger"
-                                  | "info"
-                                  | "neutral"
-                              }
-                              className="capitalize"
-                            >
-                              {video.status}
-                            </Badge>
-                          </td>
-                          <td className="py-4 px-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                            {formatNumber(video.views)}
-                          </td>
-                          <td className="py-4 px-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                            {formatDuration(video.duration)}
-                          </td>
-                          <td className="py-4 px-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                            {video.isPaid && video.price
-                              ? `${video.currency || "USD"} ${video.price.toFixed(2)}`
-                              : "-"}
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => {
-                                  setPreviewVideo(video);
-                                  onView?.(video);
-                                }}
-                                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition"
-                                title="View video"
-                              >
-                                <Icons.Eye size={16} />
-                              </button>
-                              <button
-                                onClick={() => onDelete?.(video)}
-                                className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 transition"
-                                title="Delete"
-                              >
-                                <Icons.Trash2 size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Showing{" "}
-                    {Math.min(
-                      (currentPage - 1) * itemsPerPage + 1,
-                      filteredVideos.length,
-                    )}{" "}
-                    to{" "}
-                    {Math.min(
-                      currentPage * itemsPerPage,
-                      filteredVideos.length,
-                    )}{" "}
-                    of {filteredVideos.length} results
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      <Icons.ChevronLeft size={16} />
-                    </Button>
-                    <Button variant="primary" size="sm" disabled>
-                      {currentPage} / {totalPages}
-                    </Button>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() =>
-                        setCurrentPage((p) => Math.min(totalPages, p + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                    >
-                      <Icons.ChevronRight size={16} />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Video Preview Modal */}
-      <Modal
-        isOpen={!!previewVideo}
-        onClose={() => setPreviewVideo(null)}
-        title="Video Preview & Metrics"
-        size="xl"
-      >
-        {previewVideo && (
-          <div className="space-y-6 max-h-[85vh] overflow-y-auto">
-            {/* Video Player */}
-            <VideoPlayer
-              src={previewVideo.videoUrl || ""}
-              poster={previewVideo.thumbnail}
-              title={previewVideo.title}
+    <div className="space-y-4">
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 w-full">
+          <div className="relative w-full sm:w-64">
+            <Icons.Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
+            <Input
+              type="search"
+              placeholder="Search videos or creators..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="all">All Status</option>
+            {VIDEO_STATUSES.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            {VIDEO_FILTERS.map((f) => (
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
+          {filteredVideos.length} video{filteredVideos.length !== 1 ? "s" : ""}{" "}
+          found
+        </div>
+      </div>
 
-            {/* Video Info */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                  {previewVideo.title}
-                </h3>
-                <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <Badge
-                    variant={previewVideo.isFeatured ? "warning" : "neutral"}
-                  >
-                    {previewVideo.isFeatured ? "⭐ Featured" : "Not Featured"}
-                  </Badge>
-                  <Badge variant={previewVideo.isBanner ? "info" : "neutral"}>
-                    {previewVideo.isBanner ? "🖼️ Banner" : "Not Banner"}
-                  </Badge>
-                  <Badge
-                    variant={
-                      previewVideo.status === "published"
-                        ? "success"
-                        : previewVideo.status === "pending"
-                          ? "warning"
-                          : previewVideo.status === "suspended"
-                            ? "danger"
-                            : "neutral"
-                    }
-                  >
-                    {previewVideo.status.charAt(0).toUpperCase() +
-                      previewVideo.status.slice(1)}
-                  </Badge>
-                  {previewVideo.isPaid && (
-                    <Badge variant="info">
-                      💰 {previewVideo.currency || "USD"}{" "}
-                      {previewVideo.price?.toFixed(2)}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              {/* Performance Metrics */}
-              <div>
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                  <Icons.BarChart size={16} />
-                  Performance Metrics
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.Eye
-                      size={16}
-                      className="mx-auto mb-1 text-blue-500"
-                    />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                      Views
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
-                      {formatNumber(previewVideo.views)}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.Heart
-                      size={16}
-                      className="mx-auto mb-1 text-red-500"
-                    />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                      Likes
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
-                      {formatNumber(previewVideo.likes)}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.MessageCircle
-                      size={16}
-                      className="mx-auto mb-1 text-green-500"
-                    />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                      Comments
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
-                      {formatNumber(previewVideo.comments)}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.Clock
-                      size={16}
-                      className="mx-auto mb-1 text-amber-500"
-                    />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                      Watch Time
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
-                      {formatDuration(previewVideo.watchTime || 0)}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.DollarSign
-                      size={16}
-                      className="mx-auto mb-1 text-emerald-500"
-                    />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                      Sales
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
-                      ${formatNumber(previewVideo.salesAmount || 0)}
-                    </p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                    <Icons.TrendingUp
-                      size={16}
-                      className="mx-auto mb-1 text-purple-500"
-                    />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                      Engagement
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
-                      {previewVideo.engagementRate || 0}%
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Views by Time Period */}
-              <div>
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                  <Icons.TrendingUp size={16} />
-                  Views Over Time
-                </h4>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                  {/* Time Period Selector */}
-                  <div className="flex gap-2 mb-4">
-                    {(["daily", "weekly", "monthly", "yearly"] as const).map(
-                      (period) => (
-                        <button
-                          key={period}
-                          onClick={() => setViewsTimePeriod(period)}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                            viewsTimePeriod === period
-                              ? "bg-emerald-500 text-white"
-                              : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
-                          }`}
+      {/* Cards Grid for Mobile */}
+      <div className="block lg:hidden">
+        {paginatedVideos.length === 0 ? (
+          <div className="text-center py-12">
+            <Icons.Video
+              size={48}
+              className="mx-auto text-slate-300 dark:text-slate-600 mb-4"
+            />
+            <p className="text-slate-500 dark:text-slate-400">
+              No videos found
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {paginatedVideos.map((video) => (
+              <Card
+                key={video.id}
+                className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+              >
+                <CardContent className="p-4">
+                  <div className="flex gap-3">
+                    <div className="relative group flex-shrink-0">
+                      {video.thumbnail ? (
+                        <img
+                          src={video.thumbnail}
+                          alt={video.title}
+                          className="w-20 h-14 object-cover rounded-lg"
+                          onClick={() => handleViewVideo(video)}
+                        />
+                      ) : (
+                        <div className="w-20 h-14 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                          <Icons.Video size={20} className="text-slate-400" />
+                        </div>
+                      )}
+                      <button
+                        onClick={() => handleViewVideo(video)}
+                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
+                      >
+                        <Icons.Play size={20} className="text-white" />
+                      </button>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3
+                          className="font-medium text-slate-900 dark:text-white truncate"
+                          onClick={() => handleViewVideo(video)}
                         >
-                          {period.charAt(0).toUpperCase() + period.slice(1)}
-                        </button>
-                      ),
-                    )}
-                  </div>
-                  {/* Views Chart */}
-                  <div className="space-y-2">
-                    {previewVideo.viewsByPeriod &&
-                    previewVideo.viewsByPeriod[viewsTimePeriod]?.length > 0 ? (
-                      <div className="space-y-2">
-                        {previewVideo.viewsByPeriod[viewsTimePeriod].map(
-                          (item, index) => {
-                            const maxViews = Math.max(
-                              ...previewVideo.viewsByPeriod![
-                                viewsTimePeriod
-                              ].map((d) => d.views),
-                            );
-                            const percentage =
-                              maxViews > 0
-                                ? (("views" in item ? item.views : 0) /
-                                    maxViews) *
-                                  100
-                                : 0;
-                            return (
-                              <div
-                                key={index}
-                                className="flex items-center gap-3"
-                              >
-                                <span className="text-xs text-slate-500 dark:text-slate-400 w-20">
-                                  {"date" in item
-                                    ? item.date
-                                    : "week" in item
-                                      ? item.week
-                                      : "month" in item
-                                        ? item.month
-                                        : "year" in item
-                                          ? item.year
-                                          : ""}
-                                </span>
-                                <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-                                    style={{ width: `${percentage}%` }}
-                                  />
-                                </div>
-                                <span className="text-xs font-medium text-slate-700 dark:text-slate-300 w-16 text-right">
-                                  {formatNumber(
-                                    "views" in item ? item.views : 0,
-                                  )}
-                                </span>
-                              </div>
-                            );
-                          },
-                        )}
+                          {video.title}
+                        </h3>
+                        <Badge variant={getStatusVariant(video.status)}>
+                          {video.status.charAt(0).toUpperCase() +
+                            video.status.slice(1)}
+                        </Badge>
                       </div>
-                    ) : (
-                      <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
-                        No views data available for this period
+                      <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
+                        {video.creatorName}
                       </p>
-                    )}
+                      <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <Icons.Eye size={14} />
+                          {formatNumber(video.views)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Icons.Heart size={14} />
+                          {formatNumber(video.likes)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Icons.Clock size={14} />
+                          {formatDuration(video.duration)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Video Details */}
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                    Creator
-                  </p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
-                    {previewVideo.creatorName}
-                  </p>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                    Category
-                  </p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
-                    {previewVideo.categoryName}
-                  </p>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                    Duration
-                  </p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
-                    {formatDuration(previewVideo.duration)}
-                  </p>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                    Price
-                  </p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
-                    {previewVideo.isPaid && previewVideo.price
-                      ? `${previewVideo.currency || "USD"} ${previewVideo.price.toFixed(2)}`
-                      : "Free"}
-                  </p>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                    Uploaded
-                  </p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
-                    {formatDate(previewVideo.createdAt)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Comments Section */}
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                <VideoComments
-                  videoId={previewVideo.id}
-                  videoTitle={previewVideo.title}
-                  onCommentUpdate={() => {
-                    // Refresh video data to update comment count
-                    fetchVideos();
-                  }}
-                />
-              </div>
-
-              {previewVideo.description && (
-                <div className="pt-2">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white mb-2">
-                    Description
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                    {previewVideo.description}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-wrap items-center justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setFeaturedAction(previewVideo.isFeatured ? "remove" : "add");
-                  setShowFeaturedModal(true);
-                }}
-                className={cn(
-                  previewVideo.isFeatured
-                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800"
-                    : "",
-                )}
-              >
-                <Icons.Star size={16} className="mr-1" />
-                {previewVideo.isFeatured ? "Featured" : "Feature"}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setBannerAction(previewVideo.isBanner ? "remove" : "add");
-                  setShowBannerModal(true);
-                }}
-                className={cn(
-                  previewVideo.isBanner
-                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800"
-                    : "",
-                )}
-              >
-                <Icons.Image size={16} className="mr-1" />
-                {previewVideo.isBanner ? "Banner" : "Add to Banner"}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setPublishAction(
-                    previewVideo.status === "published"
-                      ? "unpublish"
-                      : "publish",
-                  );
-                  setShowPublishModal(true);
-                }}
-              >
-                <Icons.Send size={16} className="mr-1" />
-                {previewVideo.status === "published" ? "Unpublish" : "Publish"}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setSuspendAction(
-                    previewVideo.status === "suspended"
-                      ? "unsuspend"
-                      : "suspend",
-                  );
-                  setShowSuspendModal(true);
-                }}
-                className={cn(
-                  previewVideo.status === "suspended"
-                    ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800"
-                    : "",
-                )}
-              >
-                <Icons.Ban size={16} className="mr-1" />
-                {previewVideo.status === "suspended" ? "Unsuspend" : "Suspend"}
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => setShowDeleteModal(true)}
-              >
-                <Icons.Trash2 size={16} className="mr-1" />
-                Delete
-              </Button>
-            </div>
+                  <div className="flex flex-wrap items-center gap-1 mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction("featured", video);
+                      }}
+                      className={cn(
+                        "text-xs",
+                        video.isFeatured
+                          ? "text-amber-600 dark:text-amber-400"
+                          : "text-slate-500",
+                      )}
+                    >
+                      <Icons.Star size={14} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction("banner", video);
+                      }}
+                      className={cn(
+                        "text-xs",
+                        video.isBanner
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-slate-500",
+                      )}
+                    >
+                      <Icons.Image size={14} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction("publish", video);
+                      }}
+                      className="text-xs text-slate-500"
+                    >
+                      <Icons.Send size={14} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction("suspend", video);
+                      }}
+                      className="text-xs text-slate-500"
+                    >
+                      <Icons.Ban size={14} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAction("delete", video);
+                      }}
+                      className="text-xs text-red-500 hover:text-red-600 ml-auto"
+                    >
+                      <Icons.Trash2 size={14} />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
-      </Modal>
+      </div>
 
+      {/* Table for Desktop */}
+      <div className="hidden lg:block bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Video
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Creator
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Metrics
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              {paginatedVideos.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center">
+                    <Icons.Video
+                      size={48}
+                      className="mx-auto text-slate-300 dark:text-slate-600 mb-4"
+                    />
+                    <p className="text-slate-500 dark:text-slate-400">
+                      No videos found
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                paginatedVideos.map((video) => (
+                  <tr
+                    key={video.id}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="relative group flex-shrink-0">
+                          {video.thumbnail ? (
+                            <img
+                              src={video.thumbnail}
+                              alt={video.title}
+                              className="w-24 h-16 object-cover rounded-lg cursor-pointer"
+                              onClick={() => handleViewVideo(video)}
+                            />
+                          ) : (
+                            <div className="w-24 h-16 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center cursor-pointer">
+                              <Icons.Video
+                                size={24}
+                                className="text-slate-400"
+                              />
+                            </div>
+                          )}
+                          <button
+                            onClick={() => handleViewVideo(video)}
+                            className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
+                          >
+                            <Icons.Play
+                              size={24}
+                              className="text-white md:hidden"
+                            />
+                            <Icons.Play
+                              size={32}
+                              className="text-white hidden md:block"
+                            />
+                          </button>
+                        </div>
+                        <div className="min-w-0">
+                          <p
+                            className="text-sm font-medium text-slate-900 dark:text-white truncate cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                            onClick={() => handleViewVideo(video)}
+                          >
+                            {video.title}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {video.categoryName}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-sm text-slate-900 dark:text-white">
+                        {video.creatorName}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={getStatusVariant(video.status)}>
+                          {video.status.charAt(0).toUpperCase() +
+                            video.status.slice(1)}
+                        </Badge>
+                        <span
+                          className={cn(
+                            "w-2 h-2 rounded-full",
+                            video.isFeatured
+                              ? "bg-amber-500"
+                              : video.isBanner
+                                ? "bg-blue-500"
+                                : "bg-slate-300 dark:bg-slate-600",
+                          )}
+                          title={
+                            video.isFeatured
+                              ? "Featured"
+                              : video.isBanner
+                                ? "Banner"
+                                : "Standard"
+                          }
+                        />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                        <span
+                          className="flex items-center gap-1 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          title="Views"
+                        >
+                          <Icons.Eye size={14} />
+                          {formatNumber(video.views)}
+                        </span>
+                        <span
+                          className="flex items-center gap-1 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                          title="Likes"
+                        >
+                          <Icons.Heart size={14} />
+                          {formatNumber(video.likes)}
+                        </span>
+                        <span
+                          className="flex items-center gap-1 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                          title="Comments"
+                        >
+                          <Icons.MessageCircle size={14} />
+                          {formatNumber(video.comments)}
+                        </span>
+                        <span
+                          className="flex items-center gap-1 cursor-pointer hover:text-amber-600 dark:hover:text-amber-400"
+                          title="Duration"
+                        >
+                          <Icons.Clock size={14} />
+                          {formatDuration(video.duration)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {formatDate(video.createdAt)}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleAction("featured", video)}
+                          className={cn(
+                            "p-2",
+                            video.isFeatured
+                              ? "text-amber-600 dark:text-amber-400"
+                              : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300",
+                          )}
+                          title={video.isFeatured ? "Remove from Featured" : "Add to Featured"}
+                        >
+                          <Icons.Star size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleAction("banner", video)}
+                          className={cn(
+                            "p-2",
+                            video.isBanner
+                              ? "text-blue-600 dark:text-blue-400"
+                              : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300",
+                          )}
+                          title={video.isBanner ? "Remove from Banner" : "Add to Banner"}
+                        >
+                          <Icons.Image size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleAction("publish", video)}
+                          className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          title={video.status === "published" ? "Unpublish" : "Publish"}
+                        >
+                          <Icons.Send size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleAction("suspend", video)}
+                          className={cn(
+                            "p-2",
+                            video.status === "suspended"
+                              ? "text-orange-600 dark:text-orange-400"
+                              : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300",
+                          )}
+                          title={video.status === "suspended" ? "Unsuspend" : "Suspend"}
+                        >
+                          <Icons.Ban size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleAction("delete", video)}
+                          className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400"
+                          title="Delete"
+                        >
+                          <Icons.Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-slate-500 dark:text-slate-400">
+            Page {currentPage} of {totalPages}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Modals */}
       <ConfirmModal
         isOpen={showFeaturedModal}
-        onClose={() => setShowFeaturedModal(false)}
-        onConfirm={() => {
-          onToggleFeatured?.(previewVideo!);
+        onClose={() => {
           setShowFeaturedModal(false);
+          setSelectedVideo(null);
         }}
-        title={
-          featuredAction === "add" ? "Add to Featured" : "Remove from Featured"
-        }
+        onConfirm={handleConfirmFeatured}
+        title={featuredAction === "add" ? "Add to Featured" : "Remove from Featured"}
         message={
-          featuredAction === "add"
-            ? `Are you sure you want to add "${previewVideo?.title}" to featured? This will highlight the video on the platform.`
-            : `Are you sure you want to remove "${previewVideo?.title}" from featured?`
+          selectedVideo
+            ? featuredAction === "add"
+              ? `Are you sure you want to add "${selectedVideo.title}" to featured? This will highlight the video on the platform.`
+              : `Are you sure you want to remove "${selectedVideo.title}" from featured?`
+            : ""
         }
-        confirmText={featuredAction === "add" ? "Add to Featured" : "Remove"}
-        variant="info"
+        confirmText={featuredAction === "add" ? "Add Featured" : "Remove"}
       />
 
       <ConfirmModal
         isOpen={showBannerModal}
-        onClose={() => setShowBannerModal(false)}
-        onConfirm={() => {
-          onToggleBanner?.(previewVideo!);
+        onClose={() => {
           setShowBannerModal(false);
+          setSelectedVideo(null);
         }}
+        onConfirm={handleConfirmBanner}
         title={bannerAction === "add" ? "Add to Banner" : "Remove from Banner"}
         message={
-          bannerAction === "add"
-            ? `Are you sure you want to add "${previewVideo?.title}" to banner? This will display the video on the homepage banner.`
-            : `Are you sure you want to remove "${previewVideo?.title}" from banner?`
+          selectedVideo
+            ? bannerAction === "add"
+              ? `Are you sure you want to add "${selectedVideo.title}" to banner? This will display the video on the homepage banner.`
+              : `Are you sure you want to remove "${selectedVideo.title}" from banner?`
+            : ""
         }
-        confirmText={bannerAction === "add" ? "Add to Banner" : "Remove"}
-        variant="info"
+        confirmText={bannerAction === "add" ? "Add Banner" : "Remove"}
       />
 
       <ConfirmModal
         isOpen={showPublishModal}
-        onClose={() => setShowPublishModal(false)}
-        onConfirm={() => {
-          onUpdateStatus?.(
-            previewVideo!,
-            publishAction === "unpublish" ? "draft" : "published",
-          );
+        onClose={() => {
           setShowPublishModal(false);
+          setSelectedVideo(null);
         }}
-        title={
-          publishAction === "publish" ? "Publish Video" : "Unpublish Video"
-        }
+        onConfirm={handleConfirmPublish}
+        title={publishAction === "publish" ? "Publish Video" : "Unpublish Video"}
         message={
-          publishAction === "publish"
-            ? `Are you sure you want to publish "${previewVideo?.title}"? This will make the video visible to users.`
-            : `Are you sure you want to unpublish "${previewVideo?.title}"? This will hide the video from users.`
+          selectedVideo
+            ? publishAction === "publish"
+              ? `Are you sure you want to publish "${selectedVideo.title}"? This will make the video visible to users.`
+              : `Are you sure you want to unpublish "${selectedVideo.title}"? This will hide the video from users.`
+            : ""
         }
         confirmText={publishAction === "publish" ? "Publish" : "Unpublish"}
-        variant={publishAction === "publish" ? "info" : "warning"}
+        variant="info"
       />
 
       <ConfirmModal
         isOpen={showSuspendModal}
-        onClose={() => setShowSuspendModal(false)}
-        onConfirm={() => {
-          onToggleSuspend?.(previewVideo!);
+        onClose={() => {
           setShowSuspendModal(false);
+          setSelectedVideo(null);
         }}
-        title={
-          suspendAction === "suspend" ? "Suspend Video" : "Unsuspend Video"
-        }
+        onConfirm={handleConfirmSuspend}
+        title={suspendAction === "suspend" ? "Suspend Video" : "Unsuspend Video"}
         message={
-          suspendAction === "suspend"
-            ? `Are you sure you want to suspend "${previewVideo?.title}"? This will make the video unavailable to users.`
-            : `Are you sure you want to unsuspend "${previewVideo?.title}"? This will make the video visible to users again.`
+          selectedVideo
+            ? suspendAction === "suspend"
+              ? `Are you sure you want to suspend "${selectedVideo.title}"? This will make the video unavailable to users.`
+              : `Are you sure you want to unsuspend "${selectedVideo.title}"? This will make the video visible to users again.`
+            : ""
         }
         confirmText={suspendAction === "suspend" ? "Suspend" : "Unsuspend"}
-        variant={suspendAction === "suspend" ? "warning" : "info"}
+        variant="warning"
       />
 
       <ConfirmModal
         isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={() => {
-          if (onDelete) {
-            onDelete(previewVideo!);
-          }
+        onClose={() => {
           setShowDeleteModal(false);
-          setPreviewVideo(null);
+          setSelectedVideo(null);
         }}
+        onConfirm={handleConfirmDelete}
         title="Delete Video"
-        message={`Are you sure you want to delete "${previewVideo?.title}"? This action cannot be undone and the video will be permanently removed.`}
+        message={
+          selectedVideo
+            ? `Are you sure you want to delete "${selectedVideo.title}"? This action cannot be undone and the video will be permanently removed.`
+            : ""
+        }
         confirmText="Delete"
         variant="danger"
       />
-    </>
+    </div>
   );
 }

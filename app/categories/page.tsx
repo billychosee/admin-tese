@@ -209,11 +209,12 @@ export default function CategoriesPage() {
     );
 
   return (
-    <div className="space-y-8 min-h-screen">
+    <div className="space-y-6 lg:space-y-8 min-h-screen">
       {/* HEADER & CONTROLS */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4">
+        {/* Title */}
         <div>
-          <h1 className="text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
+          <h1 className="text-2xl lg:text-3xl font-black uppercase tracking-tighter lg:tracking-tight text-[hsl(var(--text-primary))]">
             Categories
           </h1>
           <p className="text-xs font-bold uppercase tracking-widest mt-1 text-[hsl(var(--text-muted))]">
@@ -221,73 +222,78 @@ export default function CategoriesPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* SEARCH BAR */}
-          <div className="relative group">
-            <Icons.Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors"
-              style={{ color: "hsl(var(--text-muted))" }}
-              size={16}
-            />
-            <Input
-              placeholder="Filter..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-48 md:w-64 pl-10 rounded-xl font-bold text-xs"
-            />
-          </div>
-
-          {/* VIEW TOGGLE */}
-          <div
-            className="flex p-1 rounded-xl border"
-            style={{
-              backgroundColor: "hsl(var(--surface))",
-              borderColor: "hsl(var(--surface-border))",
-            }}
-          >
-            <button
-              onClick={() => setViewMode("grid")}
-              className={cn(
-                "p-2 rounded-lg transition-all",
-                viewMode === "grid" ? "text-white shadow-lg" : "",
-              )}
-              style={{
-                backgroundColor:
-                  viewMode === "grid" ? "hsl(var(--primary))" : "transparent",
-                color:
-                  viewMode === "grid"
-                    ? "hsl(var(--primary-foreground))"
-                    : "hsl(var(--text-secondary))",
-              }}
-            >
-              <Icons.Grid size={16} />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={cn(
-                "p-2 rounded-lg transition-all",
-                viewMode === "list" ? "text-white shadow-lg" : "",
-              )}
-              style={{
-                backgroundColor:
-                  viewMode === "list" ? "hsl(var(--primary))" : "transparent",
-                color:
-                  viewMode === "list"
-                    ? "hsl(var(--primary-foreground))"
-                    : "hsl(var(--text-secondary))",
-              }}
-            >
-              <Icons.List size={16} />
-            </button>
-          </div>
-
+        {/* Controls Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Left side: Add New Button (mobile: full width) */}
           <Button
             onClick={() => setShowAddModal(true)}
             size="lg"
-            className="rounded-xl font-black uppercase text-[10px]"
+            className="w-full sm:w-auto rounded-xl font-black uppercase text-[10px]"
           >
             <Icons.Plus className="mr-2" size={16} /> Add New
           </Button>
+
+          {/* Right side: Search and View Toggle */}
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            {/* Search Bar */}
+            <div className="relative group flex-1 sm:flex-none sm:w-48 md:w-64">
+              <Icons.Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors"
+                style={{ color: "hsl(var(--text-muted))" }}
+                size={16}
+              />
+              <Input
+                placeholder="Filter..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 rounded-xl font-bold text-xs h-10"
+              />
+            </div>
+
+            {/* View Toggle */}
+            <div
+              className="flex p-1 rounded-xl border flex-shrink-0"
+              style={{
+                backgroundColor: "hsl(var(--surface))",
+                borderColor: "hsl(var(--surface-border))",
+              }}
+            >
+              <button
+                onClick={() => setViewMode("grid")}
+                className={cn(
+                  "p-2 rounded-lg transition-all",
+                  viewMode === "grid" ? "text-white shadow-lg" : "",
+                )}
+                style={{
+                  backgroundColor:
+                    viewMode === "grid" ? "hsl(var(--primary))" : "transparent",
+                  color:
+                    viewMode === "grid"
+                      ? "hsl(var(--primary-foreground))"
+                      : "hsl(var(--text-secondary))",
+                }}
+              >
+                <Icons.Grid size={16} />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "p-2 rounded-lg transition-all",
+                  viewMode === "list" ? "text-white shadow-lg" : "",
+                )}
+                style={{
+                  backgroundColor:
+                    viewMode === "list" ? "hsl(var(--primary))" : "transparent",
+                  color:
+                    viewMode === "list"
+                      ? "hsl(var(--primary-foreground))"
+                      : "hsl(var(--text-secondary))",
+                }}
+              >
+                <Icons.List size={16} />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

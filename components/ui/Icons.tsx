@@ -6,6 +6,7 @@ import {
   FolderOpen,
   Users,
   Video,
+  Film,
   Star,
   CreditCard,
   Smartphone,
@@ -299,6 +300,7 @@ export const Icons = {
   Image: (props: IconProps) => <Image {...props} />,
   Music: (props: IconProps) => <Music {...props} />,
   Video: (props: IconProps) => <Video {...props} />,
+  Film: (props: IconProps) => <Film {...props} />,
 
   // Communication
   Mail: (props: IconProps) => <Mail {...props} />,

@@ -18,6 +18,7 @@ import type {
   Playlist,
   Comment,
   UserProfile,
+  ActivityLog,
 } from "@/types";
 
 export const mockUsers: User[] = [
@@ -129,6 +130,8 @@ export const mockCreators: Creator[] = [
     firstName: "Tech",
     lastName: "Master",
     creatorFullName: "Tech Master",
+    description: "Passionate technology educator bringing complex coding concepts to beginners through clear, step-by-step tutorials and practical projects.",
+    phoneNumber: "+27 82 123 4567",
     isCompany: false,
     email: "techmaster@example.com",
     mobileNumber: "+27 82 123 4567",
@@ -143,12 +146,18 @@ export const mockCreators: Creator[] = [
     // Verification Images
     selfie: "https://i.pravatar.cc/300?u=techmaster_selfie",
     idImage: "https://i.pravatar.cc/300?u=techmaster_id",
+    idType: "national_id",
+    idNumber: "123456789",
+    idCopyUrl: "https://i.pravatar.cc/300?u=techmaster_id_copy",
+    proofOfResidenceUrl: "https://i.pravatar.cc/400?u=techmaster_por",
 
     // Channel Information
     channelId: "ch_001",
     channelName: "TechMaster Official",
     channelUrl: "https://tese.com/channel/techmaster",
-    channelStatus: "active",
+    channelStatus: "deactivated",
+    channelDeactivationComment: "Channel suspended due to non-compliance with platform revenue sharing policies. Creator failed to provide required tax documentation within the specified timeframe.",
+    channelTrailer: "https://www.w3schools.com/html/mov_bbb.mp4",
 
     // Playlist Information
     playlists: [
@@ -232,6 +241,8 @@ export const mockCreators: Creator[] = [
     firstName: "Cooking",
     lastName: "Expert",
     creatorFullName: "Cooking Expert",
+    description: "Professional chef sharing delicious recipes, cooking tips, and culinary techniques from around the world. Join me on a flavorful journey!",
+    phoneNumber: "+27 83 234 5678",
     isCompany: false,
     email: "cookingexpert@example.com",
     mobileNumber: "+27 83 234 5678",
@@ -246,6 +257,7 @@ export const mockCreators: Creator[] = [
     // Verification Images
     selfie: "https://i.pravatar.cc/300?u=cookingexpert_selfie",
     idImage: "https://i.pravatar.cc/300?u=cookingexpert_id",
+    proofOfResidenceUrl: "https://i.pravatar.cc/400?u=cookingexpert_por",
 
     // Channel Information
     channelId: "ch_002",
@@ -310,6 +322,8 @@ export const mockCreators: Creator[] = [
     firstName: "Digital",
     lastName: "Marketing Pro",
     creatorFullName: "Digital Marketing Pro",
+    description: "Helping businesses grow through strategic digital marketing. Expert in SEO, social media, content marketing, and online advertising.",
+    phoneNumber: "+27 84 345 6789",
     isCompany: true,
     companyName: "DM Pro Agency",
     VAT: "ZA1234567890",
@@ -327,6 +341,7 @@ export const mockCreators: Creator[] = [
     // Verification Images
     selfie: "https://i.pravatar.cc/300?u=digitalmarketing_selfie",
     idImage: "https://i.pravatar.cc/300?u=digitalmarketing_id",
+    proofOfResidenceUrl: "https://i.pravatar.cc/400?u=digitalmarketing_por",
 
     // Channel Information
     channelId: "ch_003",
@@ -391,6 +406,8 @@ export const mockCreators: Creator[] = [
     firstName: "Fitness",
     lastName: "Coach",
     creatorFullName: "Fitness Coach",
+    description: "Certified personal trainer helping you achieve your fitness goals. Customized workout plans, nutrition guidance, and motivation.",
+    phoneNumber: "+27 85 456 7890",
     isCompany: false,
     email: "fitnesscoach@example.com",
     mobileNumber: "+27 85 456 7890",
@@ -411,6 +428,8 @@ export const mockCreators: Creator[] = [
     channelName: "FitLife Training",
     channelUrl: "https://tese.com/channel/fitnesscoach",
     channelStatus: "deactivated",
+    channelDeactivationComment: "Channel suspended due to multiple community guideline violations. Content was found to be in violation of T&Cs regarding inappropriate fitness advice and misleading health claims.",
+    channelTrailer: "https://www.w3schools.com/html/movie.mp4",
 
     // Playlist Information
     playlists: [],
@@ -454,6 +473,7 @@ export const mockVideos: Video[] = [
     videoDescription: "Big Buck Bunny sample video",
     videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     thumbnail: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+    videoTrailer: "https://www.w3schools.com/html/mov_bbb.mp4",
     duration: 596,
     creatorId: "cr_001",
     creatorName: "Tech Master",
@@ -521,6 +541,7 @@ export const mockVideos: Video[] = [
     videoDescription: "Elephant Dream open movie",
     videoUrl: "https://www.youtube.com/watch?v=18-x-2Sva4Q",
     thumbnail: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
+    videoTrailer: "https://www.w3schools.com/html/movie.mp4",
     duration: 653,
     creatorId: "cr_001",
     creatorName: "Tech Master",
@@ -1760,4 +1781,118 @@ export const mockUserProfiles: UserProfile[] = [
   },
 ];
 
+export const mockActivityLogs: ActivityLog[] = [
+  {
+    id: "log_001",
+    adminUserId: "admin_1",
+    adminUserName: "TESE Admin",
+    adminUserEmail: "admin@tese.com",
+    action: "CREATE_USER",
+    targetType: "user",
+    targetId: "admin_2",
+    targetName: "John Moderator",
+    details: "Created new admin user with role: editor",
+    ipAddress: "192.168.1.100",
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+    createdAt: new Date("2024-01-15T09:30:00"),
+  },
+  {
+    id: "log_002",
+    adminUserId: "admin_1",
+    adminUserName: "TESE Admin",
+    adminUserEmail: "admin@tese.com",
+    action: "UPDATE_USER",
+    targetType: "user",
+    targetId: "admin_3",
+    targetName: "Jane Editor",
+    details: "Updated user role from editor to admin",
+    ipAddress: "192.168.1.100",
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+    createdAt: new Date("2024-01-15T10:15:00"),
+  },
+  {
+    id: "log_003",
+    adminUserId: "admin_1",
+    adminUserName: "TESE Admin",
+    adminUserEmail: "admin@tese.com",
+    action: "DEACTIVATE_USER",
+    targetType: "user",
+    targetId: "admin_4",
+    targetName: "Bob Auditor",
+    details: "Deactivated user account",
+    ipAddress: "192.168.1.100",
+    userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/17.0",
+    createdAt: new Date("2024-01-14T14:20:00"),
+  },
+  {
+    id: "log_004",
+    adminUserId: "admin_2",
+    adminUserName: "John Moderator",
+    adminUserEmail: "john@tese.com",
+    action: "RESET_PASSWORD",
+    targetType: "user",
+    targetId: "admin_3",
+    targetName: "Jane Editor",
+    details: "Reset password for user",
+    ipAddress: "192.168.1.101",
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edge/120.0.0.0",
+    createdAt: new Date("2024-01-14T11:45:00"),
+  },
+  {
+    id: "log_005",
+    adminUserId: "admin_1",
+    adminUserName: "TESE Admin",
+    adminUserEmail: "admin@tese.com",
+    action: "UPDATE_FEE",
+    targetType: "fee",
+    targetId: "fee_1",
+    targetName: "Platform Fee",
+    details: "Updated platform fee from 5% to 7%",
+    ipAddress: "192.168.1.100",
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+    createdAt: new Date("2024-01-13T16:30:00"),
+  },
+  {
+    id: "log_006",
+    adminUserId: "admin_1",
+    adminUserName: "TESE Admin",
+    adminUserEmail: "admin@tese.com",
+    action: "CREATE_ROLE",
+    targetType: "role",
+    targetId: "role_1",
+    targetName: "Content Moderator",
+    details: "Created new role with permissions: videos, comments",
+    ipAddress: "192.168.1.100",
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+    createdAt: new Date("2024-01-12T08:00:00"),
+  },
+  {
+    id: "log_007",
+    adminUserId: "admin_3",
+    adminUserName: "Jane Editor",
+    adminUserEmail: "jane@tese.com",
+    action: "UPDATE_SETTINGS",
+    targetType: "settings",
+    targetId: "settings_1",
+    targetName: "General Settings",
+    details: "Updated site title and description",
+    ipAddress: "192.168.1.102",
+    userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/17.0",
+    createdAt: new Date("2024-01-11T13:25:00"),
+  },
+  {
+    id: "log_008",
+    adminUserId: "admin_1",
+    adminUserName: "TESE Admin",
+    adminUserEmail: "admin@tese.com",
+    action: "BULK_ACTIVATE",
+    targetType: "user",
+    targetId: "bulk_users",
+    targetName: "5 users",
+    details: "Bulk activated 5 deactivated users",
+    ipAddress: "192.168.1.100",
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+    createdAt: new Date("2024-01-10T10:00:00")
+  }
+];
 

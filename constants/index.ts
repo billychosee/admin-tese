@@ -69,12 +69,6 @@ export const SIDEBAR_ITEMS = [
     icon: "Video",
   },
   {
-    id: "comments",
-    label: "Comments",
-    href: "/comments",
-    icon: "MessageCircle",
-  },
-  {
     id: "playlists",
     label: "Playlists",
     href: "/playlists",

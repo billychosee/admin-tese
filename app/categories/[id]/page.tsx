@@ -122,32 +122,32 @@ export default function CategoryDetailPage() {
   }
 
   return (
-    <div className="space-y-8 min-h-screen">
+    <div className="space-y-6 md:space-y-8 min-h-screen px-4 md:px-0">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push("/categories")}
-            className="rounded-lg"
+            className="rounded-lg -ml-2"
           >
-            <Icons.ArrowLeft size={18} className="mr-2" />
-            Back
+            <Icons.ArrowLeft size={18} className="mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Back</span>
           </Button>
           <div>
-            <h1 className="text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
+            <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))] truncate max-w-[200px] sm:max-w-none">
               {category.name}
             </h1>
-            <p className="text-xs font-bold uppercase tracking-widest mt-1 text-[hsl(var(--text-muted))]">
-              {category.videoCount} Videos in this category
+            <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest mt-0.5 md:mt-1 text-[hsl(var(--text-muted))]">
+              {category.videoCount} Videos
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Search */}
-          <div className="relative group">
+          <div className="relative group flex-1 sm:flex-none">
             <Icons.Search
               className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors"
               style={{ color: "hsl(var(--text-muted))" }}
@@ -157,7 +157,7 @@ export default function CategoryDetailPage() {
               placeholder="Search videos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-48 md:w-64 pl-10 rounded-xl font-bold text-xs"
+              className="w-full sm:w-48 md:w-64 pl-10 rounded-xl font-bold text-xs h-9"
             />
           </div>
 
@@ -210,7 +210,7 @@ export default function CategoryDetailPage() {
       {/* Category Banner */}
       {category.bannerUrl && (
         <div
-          className="h-48 -mx-8 rounded-2xl overflow-hidden"
+          className="h-32 md:h-48 -mx-4 md:-mx-8 rounded-xl md:rounded-2xl overflow-hidden"
           style={{
             background: `linear-gradient(135deg, ${category.color}40 0%, ${category.color}10 100%)`,
           }}
@@ -229,15 +229,15 @@ export default function CategoryDetailPage() {
       {/* Videos Listing */}
       {filteredVideos.length === 0 ? (
         <div
-          className="flex flex-col items-center justify-center p-20 rounded-[3rem] shadow-xl"
+          className="flex flex-col items-center justify-center p-12 md:p-20 rounded-2xl md:rounded-[3rem] shadow-xl"
           style={{ backgroundColor: "hsl(var(--surface))" }}
         >
           <Icons.Video
-            className="w-16 h-16 mb-4"
+            className="w-12 h-12 md:w-16 md:h-16 mb-3 md:mb-4"
             style={{ color: "hsl(var(--text-muted))" }}
           />
           <p
-            className="font-black uppercase text-xs"
+            className="font-black uppercase text-xs md:text-sm"
             style={{ color: "hsl(var(--text-muted))" }}
           >
             No Videos Found
@@ -254,13 +254,13 @@ export default function CategoryDetailPage() {
         </div>
       ) : viewMode === "grid" ? (
         /* GRID VIEW */
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredVideos.map((video) => (
             <Card
               key={video.id}
               hover
               className={cn(
-                "rounded-2xl border transition-all duration-300 overflow-hidden",
+                "rounded-xl md:rounded-2xl border transition-all duration-300 overflow-hidden",
                 colors.surfaceBorder,
                 colors.surface
               )}
@@ -296,23 +296,23 @@ export default function CategoryDetailPage() {
                   </Button>
                 </div>
               </div>
-              <CardContent className="p-4">
+              <CardContent className="p-3 md:p-4">
                 <h3
                   className={cn(
-                    "text-sm font-semibold line-clamp-2 mb-2",
+                    "text-xs md:text-sm font-semibold line-clamp-2 mb-1.5 md:mb-2",
                     colors.textPrimary
                   )}
                 >
                   {video.title}
                 </h3>
-                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-3">
+                <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-slate-500 dark:text-slate-400 mb-2 md:mb-3">
                   <span>{formatNumber(video.views || 0)} views</span>
                   <span>•</span>
                   <span>{formatDateTime(video.createdAt)}</span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <Badge
-                    className="rounded-lg text-[8px] uppercase"
+                    className="rounded-lg text-[7px] md:text-[8px] uppercase truncate max-w-[80px] md:max-w-none"
                     style={{
                       backgroundColor: `${category.color}20`,
                       color: category.color,
@@ -325,10 +325,10 @@ export default function CategoryDetailPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
+                      className="h-7 w-7 md:h-8 md:w-8 p-0"
                       onClick={() => router.push(`/videos/${video.id}`)}
                     >
-                      <Icons.Eye size={14} />
+                      <Icons.Eye className="w-3 h-3 md:w-[14px] md:h-[14px]" />
                     </Button>
                   </div>
                 </div>

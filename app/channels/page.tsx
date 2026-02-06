@@ -29,6 +29,7 @@ export default function ChannelsPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [isMobile, setIsMobile] = useState(false);
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [showChannelModal, setShowChannelModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -40,6 +41,22 @@ export default function ChannelsPage() {
   );
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    // Detect if mobile (screen width < 640px)
+    const checkIsMobile = () => {
+      const mobile = window.innerWidth < 640;
+      setIsMobile(mobile);
+      setViewMode(mobile ? "grid" : "list");
+    };
+    
+    // Initial check
+    checkIsMobile();
+    
+    // Listen for window resize
+    window.addEventListener("resize", checkIsMobile);
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
 
   useEffect(() => {
     fetchCreators();
@@ -200,9 +217,9 @@ export default function ChannelsPage() {
           </p>
         </div>
 
-        {/* View Mode Toggle */}
+        {/* View Mode Toggle - Hidden on mobile */}
         <div
-          className="flex p-1 rounded-xl border"
+          className="hidden sm:flex p-1 rounded-xl border"
           style={{
             backgroundColor: "hsl(var(--surface))",
             borderColor: "hsl(var(--surface-border))",
@@ -295,7 +312,7 @@ export default function ChannelsPage() {
           }
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {creators.map((creator) => (
             <Card
               key={creator.id}
@@ -304,11 +321,11 @@ export default function ChannelsPage() {
                 "rounded-2xl border transition-all duration-300 cursor-pointer",
                 isDark
                   ? "bg-[hsl(var(--surface))] border-[hsl(var(--surface-border))]"
-                  : "bg-slate-50 border-slate-200",
+                  : "bg-white border-slate-300 shadow-sm",
               )}
               onClick={() => openChannel(creator)}
             >
-              <CardContent className="p-5">
+              <CardContent className="p-3 sm:p-5">
                 <div className="flex flex-col items-center text-center">
                   {/* Avatar */}
                   <div className="relative mb-3">
@@ -545,36 +562,56 @@ export default function ChannelsPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <div className={cn(
+                "rounded-xl p-3 sm:p-4 text-center transition-colors",
+                isDark
+                  ? "bg-[hsl(var(--surface))] border-[hsl(var(--surface-border))]"
+                  : "bg-white border border-slate-300 shadow-sm"
+              )}>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                   {formatNumber(selectedCreator.totalVideos)}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
                   Videos
                 </p>
               </div>
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+              <div className={cn(
+                "rounded-xl p-3 sm:p-4 text-center transition-colors",
+                isDark
+                  ? "bg-[hsl(var(--surface))] border-[hsl(var(--surface-border))]"
+                  : "bg-white border border-slate-300 shadow-sm"
+              )}>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                   {formatNumber(selectedCreator.totalViews)}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
                   Views
                 </p>
               </div>
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              <div className={cn(
+                "rounded-xl p-3 sm:p-4 text-center transition-colors",
+                isDark
+                  ? "bg-[hsl(var(--surface))] border-[hsl(var(--surface-border))]"
+                  : "bg-white border border-slate-300 shadow-sm"
+              )}>
+                <p className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                   {formatCurrency(selectedCreator.totalRevenue)}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
                   Revenue
                 </p>
               </div>
-              <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+              <div className={cn(
+                "rounded-xl p-3 sm:p-4 text-center transition-colors",
+                isDark
+                  ? "bg-[hsl(var(--surface))] border-[hsl(var(--surface-border))]"
+                  : "bg-white border border-slate-300 shadow-sm"
+              )}>
+                <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                   {formatNumber(selectedCreator.totalLikes)}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
                   Likes
                 </p>
               </div>

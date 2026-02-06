@@ -29,10 +29,13 @@ export interface Transaction {
 }
 
 export interface Creator {
+  lastActiveAt?: Date;
+  phoneNumber: string;
   id: string;
   firstName?: string;
   lastName?: string;
   creatorFullName: string;
+  description?: string;
   isCompany: boolean;
   companyName?: string;
   VAT?: string;
@@ -63,6 +66,8 @@ export interface Creator {
   channelId: string;
   channelUrl?: string;
   channelStatus: "active" | "deactivated";
+  channelDeactivationComment?: string;
+  channelTrailer?: string;
 
   // Playlist Information
   playlists: Playlist[];
@@ -385,6 +390,21 @@ export type FeeType = "platform" | "service" | "payout" | "subscription";
 export interface DateRange {
   startDate: Date;
   endDate: Date;
+}
+
+export interface ActivityLog {
+  id: string;
+  adminUserId: string;
+  adminUserName: string;
+  adminUserEmail: string;
+  action: string;
+  targetType: "user" | "role" | "fee" | "settings" | "creator" | "video";
+  targetId: string;
+  targetName: string;
+  details?: string;
+  ipAddress: string;
+  userAgent?: string;
+  createdAt: Date;
 }
 
 export interface ThemeContextType {

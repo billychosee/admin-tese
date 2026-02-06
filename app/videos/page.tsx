@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { VideoPlayer } from "@/components/ui/VideoPlayer";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
-import { Modal, ConfirmModal } from "@/components/ui/Modal";
+import { ConfirmModal } from "@/components/ui/Modal";
 import { SkeletonTable } from "@/components/ui/Skeleton";
 import { VideoTable } from "@/components/Tables/VideoTable";
 import { Icons } from "@/components/ui/Icons";
@@ -28,6 +28,7 @@ type ViewMode = "grid" | "list";
 export default function VideosPage() {
   const { addToast } = useToast();
   const { theme } = useTheme();
+  const router = useRouter();
   const isDark = theme === "dark";
   const [videos, setVideos] = useState<Video[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,19 +36,21 @@ export default function VideosPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [filter, setFilter] = useState("all");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [previewVideo, setPreviewVideo] = useState<Video | null>(null);
   const [showSuspendModal, setShowSuspendModal] = useState(false);
-  const [suspendAction, setSuspendAction] = useState<"suspend" | "unsuspend">("suspend");
+  const [suspendAction, setSuspendAction] = useState<"suspend" | "unsuspend">(
+    "suspend",
+  );
   const [showFeaturedModal, setShowFeaturedModal] = useState(false);
   const [featuredAction, setFeaturedAction] = useState<"add" | "remove">("add");
   const [showBannerModal, setShowBannerModal] = useState(false);
   const [bannerAction, setBannerAction] = useState<"add" | "remove">("add");
   const [showPublishModal, setShowPublishModal] = useState(false);
-  const [publishAction, setPublishAction] = useState<"publish" | "unpublish">("publish");
+  const [publishAction, setPublishAction] = useState<"publish" | "unpublish">(
+    "publish",
+  );
   const [page, setPage] = useState(1);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
@@ -177,13 +180,13 @@ export default function VideosPage() {
   };
 
   const handleConfirmFeatured = async () => {
-    if (!previewVideo) return;
+    if (!selectedVideo) return;
     try {
       if (featuredAction === "remove") {
-        await api.videos.removeFromFeatured(previewVideo.id);
+        await api.videos.removeFromFeatured(selectedVideo.id);
         addToast({ type: "success", title: "Removed from featured" });
       } else {
-        await api.videos.promoteToFeatured(previewVideo.id);
+        await api.videos.promoteToFeatured(selectedVideo.id);
         addToast({ type: "success", title: "Added to featured" });
       }
       setShowFeaturedModal(false);
@@ -198,13 +201,13 @@ export default function VideosPage() {
   };
 
   const handleConfirmBanner = async () => {
-    if (!previewVideo) return;
+    if (!selectedVideo) return;
     try {
       if (bannerAction === "remove") {
-        await api.videos.removeFromBanner(previewVideo.id);
+        await api.videos.removeFromBanner(selectedVideo.id);
         addToast({ type: "success", title: "Removed from banner" });
       } else {
-        await api.videos.promoteToBanner(previewVideo.id);
+        await api.videos.promoteToBanner(selectedVideo.id);
         addToast({ type: "success", title: "Added to banner" });
       }
       setShowBannerModal(false);
@@ -219,13 +222,13 @@ export default function VideosPage() {
   };
 
   const handleConfirmPublish = async () => {
-    if (!previewVideo) return;
+    if (!selectedVideo) return;
     try {
       if (publishAction === "unpublish") {
-        await api.videos.updateStatus(previewVideo.id, "pending");
+        await api.videos.updateStatus(selectedVideo.id, "pending");
         addToast({ type: "success", title: "Video unpublished" });
       } else {
-        await api.videos.updateStatus(previewVideo.id, "published");
+        await api.videos.updateStatus(selectedVideo.id, "published");
         addToast({ type: "success", title: "Video published" });
       }
       setShowPublishModal(false);
@@ -352,7 +355,9 @@ export default function VideosPage() {
               hover
               className={cn(
                 "rounded-2xl border transition-all duration-300 overflow-hidden",
-                isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200",
+                isDark
+                  ? "bg-slate-800 border-slate-700"
+                  : "bg-white border-slate-200",
               )}
             >
               <div className="relative aspect-video bg-slate-900">
@@ -373,8 +378,8 @@ export default function VideosPage() {
                       video.status === "published"
                         ? "success"
                         : video.status === "pending"
-                        ? "warning"
-                        : "danger"
+                          ? "warning"
+                          : "danger"
                     }
                     className="rounded-lg font-black text-[8px] uppercase"
                   >
@@ -384,12 +389,9 @@ export default function VideosPage() {
                 <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
                   {formatDuration(video.duration)}
                 </div>
-                {/* Play Button Overlay */}
+                {/* Navigate to Video Detail */}
                 <button
-                  onClick={() => {
-                    setPreviewVideo(video);
-                    setShowPreviewModal(true);
-                  }}
+                  onClick={() => router.push(`/videos/${video.id}`)}
                   className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-300 group"
                 >
                   <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -400,24 +402,32 @@ export default function VideosPage() {
               <CardContent className="p-4">
                 <div className="space-y-3">
                   <div>
-                    <h3 className={cn(
-                      "text-sm font-semibold line-clamp-2",
-                      isDark ? "text-white" : "text-slate-900",
-                    )}>
+                    <h3
+                      className={cn(
+                        "text-sm font-semibold line-clamp-2",
+                        isDark ? "text-white" : "text-slate-900",
+                      )}
+                    >
                       {video.title}
                     </h3>
-                    <p className={cn(
-                      "text-xs font-medium uppercase tracking-wider",
-                      isDark ? "text-slate-400" : "text-slate-500",
-                    )}>
+                    <p
+                      className={cn(
+                        "text-xs font-medium uppercase tracking-wider",
+                        isDark ? "text-slate-400" : "text-slate-500",
+                      )}
+                    >
                       {video.creatorName}
                     </p>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className={isDark ? "text-slate-400" : "text-slate-500"}>
+                    <span
+                      className={isDark ? "text-slate-400" : "text-slate-500"}
+                    >
                       {formatNumber(video.views)} views
                     </span>
-                    <span className={isDark ? "text-slate-400" : "text-slate-500"}>
+                    <span
+                      className={isDark ? "text-slate-400" : "text-slate-500"}
+                    >
                       {formatDate(video.createdAt)}
                     </span>
                   </div>
@@ -433,9 +443,16 @@ export default function VideosPage() {
                             : "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
                         )}
                         onClick={() => handleToggleFeatured(video)}
-                        title={video.isFeatured ? "Remove from featured" : "Promote to featured"}
+                        title={
+                          video.isFeatured
+                            ? "Remove from featured"
+                            : "Promote to featured"
+                        }
                       >
-                        <Icons.Star size={14} className={video.isFeatured ? "text-amber-500" : ""} />
+                        <Icons.Star
+                          size={14}
+                          className={video.isFeatured ? "text-amber-500" : ""}
+                        />
                       </Button>
                       <Button
                         variant="ghost"
@@ -447,7 +464,11 @@ export default function VideosPage() {
                             : "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
                         )}
                         onClick={() => handleToggleBanner(video)}
-                        title={video.isBanner ? "Remove from banner" : "Promote to banner"}
+                        title={
+                          video.isBanner
+                            ? "Remove from banner"
+                            : "Promote to banner"
+                        }
                       >
                         <Icons.Image size={14} />
                       </Button>
@@ -483,7 +504,9 @@ export default function VideosPage() {
           onToggleBanner={handleToggleBanner}
           onToggleSuspend={async (video) => {
             setSelectedVideo(video);
-            setSuspendAction(video.status === "suspended" ? "unsuspend" : "suspend");
+            setSuspendAction(
+              video.status === "suspended" ? "unsuspend" : "suspend",
+            );
             setShowSuspendModal(true);
           }}
           onUpdateStatus={handleUpdateStatus}
@@ -491,6 +514,7 @@ export default function VideosPage() {
             setSelectedVideo(video);
             setShowDeleteModal(true);
           }}
+          onView={(video) => router.push(`/videos/${video.id}`)}
         />
       )}
 
@@ -546,7 +570,9 @@ export default function VideosPage() {
         isOpen={showSuspendModal}
         onClose={() => setShowSuspendModal(false)}
         onConfirm={handleToggleSuspend}
-        title={suspendAction === "suspend" ? "Suspend Video" : "Unsuspend Video"}
+        title={
+          suspendAction === "suspend" ? "Suspend Video" : "Unsuspend Video"
+        }
         message={
           suspendAction === "suspend"
             ? `Are you sure you want to suspend "${selectedVideo?.title}"? This will make the video unavailable to users.`
@@ -560,11 +586,13 @@ export default function VideosPage() {
         isOpen={showFeaturedModal}
         onClose={() => setShowFeaturedModal(false)}
         onConfirm={handleConfirmFeatured}
-        title={featuredAction === "add" ? "Add to Featured" : "Remove from Featured"}
+        title={
+          featuredAction === "add" ? "Add to Featured" : "Remove from Featured"
+        }
         message={
           featuredAction === "add"
-            ? `Are you sure you want to add "${previewVideo?.title}" to featured? This will highlight the video on the platform.`
-            : `Are you sure you want to remove "${previewVideo?.title}" from featured?`
+            ? `Are you sure you want to add "${selectedVideo?.title}" to featured? This will highlight the video on the platform.`
+            : `Are you sure you want to remove "${selectedVideo?.title}" from featured?`
         }
         confirmText={featuredAction === "add" ? "Add to Featured" : "Remove"}
         variant="info"
@@ -577,8 +605,8 @@ export default function VideosPage() {
         title={bannerAction === "add" ? "Add to Banner" : "Remove from Banner"}
         message={
           bannerAction === "add"
-            ? `Are you sure you want to add "${previewVideo?.title}" to banner? This will display the video on the homepage banner.`
-            : `Are you sure you want to remove "${previewVideo?.title}" from banner?`
+            ? `Are you sure you want to add "${selectedVideo?.title}" to banner? This will display the video on the homepage banner.`
+            : `Are you sure you want to remove "${selectedVideo?.title}" from banner?`
         }
         confirmText={bannerAction === "add" ? "Add to Banner" : "Remove"}
         variant="info"
@@ -588,211 +616,17 @@ export default function VideosPage() {
         isOpen={showPublishModal}
         onClose={() => setShowPublishModal(false)}
         onConfirm={handleConfirmPublish}
-        title={publishAction === "publish" ? "Publish Video" : "Unpublish Video"}
+        title={
+          publishAction === "publish" ? "Publish Video" : "Unpublish Video"
+        }
         message={
           publishAction === "publish"
-            ? `Are you sure you want to publish "${previewVideo?.title}"? This will make the video visible to users.`
-            : `Are you sure you want to unpublish "${previewVideo?.title}"? This will hide the video from users.`
+            ? `Are you sure you want to publish "${selectedVideo?.title}"? This will make the video visible to users.`
+            : `Are you sure you want to unpublish "${selectedVideo?.title}"? This will hide the video from users.`
         }
         confirmText={publishAction === "publish" ? "Publish" : "Unpublish"}
         variant={publishAction === "publish" ? "info" : "warning"}
       />
-
-      {/* Video Preview Modal */}
-      <Modal
-        isOpen={showPreviewModal}
-        onClose={() => {
-          setShowPreviewModal(false);
-          setPreviewVideo(null);
-        }}
-        title="Video Preview & Metrics"
-        size="xl"
-      >
-        {previewVideo && (
-          <div className="space-y-6">
-            {/* Video Player */}
-            <VideoPlayer
-              src={previewVideo.videoUrl || ""}
-              poster={previewVideo.thumbnail}
-              title={previewVideo.title}
-            />
-            
-            {/* Video Title & Status Badges */}
-            <div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
-                {previewVideo.title}
-              </h3>
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <Badge variant={previewVideo.isFeatured ? "warning" : "neutral"}>
-                  {previewVideo.isFeatured ? "⭐ Featured" : "Not Featured"}
-                </Badge>
-                <Badge variant={previewVideo.isBanner ? "info" : "neutral"}>
-                  {previewVideo.isBanner ? "🖼️ Banner" : "Not Banner"}
-                </Badge>
-                <Badge 
-                  variant={
-                    previewVideo.status === "published" ? "success" :
-                    previewVideo.status === "pending" ? "warning" :
-                    previewVideo.status === "suspended" ? "danger" : "neutral"
-                  }
-                >
-                  {previewVideo.status.charAt(0).toUpperCase() + previewVideo.status.slice(1)}
-                </Badge>
-                {previewVideo.isPaid && (
-                  <Badge variant="info">
-                    💰 {previewVideo.currency || "USD"} {previewVideo.price?.toFixed(2)}
-                  </Badge>
-                )}
-              </div>
-            </div>
-            
-            {/* Performance Metrics */}
-            <div>
-              <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                <Icons.BarChart size={16} />
-                Performance Metrics
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                  <Icons.Eye size={16} className="mx-auto mb-1 text-blue-500" />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Views</p>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.views)}</p>
-                </div>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                  <Icons.Heart size={16} className="mx-auto mb-1 text-red-500" />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Likes</p>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.likes)}</p>
-                </div>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                  <Icons.MessageCircle size={16} className="mx-auto mb-1 text-green-500" />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Comments</p>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.comments)}</p>
-                </div>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                  <Icons.Share2 size={16} className="mx-auto mb-1 text-purple-500" />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Shares</p>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatNumber(previewVideo.shares || 0)}</p>
-                </div>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                  <Icons.Clock size={16} className="mx-auto mb-1 text-amber-500" />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Watch Time</p>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatDuration(previewVideo.watchTime || 0)}</p>
-                </div>
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
-                  <Icons.TrendingUp size={16} className="mx-auto mb-1 text-emerald-500" />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Engagement</p>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">{previewVideo.engagementRate || 0}%</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Video Details */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-              <div>
-                <p className={cn("text-xs uppercase tracking-wider font-medium", isDark ? "text-slate-500" : "text-slate-400")}>
-                  Creator
-                </p>
-                <p className={isDark ? "text-white" : "text-slate-900"}>
-                  {previewVideo.creatorName}
-                </p>
-              </div>
-              <div>
-                <p className={cn("text-xs uppercase tracking-wider font-medium", isDark ? "text-slate-500" : "text-slate-400")}>
-                  Category
-                </p>
-                <p className={isDark ? "text-white" : "text-slate-900"}>
-                  {previewVideo.categoryName}
-                </p>
-              </div>
-              <div>
-                <p className={cn("text-xs uppercase tracking-wider font-medium", isDark ? "text-slate-500" : "text-slate-400")}>
-                  Duration
-                </p>
-                <p className={isDark ? "text-white" : "text-slate-900"}>
-                  {formatDuration(previewVideo.duration)}
-                </p>
-              </div>
-              <div>
-                <p className={cn("text-xs uppercase tracking-wider font-medium", isDark ? "text-slate-500" : "text-slate-400")}>
-                  Published
-                </p>
-                <p className={isDark ? "text-white" : "text-slate-900"}>
-                  {formatDate(previewVideo.createdAt)}
-                </p>
-              </div>
-            </div>
-            
-            {/* Actions */}
-            <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setFeaturedAction(previewVideo.isFeatured ? "remove" : "add");
-                  setShowFeaturedModal(true);
-                }}
-                className="flex-1"
-              >
-                <Icons.Star size={14} className="mr-2" />
-                {previewVideo.isFeatured ? "Remove Featured" : "Add to Featured"}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setBannerAction(previewVideo.isBanner ? "remove" : "add");
-                  setShowBannerModal(true);
-                }}
-                className="flex-1"
-              >
-                <Icons.Image size={14} className="mr-2" />
-                {previewVideo.isBanner ? "Remove Banner" : "Add to Banner"}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setPublishAction(previewVideo.status === "published" ? "unpublish" : "publish");
-                  setShowPublishModal(true);
-                }}
-                className="flex-1"
-              >
-                <Icons.RefreshCw size={14} className="mr-2" />
-                {previewVideo.status === "published" ? "Unpublish" : "Publish"}
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setShowPreviewModal(false);
-                  setSelectedVideo(previewVideo);
-                  setSuspendAction(previewVideo.status === "suspended" ? "unsuspend" : "suspend");
-                  setShowSuspendModal(true);
-                }}
-                className="flex-1"
-              >
-                <Icons.Ban size={14} className="mr-2" />
-                {previewVideo.status === "suspended" ? "Unsuspend" : "Suspend"}
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => {
-                  setSelectedVideo(previewVideo);
-                  setShowDeleteModal(true);
-                  setShowPreviewModal(false);
-                }}
-                className="flex-1"
-              >
-                <Icons.Trash2 size={14} className="mr-2" />
-                Delete
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

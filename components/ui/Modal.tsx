@@ -58,15 +58,18 @@ export function Modal({
         onClick={handleOverlayClick}
       >
         <div
-          className={cn("modal-content w-full animate-scale-in", sizes[size])}
+          className={cn(
+            "modal-content w-full max-h-[90vh] lg:max-h-[80vh] flex flex-col animate-scale-in",
+            sizes[size],
+          )}
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between px-4 lg:px-6 py-3 lg:py-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
             <h2
               id="modal-title"
-              className="text-lg font-semibold text-slate-900 dark:text-white"
+              className="text-base lg:text-lg font-semibold text-slate-900 dark:text-white"
             >
               {title}
             </h2>
@@ -80,7 +83,7 @@ export function Modal({
               </button>
             )}
           </div>
-          <div className="p-6">{children}</div>
+          <div className="p-4 lg:p-6 overflow-y-auto flex-1">{children}</div>
         </div>
       </div>
     </Fragment>
@@ -119,9 +122,9 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         <p className="text-sm text-slate-500 dark:text-slate-400">{message}</p>
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
           <button
             onClick={onClose}
             disabled={isLoading}

@@ -118,21 +118,21 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Notifications</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Notifications</h1>
           <p className="text-sm text-slate-500 mt-1">
             {unreadCount} unread notifications
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
             <button
               onClick={() => setFilter("all")}
               className={cn(
-                "px-4 py-2 text-xs font-medium rounded-lg transition-colors",
+                "flex-1 sm:flex-none px-4 py-2 text-xs font-medium rounded-lg transition-colors",
                 filter === "all"
                   ? "bg-white dark:bg-slate-700 shadow-sm"
                   : "text-slate-500 hover:text-slate-700 dark:text-slate-400",
@@ -143,7 +143,7 @@ export default function NotificationsPage() {
             <button
               onClick={() => setFilter("unread")}
               className={cn(
-                "px-4 py-2 text-xs font-medium rounded-lg transition-colors",
+                "flex-1 sm:flex-none px-4 py-2 text-xs font-medium rounded-lg transition-colors",
                 filter === "unread"
                   ? "bg-white dark:bg-slate-700 shadow-sm"
                   : "text-slate-500 hover:text-slate-700 dark:text-slate-400",
@@ -183,14 +183,14 @@ export default function NotificationsPage() {
                 key={notification.id}
                 onClick={() => markAsRead(notification.id)}
                 className={cn(
-                  "flex items-start gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer",
+                  "flex items-start gap-3 p-4 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer",
                   !notification.read &&
                     "bg-emerald-50/30 dark:bg-emerald-900/5",
                 )}
               >
                 <div
                   className={cn(
-                    "flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center",
+                    "flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center",
                     notification.read
                       ? "bg-slate-100 dark:bg-slate-800"
                       : "bg-white dark:bg-slate-800 shadow-sm",
@@ -202,7 +202,7 @@ export default function NotificationsPage() {
                   <div className="flex items-center gap-2">
                     <p
                       className={cn(
-                        "text-sm font-medium",
+                        "text-base font-medium",
                         notification.read
                           ? "text-slate-600 dark:text-slate-400"
                           : "text-slate-900 dark:text-white",
@@ -211,13 +211,13 @@ export default function NotificationsPage() {
                       {notification.title}
                     </p>
                     {!notification.read && (
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0" />
                     )}
                   </div>
-                  <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                  <p className="text-sm text-slate-500 mt-1 line-clamp-2">
                     {notification.description}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-2">
+                  <p className="text-xs text-slate-400 mt-2">
                     {notification.time}
                   </p>
                 </div>
@@ -229,7 +229,7 @@ export default function NotificationsPage() {
                     }}
                     className="flex-shrink-0 p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
                   >
-                    <Icons.Check size={14} className="text-slate-400" />
+                    <Icons.Check size={16} className="text-slate-400" />
                   </button>
                 )}
               </div>

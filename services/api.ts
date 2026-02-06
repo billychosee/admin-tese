@@ -19,6 +19,7 @@ import type {
   Playlist,
   Comment,
   UserProfile,
+  ActivityLog,
 } from "@/types";
 import {
   mockTransactions,
@@ -40,6 +41,7 @@ import {
   mockPlaylists,
   mockComments,
   mockUserProfiles,
+  mockActivityLogs,
 } from "./mockData";
 import { generateId } from "@/utils";
 
@@ -722,6 +724,66 @@ export const api = {
       if (!user) throw new Error("Admin user not found");
       user.isActive = !user.isActive;
       return user;
+    },
+
+    async uploadAvatar(id: string, _file: File): Promise<string> {
+      await simulateApiDelay();
+      const user = mockAdminUsers.find((u) => u.id === id);
+      if (!user) throw new Error("Admin user not found");
+      // In real app, upload to server and return URL
+      const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`;
+      user.avatar = avatarUrl;
+      return avatarUrl;
+    },
+
+    async resetPassword(id: string, _newPassword: string): Promise<void> {
+      await simulateApiDelay();
+      const user = mockAdminUsers.find((u) => u.id === id);
+      if (!user) throw new Error("Admin user not found");
+      // In real app, hash and store new password
+    },
+
+    async bulkActivate(userIds: string[], activate: boolean): Promise<AdminUser[]> {
+      await simulateApiDelay();
+      const updatedUsers: AdminUser[] = [];
+      for (const id of userIds) {
+        const user = mockAdminUsers.find((u) => u.id === id);
+        if (user) {
+          user.isActive = activate;
+          updatedUsers.push(user);
+        }
+      }
+      return updatedUsers;
+    },
+
+    async bulkDelete(userIds: string[]): Promise<void> {
+      await simulateApiDelay();
+      for (const id of userIds) {
+        const index = mockAdminUsers.findIndex((u) => u.id === id);
+        if (index !== -1) {
+          mockAdminUsers.splice(index, 1);
+        }
+      }
+    },
+  },
+
+  // Activity Log
+  activityLog: {
+    async getAll(): Promise<ActivityLog[]> {
+      await simulateApiDelay();
+      return mockActivityLogs;
+    },
+
+    async getByUserId(userId: string): Promise<ActivityLog[]> {
+      await simulateApiDelay();
+      return mockActivityLogs.filter((log) => log.adminUserId === userId);
+    },
+
+    async getByTarget(targetType: string, targetId: string): Promise<ActivityLog[]> {
+      await simulateApiDelay();
+      return mockActivityLogs.filter(
+        (log) => log.targetType === targetType && log.targetId === targetId
+      );
     },
   },
 

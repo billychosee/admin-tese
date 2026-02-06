@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { Icons } from "@/components/ui/Icons";
 import { api } from "@/services/api";
-import { cn, formatDate } from "@/utils";
+import { cn, formatDate } from "../../utils";
 import type { Comment, UserProfile } from "@/types";
 
 interface VideoCommentsProps {
@@ -313,22 +313,6 @@ export function VideoComments({
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {comments.length > 0 && (
-          <div className="flex justify-center">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                // Navigate to full comments management page
-                window.location.href = "/comments";
-              }}
-            >
-              <Icons.ExternalLink size={14} className="mr-1" />
-              Manage All Comments
-            </Button>
           </div>
         )}
       </div>

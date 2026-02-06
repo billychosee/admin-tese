@@ -178,9 +178,9 @@ export default function PlaylistsPage() {
           </p>
         </div>
 
-        {/* View Mode Toggle */}
+        {/* View Mode Toggle - Hidden on mobile, shows on desktop */}
         <div
-          className="flex p-1 rounded-xl border"
+          className="hidden sm:flex p-1 rounded-xl border"
           style={{
             backgroundColor: "hsl(var(--surface))",
             borderColor: "hsl(var(--surface-border))",
@@ -231,11 +231,18 @@ export default function PlaylistsPage() {
             colors.background,
           )}
         >
-          {viewMode === "list" ? (
-            <SkeletonTable rows={10} cols={7} />
-          ) : (
+          {/* Mobile: Always show grid skeleton */}
+          <div className="sm:hidden">
             <SkeletonList count={8} />
-          )}
+          </div>
+          {/* Desktop: Show list or grid skeleton based on viewMode */}
+          <div className="hidden sm:block">
+            {viewMode === "list" ? (
+              <SkeletonTable rows={10} cols={7} />
+            ) : (
+              <SkeletonList count={8} />
+            )}
+          </div>
         </div>
       ) : playlists.length === 0 ? (
         <Card
@@ -253,199 +260,312 @@ export default function PlaylistsPage() {
             </p>
           </CardContent>
         </Card>
-      ) : viewMode === "list" ? (
-        <PlaylistTable
-          playlists={playlists}
-          isLoading={isLoading}
-          onViewPlaylist={openPlaylist}
-          onToggleStatus={(playlist, action) => openConfirmModal(playlist, action)}
-          onViewVideos={openVideos}
-        />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {playlists.map((playlist) => (
-            <Card
-              key={playlist.id}
-              hover
-              className={cn(
-                "rounded-2xl border transition-all duration-300 cursor-pointer",
-                isDark
-                  ? "bg-[hsl(var(--surface))] border-[hsl(var(--surface-border))]"
-                  : "bg-slate-50 border-slate-200",
-              )}
-              onClick={() => openPlaylist(playlist)}
-            >
-              <CardContent className="p-5">
-                <div className="flex flex-col items-center text-center">
-                  {/* Thumbnail */}
-                  <div className="relative mb-3 group">
-                    {playlist.thumbnail ? (
-                      <>
-                        <img
-                          src={playlist.thumbnail}
-                          alt={playlist.playlistName}
-                          className="w-20 h-20 rounded-xl object-cover ring-2 ring-[hsl(var(--primary))]/20"
-                        />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePreviewPlaylist(playlist);
-                          }}
-                          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center"
-                        >
-                          <Icons.Play size={32} className="text-white ml-1" />
-                        </button>
-                      </>
-                    ) : (
-                      <div
-                        className={cn(
-                          "w-20 h-20 rounded-xl flex items-center justify-center text-2xl font-bold",
-                          isDark
-                            ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
-                            : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
+        <>
+          {/* Mobile: Always show grid view */}
+          <div className="sm:hidden">
+            <div className="grid gap-3 grid-cols-2">
+              {playlists.map((playlist) => (
+                <Card
+                  key={playlist.id}
+                  hover
+                  className={cn(
+                    "rounded-xl border transition-all duration-300 cursor-pointer",
+                    isDark
+                      ? "bg-[hsl(var(--surface))] border-[hsl(var(--surface-border))]"
+                      : "bg-slate-50 border-slate-200",
+                  )}
+                  onClick={() => openPlaylist(playlist)}
+                >
+                  <CardContent className="p-3">
+                    <div className="flex flex-col items-center text-center">
+                      {/* Thumbnail */}
+                      <div className="relative mb-2 group">
+                        {playlist.thumbnail ? (
+                          <>
+                            <img
+                              src={playlist.thumbnail}
+                              alt={playlist.playlistName}
+                              className="w-14 h-14 rounded-lg object-cover ring-2 ring-[hsl(var(--primary))]/20"
+                            />
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePreviewPlaylist(playlist);
+                              }}
+                              className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
+                            >
+                              <Icons.Play size={24} className="text-white ml-0.5" />
+                            </button>
+                          </>
+                        ) : (
+                          <div
+                            className={cn(
+                              "w-14 h-14 rounded-lg flex items-center justify-center text-lg font-bold",
+                              isDark
+                                ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                                : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
+                            )}
+                          >
+                            {getInitials(playlist.playlistName)}
+                          </div>
                         )}
-                      >
-                        {getInitials(playlist.playlistName)}
                       </div>
-                    )}
-                  </div>
 
-                  {/* Name */}
-                  <h3
-                    className={cn(
-                      "text-base font-semibold",
-                      colors.textPrimary,
-                    )}
-                  >
-                    {playlist.playlistName}
-                  </h3>
-                  <p
-                    className={cn(
-                      "text-xs font-medium uppercase tracking-wider mt-1",
-                      colors.textMuted,
-                    )}
-                  >
-                    {playlist.channelName}
-                  </p>
-
-                  {/* Creator */}
-                  <p
-                    className={cn(
-                      "text-xs mt-1",
-                      colors.textSecondary,
-                    )}
-                  >
-                    {playlist.creatorName}
-                  </p>
-
-                  {/* Status Badge */}
-                  <Badge
-                    variant={
-                      playlist.isDeactivated
-                        ? "danger"
-                        : playlist.isActive
-                          ? "success"
-                          : "warning"
-                    }
-                    className="mt-3"
-                  >
-                    {playlist.isDeactivated
-                      ? "Deactivated"
-                      : playlist.isActive
-                        ? "Active"
-                        : "Inactive"}
-                  </Badge>
-
-                  {/* Stats */}
-                  <div className="mt-4 w-full grid grid-cols-2 gap-3">
-                    <div
-                      className={cn(
-                        "rounded-xl p-3 transition-colors duration-300 text-center",
-                        isDark
-                          ? "bg-[hsl(var(--surface-hover))]/50"
-                          : "bg-[hsl(var(--surface-hover))]",
-                      )}
-                    >
-                      <p
+                      {/* Name */}
+                      <h3
                         className={cn(
-                          "text-lg font-bold",
+                          "text-xs font-semibold",
                           colors.textPrimary,
                         )}
                       >
-                        {formatNumber(playlist.videoCount)}
-                      </p>
-                      <p
-                        className={cn(
-                          "text-[10px] font-medium uppercase tracking-wider",
-                          colors.textMuted,
-                        )}
-                      >
-                        Videos
-                      </p>
-                    </div>
-                    <div
-                      className={cn(
-                        "rounded-xl p-3 transition-colors duration-300 text-center",
-                        isDark
-                          ? "bg-[hsl(var(--success))]/10"
-                          : "bg-[hsl(var(--success))]/10",
-                      )}
-                    >
-                      <p
-                        className={cn(
-                          "text-lg font-bold",
-                          colors.successText,
-                        )}
-                      >
-                        {formatNumber(playlist.totalViews)}
-                      </p>
-                      <p
-                        className={cn(
-                          "text-[10px] font-medium uppercase tracking-wider",
-                          colors.successText,
-                        )}
-                      >
-                        Views
-                      </p>
-                    </div>
-                  </div>
+                        {playlist.playlistName.length > 15
+                          ? playlist.playlistName.substring(0, 15) + "..."
+                          : playlist.playlistName}
+                      </h3>
 
-                  {/* Price */}
-                  <div className="mt-3">
-                    {playlist.paymentType === "free" ? (
-                      <Badge variant="neutral">Free</Badge>
-                    ) : (
-                      <span
-                        className={cn(
-                          "text-sm font-bold",
-                          colors.successText,
-                        )}
+                      {/* Status Badge */}
+                      <Badge
+                        variant={
+                          playlist.isDeactivated
+                            ? "danger"
+                            : playlist.isActive
+                              ? "success"
+                              : "warning"
+                        }
+                        className="mt-2 text-[10px]"
                       >
-                        {formatCurrency(playlist.price || 0)}
-                      </span>
-                    )}
-                  </div>
+                        {playlist.isDeactivated
+                          ? "Deactivated"
+                          : playlist.isActive
+                            ? "Active"
+                            : "Inactive"}
+                      </Badge>
 
-                  {/* Deactivate Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openConfirmModal(playlist, playlist.isActive && !playlist.isDeactivated ? "deactivate" : "activate");
-                    }}
+                      {/* Stats */}
+                      <div className="mt-2 w-full grid grid-cols-2 gap-2">
+                        <div
+                          className={cn(
+                            "rounded-lg p-2 transition-colors duration-300 text-center",
+                            isDark
+                              ? "bg-[hsl(var(--surface-hover))]/50"
+                              : "bg-[hsl(var(--surface-hover))]",
+                          )}
+                        >
+                          <p className={cn("text-xs font-bold", colors.textPrimary)}>
+                            {formatNumber(playlist.videoCount)}
+                          </p>
+                          <p className={cn("text-[9px] font-medium uppercase tracking-wider", colors.textMuted)}>
+                            Videos
+                          </p>
+                        </div>
+                        <div
+                          className={cn(
+                            "rounded-lg p-2 transition-colors duration-300 text-center",
+                            isDark
+                              ? "bg-[hsl(var(--success))]/10"
+                              : "bg-[hsl(var(--success))]/10",
+                          )}
+                        >
+                          <p className={cn("text-xs font-bold", colors.successText)}>
+                            {formatNumber(playlist.totalViews)}
+                          </p>
+                          <p className={cn("text-[9px] font-medium uppercase tracking-wider", colors.successText)}>
+                            Views
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Price */}
+                      <div className="mt-2">
+                        {playlist.paymentType === "free" ? (
+                          <Badge variant="neutral" className="text-[10px]">Free</Badge>
+                        ) : (
+                          <span className={cn("text-xs font-bold", colors.successText)}>
+                            {formatCurrency(playlist.price || 0)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop: Show list or grid based on viewMode */}
+          <div className="hidden sm:block">
+            {viewMode === "list" ? (
+              <PlaylistTable
+                playlists={playlists}
+                isLoading={isLoading}
+                onViewPlaylist={openPlaylist}
+                onToggleStatus={(playlist, action) => openConfirmModal(playlist, action)}
+                onViewVideos={openVideos}
+              />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {playlists.map((playlist) => (
+                  <Card
+                    key={playlist.id}
+                    hover
                     className={cn(
-                      "mt-4 px-4 py-2 rounded-lg text-sm font-medium transition-colors border",
-                      playlist.isActive && !playlist.isDeactivated
-                        ? "border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        : "border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                      "rounded-2xl border transition-all duration-300 cursor-pointer",
+                      isDark
+                        ? "bg-[hsl(var(--surface))] border-[hsl(var(--surface-border))]"
+                        : "bg-slate-50 border-slate-200",
                     )}
+                    onClick={() => openPlaylist(playlist)}
                   >
-                    {playlist.isActive && !playlist.isDeactivated ? "Deactivate" : "Activate"}
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    <CardContent className="p-5">
+                      <div className="flex flex-col items-center text-center">
+                        {/* Thumbnail */}
+                        <div className="relative mb-3 group">
+                          {playlist.thumbnail ? (
+                            <>
+                              <img
+                                src={playlist.thumbnail}
+                                alt={playlist.playlistName}
+                                className="w-20 h-20 rounded-xl object-cover ring-2 ring-[hsl(var(--primary))]/20"
+                              />
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePreviewPlaylist(playlist);
+                                }}
+                                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center"
+                              >
+                                <Icons.Play size={32} className="text-white ml-1" />
+                              </button>
+                            </>
+                          ) : (
+                            <div
+                              className={cn(
+                                "w-20 h-20 rounded-xl flex items-center justify-center text-2xl font-bold",
+                                isDark
+                                  ? "bg-[hsl(var(--primary))]/20 text-[hsl(var(--primary))]"
+                                  : "bg-[hsl(var(--primary))]/10 text-[hsl(var(--primary))]",
+                              )}
+                            >
+                              {getInitials(playlist.playlistName)}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Name */}
+                        <h3
+                          className={cn(
+                            "text-base font-semibold",
+                            colors.textPrimary,
+                          )}
+                        >
+                          {playlist.playlistName}
+                        </h3>
+                        <p
+                          className={cn(
+                            "text-xs font-medium uppercase tracking-wider mt-1",
+                            colors.textMuted,
+                          )}
+                        >
+                          {playlist.channelName}
+                        </p>
+
+                        {/* Creator */}
+                        <p
+                          className={cn(
+                            "text-xs mt-1",
+                            colors.textSecondary,
+                          )}
+                        >
+                          {playlist.creatorName}
+                        </p>
+
+                        {/* Status Badge */}
+                        <Badge
+                          variant={
+                            playlist.isDeactivated
+                              ? "danger"
+                              : playlist.isActive
+                                ? "success"
+                                : "warning"
+                          }
+                          className="mt-3"
+                        >
+                          {playlist.isDeactivated
+                            ? "Deactivated"
+                            : playlist.isActive
+                              ? "Active"
+                              : "Inactive"}
+                        </Badge>
+
+                        {/* Stats */}
+                        <div className="mt-4 w-full grid grid-cols-2 gap-3">
+                          <div
+                            className={cn(
+                              "rounded-xl p-3 transition-colors duration-300 text-center",
+                              isDark
+                                ? "bg-[hsl(var(--surface-hover))]/50"
+                                : "bg-[hsl(var(--surface-hover))]",
+                            )}
+                          >
+                            <p className={cn("text-lg font-bold", colors.textPrimary)}>
+                              {formatNumber(playlist.videoCount)}
+                            </p>
+                            <p className={cn("text-[10px] font-medium uppercase tracking-wider", colors.textMuted)}>
+                              Videos
+                            </p>
+                          </div>
+                          <div
+                            className={cn(
+                              "rounded-xl p-3 transition-colors duration-300 text-center",
+                              isDark
+                                ? "bg-[hsl(var(--success))]/10"
+                                : "bg-[hsl(var(--success))]/10",
+                            )}
+                          >
+                            <p className={cn("text-lg font-bold", colors.successText)}>
+                              {formatNumber(playlist.totalViews)}
+                            </p>
+                            <p className={cn("text-[10px] font-medium uppercase tracking-wider", colors.successText)}>
+                              Views
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Price */}
+                        <div className="mt-3">
+                          {playlist.paymentType === "free" ? (
+                            <Badge variant="neutral">Free</Badge>
+                          ) : (
+                            <span className={cn("text-sm font-bold", colors.successText)}>
+                              {formatCurrency(playlist.price || 0)}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Deactivate Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openConfirmModal(playlist, playlist.isActive && !playlist.isDeactivated ? "deactivate" : "activate");
+                          }}
+                          className={cn(
+                            "mt-4 px-4 py-2 rounded-lg text-sm font-medium transition-colors border",
+                            playlist.isActive && !playlist.isDeactivated
+                              ? "border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              : "border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                          )}
+                        >
+                          {playlist.isActive && !playlist.isDeactivated ? "Deactivate" : "Activate"}
+                        </button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* Pagination */}

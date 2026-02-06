@@ -22,6 +22,7 @@ export default function FeaturedPage() {
   const [featured, setFeatured] = useState<FeaturedCreator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [isMobile, setIsMobile] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
 
@@ -60,6 +61,20 @@ export default function FeaturedPage() {
 
   useEffect(() => {
     fetchFeatured();
+    
+    // Detect if mobile (screen width < 640px)
+    const checkIsMobile = () => {
+      const mobile = window.innerWidth < 640;
+      setIsMobile(mobile);
+      setViewMode(mobile ? "grid" : "list");
+    };
+    
+    // Initial check
+    checkIsMobile();
+    
+    // Listen for window resize
+    window.addEventListener("resize", checkIsMobile);
+    return () => window.removeEventListener("resize", checkIsMobile);
   }, [fetchFeatured]);
 
   const handleToggleStatus = async (id: string) => {
@@ -132,15 +147,15 @@ export default function FeaturedPage() {
   return (
     <div
       className={cn(
-        "space-y-8 min-h-screen font-sans transition-colors duration-300 p-8",
+        "space-y-8 min-h-screen font-sans transition-colors duration-300 p-4 sm:p-8",
         colors.background,
       )}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2
             className={cn(
-              "text-3xl font-black tracking-tighter",
+              "text-2xl sm:text-3xl font-black tracking-tighter",
               isDark ? "text-white" : "text-slate-800",
             )}
           >
@@ -151,9 +166,10 @@ export default function FeaturedPage() {
           </p>
         </div>
 
+        {/* View Mode Toggle - Hidden on mobile */}
         <div
           className={cn(
-            "flex p-1 rounded-xl border",
+            "hidden sm:flex p-1 rounded-xl border",
             colors.surface,
             colors.surfaceBorder,
           )}
@@ -222,7 +238,7 @@ export default function FeaturedPage() {
           }}
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {featured.map((item, index) => (
             <Card
               key={item.id}
@@ -232,19 +248,19 @@ export default function FeaturedPage() {
                 colors.surface,
               )}
             >
-              <CardContent className="p-5">
+              <CardContent className="p-3 sm:p-5">
                 <div className="flex flex-col">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                       <span
                         className={cn(
-                          "text-2xl font-black",
+                          "text-lg sm:text-2xl font-black flex-shrink-0",
                           isDark ? "text-amber-500/30" : "text-amber-200",
                         )}
                       >
                         #{index + 1}
                       </span>
-                      <div className="flex items-center gap-3 flex-1">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         {item.creator.avatar ? (
                           <img
                             src={item.creator.avatar}
@@ -285,25 +301,25 @@ export default function FeaturedPage() {
                         </div>
                       </div>
                     </div>
-                    <Badge variant={item.isActive ? "success" : "danger"}>
+                    <Badge variant={item.isActive ? "success" : "danger"} className="flex-shrink-0">
                       {item.isActive ? "Active" : "Inactive"}
                     </Badge>
                   </div>
 
                   <div
-                    className={cn("mt-4 h-px w-full", colors.surfaceBorder)}
+                    className={cn("mt-3 h-px w-full", colors.surfaceBorder)}
                   />
 
-                  <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="mt-3 grid grid-cols-2 gap-2">
                     <div
                       className={cn(
-                        "rounded-lg p-3",
+                        "rounded-lg p-2 sm:p-3",
                         isDark ? "bg-white/5" : "bg-slate-50",
                       )}
                     >
                       <p
                         className={cn(
-                          "text-xs font-medium uppercase tracking-wider",
+                          "text-[10px] sm:text-xs font-medium uppercase tracking-wider",
                           colors.textMuted,
                         )}
                       >
@@ -311,7 +327,7 @@ export default function FeaturedPage() {
                       </p>
                       <p
                         className={cn(
-                          "text-base font-bold",
+                          "text-sm sm:text-base font-bold",
                           colors.textPrimary,
                         )}
                       >
@@ -320,23 +336,23 @@ export default function FeaturedPage() {
                     </div>
                     <div
                       className={cn(
-                        "rounded-lg p-3",
+                        "rounded-lg p-2 sm:p-3",
                         colors.success,
                         "bg-opacity-10",
                       )}
                     >
                       <p
                         className={cn(
-                          "text-xs font-medium uppercase tracking-wider",
-                          colors.successText,
+                          "text-[10px] sm:text-xs font-medium uppercase tracking-wider",
+                          isDark ? "text-white" : "text-white sm:" + colors.successText.replace("text-", ""),
                         )}
                       >
                         Earnings
                       </p>
                       <p
                         className={cn(
-                          "text-base font-bold",
-                          colors.successText,
+                          "text-sm sm:text-base font-bold",
+                          isDark ? "text-white" : "text-white sm:text-emerald-600 dark:text-emerald-400",
                         )}
                       >
                         {formatCurrency(item.creator.totalEarnings)}
@@ -344,7 +360,7 @@ export default function FeaturedPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between">
+                  <div className="mt-3 flex items-center justify-between">
                     <span
                       className={cn(
                         "text-xs font-medium uppercase",

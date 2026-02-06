@@ -51,30 +51,49 @@ export function SkeletonCard() {
 
 export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
-    <div className="table-container">
-      <table className="table">
-        <thead>
-          <tr>
-            {Array.from({ length: cols }).map((_, i) => (
-              <th key={i}>
-                <Skeleton width={100} height={16} />
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: rows }).map((_, rowIndex) => (
-            <tr key={rowIndex}>
-              {Array.from({ length: cols }).map((_, colIndex) => (
-                <td key={colIndex}>
-                  <Skeleton width={colIndex === 0 ? 120 : 80} height={16} />
-                </td>
+    <>
+      {/* Mobile skeleton */}
+      <div className="sm:hidden p-4 space-y-3">
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <div key={rowIndex} className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 animate-pulse">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700" />
+              <div className="flex-1">
+                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24 mb-2" />
+                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-32" />
+              </div>
+            </div>
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full mb-2" />
+            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-2/3" />
+          </div>
+        ))}
+      </div>
+      {/* Desktop skeleton */}
+      <div className="hidden sm:block table-container">
+        <table className="table">
+          <thead>
+            <tr>
+              {Array.from({ length: cols }).map((_, i) => (
+                <th key={i}>
+                  <Skeleton width={100} height={16} />
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {Array.from({ length: rows }).map((_, rowIndex) => (
+              <tr key={rowIndex}>
+                {Array.from({ length: cols }).map((_, colIndex) => (
+                  <td key={colIndex}>
+                    <Skeleton width={colIndex === 0 ? 120 : 80} height={16} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 

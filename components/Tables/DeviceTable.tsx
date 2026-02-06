@@ -131,14 +131,136 @@ export function DeviceTable({
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-12 bg-muted rounded animate-pulse" />
-            ))}
-          </div>
+          <>
+            {/* Mobile skeleton */}
+            <div className="sm:hidden space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 animate-pulse"
+                >
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-700" />
+                    <div className="flex-1">
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24 mb-2" />
+                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-32" />
+                    </div>
+                    <div className="h-6 w-16 rounded-full bg-slate-200 dark:bg-slate-700" />
+                  </div>
+                  <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-full mb-2" />
+                  <div className="flex items-center justify-between">
+                    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-24" />
+                    <div className="h-8 w-20 rounded-lg bg-slate-200 dark:bg-slate-700" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop skeleton */}
+            <div className="hidden sm:block space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-12 bg-muted rounded animate-pulse" />
+              ))}
+            </div>
+          </>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Mobile Card View */}
+            <div className="sm:hidden">
+              {paginatedDevices.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-slate-500 dark:text-slate-400">
+                  <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                    <Icons.Smartphone size={32} className="text-slate-300 dark:text-slate-600" />
+                  </div>
+                  <p className="text-sm font-medium">No devices found</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {paginatedDevices.map((device) => (
+                    <div
+                      key={device.id}
+                      className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+                    >
+                      {/* Top Row - Device Icon, Browser/OS, Status */}
+                      <div className="flex items-center gap-3 p-4">
+                        {/* Device Icon */}
+                        <div className={cn("p-3 rounded-xl w-fit", getDeviceColor(device.deviceType))}>
+                          {getDeviceIcon(device.deviceType)}
+                        </div>
+
+                        {/* Browser and OS */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-base font-bold text-slate-900 dark:text-white truncate">
+                            {device.browser}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {device.os}
+                          </p>
+                        </div>
+
+                        {/* Status Badge */}
+                        <Badge
+                          variant={device.isBlocked ? "danger" : device.isCurrentSession ? "success" : "neutral"}
+                          className="capitalize text-xs"
+                        >
+                          {device.isBlocked ? "Blocked" : device.isCurrentSession ? "Current" : "Active"}
+                        </Badge>
+                      </div>
+
+                      {/* IP and Location Row */}
+                      <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Icons.Globe size={14} className="text-slate-400" />
+                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                              {device.location.city}, {device.location.country}
+                            </span>
+                          </div>
+                          <code className="text-xs font-mono text-slate-600 dark:text-slate-300">
+                            {device.ipAddress}
+                          </code>
+                        </div>
+                      </div>
+
+                      {/* Last Active Row */}
+                      <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-700">
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                          <Icons.Clock size={14} />
+                          <span>Last active: {formatRelativeTime(device.lastActive)}</span>
+                        </div>
+                      </div>
+
+                      {/* Actions Row */}
+                      <div className="p-3 border-t border-slate-100 dark:border-slate-700">
+                        {!device.isBlocked && !device.isCurrentSession && (
+                          <button
+                            onClick={() => onForceLogout(device)}
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-semibold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                          >
+                            <Icons.LogOut size={14} />
+                            Force Logout
+                          </button>
+                        )}
+                        {device.isBlocked && (
+                          <div className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-sm font-medium">
+                            <Icons.Lock size={14} />
+                            Device is Blocked
+                          </div>
+                        )}
+                        {device.isCurrentSession && (
+                          <div className="flex items-center justify-center gap-2 py-3 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm font-medium">
+                            <Icons.CheckCircle size={14} />
+                            Current Session
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b-2 border-slate-300 dark:border-slate-600">
@@ -228,9 +350,50 @@ export function DeviceTable({
               </table>
             </div>
 
-            {/* Pagination */}
+            {/* Mobile Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 sm:hidden">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {Math.min(
+                    (currentPage - 1) * itemsPerPage + 1,
+                    filteredDevices.length
+                  )}
+                  -
+                  {Math.min(
+                    currentPage * itemsPerPage,
+                    filteredDevices.length
+                  )}{" "}
+                  of {filteredDevices.length}
+                </p>
+                <div className="flex gap-1">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <Icons.ChevronLeft size={14} />
+                  </Button>
+                  <Button variant="primary" size="sm" disabled className="px-3">
+                    {currentPage}/{totalPages}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    <Icons.ChevronRight size={14} />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Desktop Pagination */}
+            {totalPages > 1 && (
+              <div className="hidden sm:flex items-center justify-between mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   Showing{" "}
                   {Math.min(

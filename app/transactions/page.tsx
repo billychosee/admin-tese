@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
-import { ConfirmModal } from "@/components/ui/Modal";
+import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { SkeletonTable } from "@/components/ui/Skeleton";
 import { TransactionTable } from "@/components/Tables/TransactionTable";
 import { Icons } from "@/components/ui/Icons";
@@ -30,6 +30,7 @@ export default function TransactionsPage() {
     useState<Transaction | null>(null);
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [showFlagModal, setShowFlagModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -253,36 +254,34 @@ export default function TransactionsPage() {
   return (
     <div
       className={cn(
-        "space-y-8 min-h-screen font-sans transition-colors duration-300",
+        "space-y-6 sm:space-y-8 min-h-screen font-sans transition-colors duration-300 p-4 sm:p-6 lg:p-8",
         isDark ? "bg-[#020617]" : "bg-white",
       )}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
-              Transactions
-            </h1>
-            <p className="text-xs font-bold uppercase tracking-widest text-[hsl(var(--text-muted))]">
-              View and manage all transactions
-            </p>
-          </div>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-xl sm:text-3xl font-black uppercase tracking-tighter text-[hsl(var(--text-primary))]">
+            Transactions
+          </h1>
+          <p className="text-xs font-bold uppercase tracking-widest text-[hsl(var(--text-muted))]">
+            View and manage all transactions
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Date Range Filter */}
-          <div className="flex items-center gap-2">
+
+        {/* Date Range Filter - Side by side on mobile */}
+          <div className="flex items-center gap-1 sm:gap-2">
             <Input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               className={cn(
-                "w-40",
+                "flex-1 h-8 sm:h-10 text-xs sm:text-sm",
                 isDark
                   ? "bg-slate-700 border-slate-600 text-white"
                   : "bg-slate-50 border-slate-200",
               )}
             />
-            <span className={isDark ? "text-slate-400" : "text-slate-500"}>
+            <span className={cn("text-xs font-medium whitespace-nowrap", isDark ? "text-slate-400" : "text-slate-500")}>
               to
             </span>
             <Input
@@ -290,7 +289,7 @@ export default function TransactionsPage() {
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               className={cn(
-                "w-40",
+                "flex-1 h-8 sm:h-10 text-xs sm:text-sm",
                 isDark
                   ? "bg-slate-700 border-slate-600 text-white"
                   : "bg-slate-50 border-slate-200",
@@ -298,99 +297,17 @@ export default function TransactionsPage() {
             />
           </div>
 
-          {/* Search */}
-          <div className={cn("relative", isDark ? "bg-slate-800" : "bg-white")}>
-            <Input
-              placeholder="Search transactions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn(
-                "w-64 pl-10",
-                isDark
-                  ? "bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
-                  : "bg-slate-50 border-slate-200",
-              )}
-            />
-            <Icons.Search
-              size={18}
-              className={cn(
-                "absolute left-3 top-1/2 -translate-y-1/2",
-                isDark ? "text-slate-400" : "text-slate-400",
-              )}
-            />
-          </div>
-
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className={cn(
-              "px-4 py-2 rounded-xl border text-sm font-medium",
-              isDark
-                ? "bg-slate-800 border-slate-700 text-white"
-                : "bg-slate-50 border-slate-200 text-slate-900",
-            )}
-          >
-            {TRANSACTION_STATUSES.map((status) => (
-              <option key={status.value} value={status.value}>
-                {status.label}
-              </option>
-            ))}
-          </select>
-
           {/* Clear Filters */}
           {hasFilters && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
-              <Icons.X size={16} />
+              <Icons.X size={14} className="mr-1" />
               Clear
             </Button>
           )}
-
-          {/* Export Dropdown */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className={isDark ? "border-slate-600 hover:bg-slate-700" : ""}
-            >
-              <Icons.Download size={18} />
-              Export
-            </Button>
-            {showExportMenu && (
-              <div
-                className={cn(
-                  "absolute right-0 top-full mt-2 w-40 rounded-xl shadow-xl z-50 py-2",
-                  isDark ? "bg-slate-800 border border-slate-700" : "bg-white border border-slate-200",
-                )}
-              >
-                <button
-                  onClick={() => handleExport("csv")}
-                  className={cn(
-                    "w-full px-4 py-2 text-left text-sm hover:bg-opacity-50 transition-colors",
-                    isDark ? "hover:bg-slate-700" : "hover:bg-slate-100",
-                  )}
-                >
-                  <Icons.FileText size={14} className="inline mr-2" />
-                  Export CSV
-                </button>
-                <button
-                  onClick={() => handleExport("excel")}
-                  className={cn(
-                    "w-full px-4 py-2 text-left text-sm hover:bg-opacity-50 transition-colors",
-                    isDark ? "hover:bg-slate-700" : "hover:bg-slate-100",
-                  )}
-                >
-                  <Icons.Table size={14} className="inline mr-2" />
-                  Export Excel
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
           { label: "Total", value: transactions.length, color: "primary" },
           { label: "Completed", value: transactions.filter((t) => t.status === "completed").length, color: "success" },
@@ -399,9 +316,9 @@ export default function TransactionsPage() {
           { label: "Flagged", value: transactions.filter((t) => t.status === "flagged").length, color: "danger" },
         ].map((stat, i) => (
           <Card key={i}>
-            <CardContent className="p-4">
-              <p className="text-2xl font-bold">{stat.value}</p>
-              <p className="text-xs text-slate-500 uppercase tracking-wide">
+            <CardContent className="p-3 sm:p-4">
+              <p className="text-xl sm:text-2xl font-bold">{stat.value}</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wide truncate">
                 {stat.label}
               </p>
             </CardContent>
@@ -451,7 +368,8 @@ export default function TransactionsPage() {
             setShowFlagModal(true);
           }}
           onViewDetails={(txn) => {
-            console.log("View details", txn);
+            setSelectedTransaction(txn);
+            setShowDetailsModal(true);
           }}
         />
       )}
@@ -459,7 +377,7 @@ export default function TransactionsPage() {
       {totalPages > 1 && (
         <div
           className={cn(
-            "flex items-center justify-center gap-4 py-4",
+            "flex flex-col sm:flex-row items-center justify-center gap-3 py-4",
             isDark
               ? "bg-slate-800 rounded-3xl"
               : "bg-white rounded-3xl shadow-xl",
@@ -470,13 +388,18 @@ export default function TransactionsPage() {
             size="sm"
             onClick={() => setPage(page - 1)}
             disabled={page === 1}
-            className={isDark ? "border-slate-600 hover:bg-slate-700" : ""}
+            className={cn(
+              "w-full sm:w-auto",
+              isDark ? "border-slate-600 hover:bg-slate-700" : "",
+            )}
           >
-            Previous
+            <Icons.ChevronLeft size={14} className="sm:mr-1" />
+            <span className="sm:hidden">Prev</span>
+            <span className="hidden sm:inline">Previous</span>
           </Button>
           <span
             className={cn(
-              "text-sm font-black uppercase tracking-wider px-4",
+              "text-xs sm:text-sm font-black uppercase tracking-wider px-2 sm:px-4",
               isDark ? "text-slate-400" : "text-slate-500",
             )}
           >
@@ -487,9 +410,14 @@ export default function TransactionsPage() {
             size="sm"
             onClick={() => setPage(page + 1)}
             disabled={page === totalPages}
-            className={isDark ? "border-slate-600 hover:bg-slate-700" : ""}
+            className={cn(
+              "w-full sm:w-auto",
+              isDark ? "border-slate-600 hover:bg-slate-700" : "",
+            )}
           >
-            Next
+            <span className="hidden sm:inline">Next</span>
+            <span className="sm:hidden">Next</span>
+            <Icons.ChevronRight size={14} className="sm:ml-1" />
           </Button>
         </div>
       )}
@@ -513,6 +441,63 @@ export default function TransactionsPage() {
         confirmText="Flag"
         variant="danger"
       />
+
+      {/* Transaction Details Modal */}
+      <Modal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        title="Transaction Details"
+        size="md"
+      >
+        {selectedTransaction && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Transaction ID</span>
+              <code className="text-sm font-mono text-emerald-600 dark:text-emerald-400">
+                {selectedTransaction.id}
+              </code>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+              <span className="text-sm text-slate-500 dark:text-slate-400">User</span>
+              <span className="text-sm font-medium text-slate-900 dark:text-white">
+                {selectedTransaction.userName}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Type</span>
+              <span className="text-sm font-medium text-slate-900 dark:text-white capitalize">
+                {selectedTransaction.type}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Amount</span>
+              <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                {formatCurrency(selectedTransaction.amount, selectedTransaction.currency)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Status</span>
+              <Badge variant={getStatusVariant(selectedTransaction.status) as "success" | "warning" | "danger" | "info" | "neutral"} className="capitalize">
+                {selectedTransaction.status}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+              <span className="text-sm text-slate-500 dark:text-slate-400">Date</span>
+              <span className="text-sm font-medium text-slate-900 dark:text-white">
+                {formatDateTime(selectedTransaction.createdAt)}
+              </span>
+            </div>
+            {selectedTransaction.description && (
+              <div className="py-2">
+                <span className="text-sm text-slate-500 dark:text-slate-400 block mb-1">Description</span>
+                <p className="text-sm text-slate-900 dark:text-white">
+                  {selectedTransaction.description}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

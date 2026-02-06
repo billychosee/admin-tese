@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
+import { ConfirmModal } from "@/components/ui/Modal";
 import { cn, formatNumber, formatCurrency, formatRelativeTime, getInitials, formatDate } from "@/utils";
 import { Icons } from "@/components/ui/Icons";
 import type { Creator } from "@/types";
@@ -33,6 +34,8 @@ export function CreatorTable({
   const [currentPage, setCurrentPage] = useState(1);
   const [previewCreator, setPreviewCreator] = useState<Creator | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [deactivationComment, setDeactivationComment] = useState("");
   const itemsPerPage = 10;
 
   const filteredCreators = useMemo(() => {
@@ -519,32 +522,83 @@ export function CreatorTable({
                 Verification Documents
               </h4>
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Selfie</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.selfie ? (
-                        <button
-                          onClick={() => previewCreator.selfie && setImagePreview(previewCreator.selfie)}
-                          className="text-emerald-600 hover:underline"
-                        >
-                          View Selfie
-                        </button>
-                      ) : "N/A"}
-                    </p>
+                <div className="flex gap-4">
+                  {/* Selfie */}
+                  <div className="flex-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 text-center">Selfie</p>
+                    {previewCreator.selfie ? (
+                      <button
+                        onClick={() => previewCreator.selfie && setImagePreview(previewCreator.selfie)}
+                        className="w-full group"
+                      >
+                        <div className="relative rounded-lg overflow-hidden aspect-[3/4] border-2 border-emerald-500">
+                          <img
+                            src={previewCreator.selfie}
+                            alt="Selfie"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Icons.Eye size={20} className="text-white" />
+                          </div>
+                        </div>
+                      </button>
+                    ) : (
+                      <div className="w-full aspect-[3/4] rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600">
+                        <Icons.EyeOff size={24} className="text-slate-400" />
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">ID Image</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      {previewCreator.idImage ? (
-                        <button
-                          onClick={() => previewCreator.idImage && setImagePreview(previewCreator.idImage)}
-                          className="text-emerald-600 hover:underline"
-                        >
-                          View ID
-                        </button>
-                      ) : "N/A"}
-                    </p>
+
+                  {/* ID Image */}
+                  <div className="flex-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 text-center">ID</p>
+                    {previewCreator.idImage ? (
+                      <button
+                        onClick={() => previewCreator.idImage && setImagePreview(previewCreator.idImage)}
+                        className="w-full group"
+                      >
+                        <div className="relative rounded-lg overflow-hidden aspect-[3/4] border-2 border-blue-500">
+                          <img
+                            src={previewCreator.idImage}
+                            alt="ID"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Icons.Eye size={20} className="text-white" />
+                          </div>
+                        </div>
+                      </button>
+                    ) : (
+                      <div className="w-full aspect-[3/4] rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600">
+                        <Icons.FileText size={24} className="text-slate-400" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Proof of Residence */}
+                  <div className="flex-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 text-center">Proof</p>
+                    {previewCreator.proofOfResidenceUrl ? (
+                      <button
+                        onClick={() => previewCreator.proofOfResidenceUrl && setImagePreview(previewCreator.proofOfResidenceUrl)}
+                        className="w-full group"
+                      >
+                        <div className="relative rounded-lg overflow-hidden aspect-[3/4] border-2 border-emerald-500">
+                          <img
+                            src={previewCreator.proofOfResidenceUrl}
+                            alt="Proof"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Icons.Eye size={20} className="text-white" />
+                          </div>
+                        </div>
+                      </button>
+                    ) : (
+                      <div className="w-full aspect-[3/4] rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600">
+                        <Icons.Home size={24} className="text-slate-400" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -573,8 +627,17 @@ export function CreatorTable({
                     </Badge>
                   </div>
                 </div>
+                {previewCreator.channelStatus === "deactivated" && previewCreator.channelDeactivationComment && (
+                  <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Deactivation Reason</p>
+                    <p className="text-sm text-slate-900 dark:text-white bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
+                      {previewCreator.channelDeactivationComment}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
+
 
             {/* Admin Actions */}
             <div className="space-y-3">
@@ -585,16 +648,21 @@ export function CreatorTable({
               <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
                 <div className="flex flex-wrap gap-2">
                   <Button
-                    variant={previewCreator.channelStatus === "active" ? "danger" : "secondary"}
+                    variant={previewCreator.channelStatus === "deactivated" ? "primary" : "danger"}
                     size="sm"
-                    onClick={() => onDeactivateChannel && onDeactivateChannel(previewCreator)}
+                    className={previewCreator.channelStatus === "deactivated" ? "" : ""}
+                    onClick={() => {
+                      setDeactivationComment("");
+                      setShowDeactivateModal(true);
+                    }}
                   >
-                    <Icons.Lock size={14} className="mr-1" />
+                    <Icons.Unlock size={14} className="mr-1" />
                     {previewCreator.channelStatus === "active" ? "Deactivate Channel" : "Activate Channel"}
                   </Button>
                   <Button
-                    variant="primary"
+                    variant="outline"
                     size="sm"
+                    className="border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
                     onClick={() => onPayout && onPayout(previewCreator)}
                     disabled={previewCreator.currentBalance <= 0}
                   >
@@ -615,11 +683,11 @@ export function CreatorTable({
         )}
       </Modal>
 
-      {/* Image Preview Modal */}
+      {/* Image/Video Preview Modal */}
       <Modal
         isOpen={!!imagePreview}
         onClose={() => setImagePreview(null)}
-        title=""
+        title={imagePreview?.endsWith('.mp4') || imagePreview?.includes('video') ? "Channel Trailer" : ""}
         size="md"
         showClose={false}
       >
@@ -631,13 +699,74 @@ export function CreatorTable({
             >
               <Icons.X size={20} />
             </button>
-            <img
-              src={imagePreview}
-              alt="Profile Preview"
-              className="w-full max-h-[60vh] object-contain rounded-lg"
-            />
+            {imagePreview.endsWith('.mp4') || imagePreview.includes('video') ? (
+              <video
+                src={imagePreview}
+                controls
+                autoPlay
+                className="w-full max-h-[60vh] rounded-lg"
+              />
+            ) : (
+              <img
+                src={imagePreview}
+                alt="Profile Preview"
+                className="w-full max-h-[60vh] object-contain rounded-lg"
+              />
+            )}
           </div>
         )}
+      </Modal>
+
+      {/* Deactivate Channel Modal */}
+      <Modal
+        isOpen={showDeactivateModal}
+        onClose={() => setShowDeactivateModal(false)}
+        title={previewCreator?.channelStatus === "active" ? "Deactivate Channel" : "Activate Channel"}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {previewCreator?.channelStatus === "active"
+              ? `Are you sure you want to deactivate the channel "${previewCreator?.channelName}"?`
+              : `Are you sure you want to activate the channel "${previewCreator?.channelName}"?`}
+          </p>
+          {previewCreator?.channelStatus === "active" && (
+            <div>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+                Comment (optional)
+              </label>
+              <textarea
+                value={deactivationComment}
+                onChange={(e) => setDeactivationComment(e.target.value)}
+                placeholder="Add a reason for deactivation..."
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                rows={3}
+              />
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowDeactivateModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={previewCreator?.channelStatus === "active" ? "danger" : "primary"}
+              size="sm"
+              onClick={() => {
+                if (previewCreator) {
+                  onDeactivateChannel && onDeactivateChannel(previewCreator);
+                  setShowDeactivateModal(false);
+                  setPreviewCreator(null);
+                }
+              }}
+            >
+              {previewCreator?.channelStatus === "active" ? "Deactivate" : "Activate"}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </>
   );
