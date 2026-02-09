@@ -117,9 +117,7 @@ export const api = {
       return mockDashboardStats;
     },
 
-    async getOverview(
-      _range: string = "MONTHLY",
-    ): Promise<DashboardOverview> {
+    async getOverview(_range: string = "MONTHLY"): Promise<DashboardOverview> {
       await simulateApiDelay();
       return mockOverviewData;
     },
@@ -283,7 +281,8 @@ export const api = {
       await simulateApiDelay();
       const creator = mockCreators.find((c) => c.id === id);
       if (!creator) throw new Error("Creator not found");
-      const newStatus = creator.channelStatus === "active" ? "deactivated" : "active";
+      const newStatus =
+        creator.channelStatus === "active" ? "deactivated" : "active";
       return { ...creator, channelStatus: newStatus };
     },
 
@@ -501,7 +500,8 @@ export const api = {
       await simulateApiDelay();
       const video = mockVideos.find((v) => v.id === id);
       if (!video) throw new Error("Video not found");
-      const newStatus = video.status === "published" ? "suspended" : "published";
+      const newStatus =
+        video.status === "published" ? "suspended" : "published";
       return { ...video, status: newStatus };
     },
 
@@ -516,7 +516,10 @@ export const api = {
       await simulateApiDelay();
       const video = mockVideos.find((v) => v.id === id);
       if (!video) throw new Error("Video not found");
-      return { ...video, videoTrailer: video.videoTrailer ? undefined : video.videoTrailer };
+      return {
+        ...video,
+        videoTrailer: video.videoTrailer ? undefined : video.videoTrailer,
+      };
     },
 
     async hideComments(id: string): Promise<Video> {
@@ -593,6 +596,30 @@ export const api = {
     async getAll(): Promise<FeaturedCreator[]> {
       await simulateApiDelay();
       return mockFeaturedCreators;
+    },
+
+    async getById(id: string): Promise<FeaturedCreator> {
+      await simulateApiDelay();
+      const featured = mockFeaturedCreators.find((f) => f.id === id);
+      if (!featured) throw new Error("Featured creator not found");
+      return featured;
+    },
+
+    async add(creatorId: string, position: number): Promise<FeaturedCreator> {
+      await simulateApiDelay();
+      const creator = mockCreators.find((c) => c.id === creatorId);
+      if (!creator) throw new Error("Creator not found");
+
+      const newFeatured: FeaturedCreator = {
+        id: "fc_" + generateId(),
+        creatorId,
+        creator,
+        position,
+        isActive: true,
+        createdAt: new Date(),
+      };
+      mockFeaturedCreators.push(newFeatured);
+      return newFeatured;
     },
 
     async reorder(items: FeaturedCreator[]): Promise<FeaturedCreator[]> {
@@ -709,10 +736,14 @@ export const api = {
       await simulateApiDelay();
       const pending = mockPayoutRequests.filter((p) => p.status === "pending");
       return {
-        pending: mockPayoutRequests.filter((p) => p.status === "pending").length,
-        approved: mockPayoutRequests.filter((p) => p.status === "approved").length,
-        completed: mockPayoutRequests.filter((p) => p.status === "completed").length,
-        rejected: mockPayoutRequests.filter((p) => p.status === "rejected").length,
+        pending: mockPayoutRequests.filter((p) => p.status === "pending")
+          .length,
+        approved: mockPayoutRequests.filter((p) => p.status === "approved")
+          .length,
+        completed: mockPayoutRequests.filter((p) => p.status === "completed")
+          .length,
+        rejected: mockPayoutRequests.filter((p) => p.status === "rejected")
+          .length,
         totalPendingAmount: pending.reduce((sum, p) => sum + p.amount, 0),
       };
     },
@@ -798,7 +829,9 @@ export const api = {
       return user;
     },
 
-    async create(data: Omit<AdminUser, "id" | "createdAt">): Promise<AdminUser> {
+    async create(
+      data: Omit<AdminUser, "id" | "createdAt">,
+    ): Promise<AdminUser> {
       await simulateApiDelay();
       const newUser: AdminUser = {
         ...data,
@@ -825,6 +858,13 @@ export const api = {
       return user;
     },
 
+    async delete(id: string): Promise<void> {
+      await simulateApiDelay();
+      const index = mockAdminUsers.findIndex((u) => u.id === id);
+      if (index === -1) throw new Error("Admin user not found");
+      mockAdminUsers.splice(index, 1);
+    },
+
     async uploadAvatar(id: string, _file: File): Promise<string> {
       await simulateApiDelay();
       const user = mockAdminUsers.find((u) => u.id === id);
@@ -842,7 +882,10 @@ export const api = {
       // In real app, hash and store new password
     },
 
-    async bulkActivate(userIds: string[], activate: boolean): Promise<AdminUser[]> {
+    async bulkActivate(
+      userIds: string[],
+      activate: boolean,
+    ): Promise<AdminUser[]> {
       await simulateApiDelay();
       const updatedUsers: AdminUser[] = [];
       for (const id of userIds) {
@@ -878,10 +921,13 @@ export const api = {
       return mockActivityLogs.filter((log) => log.adminUserId === userId);
     },
 
-    async getByTarget(targetType: string, targetId: string): Promise<ActivityLog[]> {
+    async getByTarget(
+      targetType: string,
+      targetId: string,
+    ): Promise<ActivityLog[]> {
       await simulateApiDelay();
       return mockActivityLogs.filter(
-        (log) => log.targetType === targetType && log.targetId === targetId
+        (log) => log.targetType === targetType && log.targetId === targetId,
       );
     },
   },
@@ -942,7 +988,9 @@ export const api = {
       ];
     },
 
-    async logAction(data: Omit<ContentAuditLog, "id" | "createdAt">): Promise<ContentAuditLog> {
+    async logAction(
+      data: Omit<ContentAuditLog, "id" | "createdAt">,
+    ): Promise<ContentAuditLog> {
       await simulateApiDelay();
       return {
         ...data,
@@ -1012,12 +1060,21 @@ export const api = {
       return mockFeeConfigurations;
     },
 
+    async getById(id: string): Promise<FeeConfiguration> {
+      await simulateApiDelay();
+      const fee = mockFeeConfigurations.find((f) => f.id === id);
+      if (!fee) throw new Error("Fee configuration not found");
+      return fee;
+    },
+
     async getByType(type: string): Promise<FeeConfiguration | undefined> {
       await simulateApiDelay();
       return mockFeeConfigurations.find((f) => f.type === type);
     },
 
-    async create(data: Omit<FeeConfiguration, "id" | "createdAt" | "updatedAt">): Promise<FeeConfiguration> {
+    async create(
+      data: Omit<FeeConfiguration, "id" | "createdAt" | "updatedAt">,
+    ): Promise<FeeConfiguration> {
       await simulateApiDelay();
       const newFee: FeeConfiguration = {
         ...data,
@@ -1029,7 +1086,10 @@ export const api = {
       return newFee;
     },
 
-    async update(id: string, data: Partial<FeeConfiguration>): Promise<FeeConfiguration> {
+    async update(
+      id: string,
+      data: Partial<FeeConfiguration>,
+    ): Promise<FeeConfiguration> {
       await simulateApiDelay();
       const index = mockFeeConfigurations.findIndex((f) => f.id === id);
       if (index === -1) throw new Error("Fee configuration not found");
@@ -1210,7 +1270,8 @@ export const api = {
       const comment = mockComments.find((c) => c.id === id);
       if (!comment) throw new Error("Comment not found");
       comment.isFlagged = false;
-      comment.status = comment.flags && comment.flags > 0 ? "flagged" : "active";
+      comment.status =
+        comment.flags && comment.flags > 0 ? "flagged" : "active";
       comment.updatedAt = new Date();
       return comment;
     },
