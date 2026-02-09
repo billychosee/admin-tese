@@ -44,13 +44,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-start gap-3 p-4 rounded-xl shadow-strong animate-slide-in-bottom",
               toast.type === "success" &&
-                "bg-green-500/20 border border-green-500/30 text-green-400",
+                "bg-[hsl(var(--success)/0.2)] border border-[hsl(var(--success)/0.3)] text-[hsl(var(--success))]",
               toast.type === "error" &&
-                "bg-red-500/20 border border-red-500/30 text-red-400",
+                "bg-[hsl(var(--danger)/0.2)] border border-[hsl(var(--danger)/0.3)] text-[hsl(var(--danger))]",
               toast.type === "warning" &&
-                "bg-yellow-500/20 border border-yellow-500/30 text-yellow-400",
+                "bg-[hsl(var(--warning)/0.2)] border border-[hsl(var(--warning)/0.3)] text-[hsl(var(--warning))]",
               toast.type === "info" &&
-                "bg-blue-500/20 border border-blue-500/30 text-blue-400",
+                "bg-[hsl(var(--info)/0.2)] border border-[hsl(var(--info)/0.3)] text-[hsl(var(--info))]",
             )}
           >
             {toast.type === "success" && <Icons.Check size={20} />}

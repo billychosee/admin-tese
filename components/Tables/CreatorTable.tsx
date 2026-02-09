@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { ConfirmModal } from "@/components/ui/Modal";
-import { cn, formatNumber, formatCurrency, formatRelativeTime, getInitials, formatDate } from "@/utils";
+import { cn, formatNumber, formatCurrency, formatRelativeTime, getInitials, formatDate, exportToCSV } from "@/utils";
 import { Icons } from "@/components/ui/Icons";
 import type { Creator } from "@/types";
 import { CREATOR_STATUSES } from "@/constants";
@@ -19,6 +19,11 @@ interface CreatorTableProps {
   onToggleStatus: (creator: Creator) => void;
   onDeactivateChannel?: (creator: Creator) => void;
   onPayout?: (creator: Creator) => void;
+  onBan?: (creator: Creator, reason: string) => void;
+  onUnban?: (creator: Creator) => void;
+  onSendMessage?: (creator: Creator) => void;
+  onViewEarnings?: (creator: Creator) => void;
+  onViewAuditLog?: (creator: Creator) => void;
 }
 
 export function CreatorTable({
@@ -28,6 +33,11 @@ export function CreatorTable({
   onToggleStatus,
   onDeactivateChannel,
   onPayout,
+  onBan,
+  onUnban,
+  onSendMessage,
+  onViewEarnings,
+  onViewAuditLog,
 }: CreatorTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -35,8 +45,65 @@ export function CreatorTable({
   const [previewCreator, setPreviewCreator] = useState<Creator | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [showBanModal, setShowBanModal] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showEarningsModal, setShowEarningsModal] = useState(false);
+  const [showAuditLogModal, setShowAuditLogModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
   const [deactivationComment, setDeactivationComment] = useState("");
+  const [banReason, setBanReason] = useState("");
+  const [messageSubject, setMessageSubject] = useState("");
+  const [messageContent, setMessageContent] = useState("");
+  const [messageType, setMessageType] = useState<"general" | "warning" | "important" | "payout" | "kyc">("general");
+  const [isExporting, setIsExporting] = useState(false);
   const itemsPerPage = 10;
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const exportData = filteredCreators.map((creator) => ({
+        id: creator.id,
+        fullName: creator.creatorFullName,
+        email: creator.email,
+        channelName: creator.channelName,
+        status: creator.status,
+        onlineStatus: creator.onlineStatus,
+        payoutType: creator.payoutType,
+        totalVideos: creator.totalVideos,
+        totalViews: creator.totalViews,
+        totalLikes: creator.totalLikes,
+        totalRevenue: creator.totalRevenue,
+        currentBalance: creator.currentBalance,
+        isCompany: creator.isCompany ? "Yes" : "No",
+        companyName: creator.companyName || "",
+        country: creator.country || "",
+        createdAt: formatDate(creator.createdAt),
+        kycStatus: creator.kycStatus,
+      }));
+
+      exportToCSV(exportData, `creators_export_${formatDate(new Date())}`, [
+        { key: "id", header: "ID" },
+        { key: "fullName", header: "Full Name" },
+        { key: "email", header: "Email" },
+        { key: "channelName", header: "Channel Name" },
+        { key: "status", header: "Status" },
+        { key: "onlineStatus", header: "Online Status" },
+        { key: "payoutType", header: "Payout Type" },
+        { key: "totalVideos", header: "Total Videos" },
+        { key: "totalViews", header: "Total Views" },
+        { key: "totalLikes", header: "Total Likes" },
+        { key: "totalRevenue", header: "Total Revenue" },
+        { key: "currentBalance", header: "Current Balance" },
+        { key: "isCompany", header: "Is Company" },
+        { key: "companyName", header: "Company Name" },
+        { key: "country", header: "Country" },
+        { key: "createdAt", header: "Created At" },
+        { key: "kycStatus", header: "KYC Status" },
+      ]);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const filteredCreators = useMemo(() => {
     return creators.filter((creator) => {
@@ -58,20 +125,20 @@ export function CreatorTable({
   );
 
   const statusColors = {
-    active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-    suspended: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    active: "bg-[hsl(var(--success)/0.2)] text-[hsl(var(--success))] dark:bg-[hsl(var(--success)/0.3)]",
+    pending: "bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))] dark:bg-[hsl(var(--warning)/0.3)]",
+    suspended: "bg-[hsl(var(--danger)/0.2)] text-[hsl(var(--danger))] dark:bg-[hsl(var(--danger)/0.3)]",
   };
 
   const onlineStatusColors = {
-    online: "bg-green-500",
-    away: "bg-yellow-500",
-    offline: "bg-slate-400",
+    online: "bg-[hsl(var(--success))]",
+    away: "bg-[hsl(var(--warning))]",
+    offline: "bg-[hsl(var(--text-muted))]",
   };
 
   const payoutTypeColors = {
-    mobile_wallet: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-    bank: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+    mobile_wallet: "bg-[hsl(var(--info)/0.2)] text-[hsl(var(--info))] dark:bg-[hsl(var(--info)/0.3)]",
+    bank: "bg-[hsl(var(--primary)/0.2)] text-[hsl(var(--primary))] dark:bg-[hsl(var(--primary)/0.3)]",
   };
 
   return (
@@ -94,6 +161,16 @@ export function CreatorTable({
                   className="h-10"
                 />
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExport}
+                disabled={isExporting || filteredCreators.length === 0}
+                className="h-10"
+              >
+                <Icons.Download size={16} className="mr-2" />
+                {isExporting ? "Exporting..." : "Export CSV"}
+              </Button>
               <div className="relative">
                 <select
                   value={statusFilter}
@@ -101,7 +178,7 @@ export function CreatorTable({
                     setStatusFilter(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="appearance-none w-full px-4 py-2 pr-10 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 h-10 cursor-pointer"
+                  className="appearance-none w-full px-4 py-2 pr-10 border border-[hsl(var(--surface-border))] rounded-lg text-sm bg-[hsl(var(--surface))] text-[hsl(var(--text-primary))] focus:ring-2 focus:ring-[hsl(var(--primary))] focus:border-transparent transition-all duration-200 h-10 cursor-pointer"
                 >
                   {CREATOR_STATUSES.map((status) => (
                     <option key={status.value} value={status.value}>
@@ -109,7 +186,7 @@ export function CreatorTable({
                     </option>
                   ))}
                 </select>
-                <Icons.ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <Icons.ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[hsl(var(--text-muted))] pointer-events-none" />
               </div>
             </div>
           </div>
@@ -126,29 +203,29 @@ export function CreatorTable({
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b-2 border-slate-300 dark:border-slate-600">
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
+                    <tr className="border-b-2 border-[hsl(var(--surface-border))]">
+                      <th className="text-left py-4 px-4 font-bold text-sm text-[hsl(var(--text-secondary))] bg-[hsl(var(--surface-muted))] dark:bg-[hsl(var(--surface-hover))]">
                         Creator
                       </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
+                      <th className="text-left py-4 px-4 font-bold text-sm text-[hsl(var(--text-secondary))] bg-[hsl(var(--surface-muted))] dark:bg-[hsl(var(--surface-hover))]">
                         Channel
                       </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
+                      <th className="text-left py-4 px-4 font-bold text-sm text-[hsl(var(--text-secondary))] bg-[hsl(var(--surface-muted))] dark:bg-[hsl(var(--surface-hover))]">
                         Status
                       </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
+                      <th className="text-left py-4 px-4 font-bold text-sm text-[hsl(var(--text-secondary))] bg-[hsl(var(--surface-muted))] dark:bg-[hsl(var(--surface-hover))]">
                         Online
                       </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
+                      <th className="text-left py-4 px-4 font-bold text-sm text-[hsl(var(--text-secondary))] bg-[hsl(var(--surface-muted))] dark:bg-[hsl(var(--surface-hover))]">
                         Payout Type
                       </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
+                      <th className="text-left py-4 px-4 font-bold text-sm text-[hsl(var(--text-secondary))] bg-[hsl(var(--surface-muted))] dark:bg-[hsl(var(--surface-hover))]">
                         Videos
                       </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
+                      <th className="text-left py-4 px-4 font-bold text-sm text-[hsl(var(--text-secondary))] bg-[hsl(var(--surface-muted))] dark:bg-[hsl(var(--surface-hover))]">
                         Revenue
                       </th>
-                      <th className="text-left py-4 px-4 font-bold text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/50">
+                      <th className="text-left py-4 px-4 font-bold text-sm text-[hsl(var(--text-secondary))] bg-[hsl(var(--surface-muted))] dark:bg-[hsl(var(--surface-hover))]">
                         Actions
                       </th>
                     </tr>
@@ -156,7 +233,7 @@ export function CreatorTable({
                   <tbody>
                     {paginatedCreators.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="text-center py-8 text-slate-500 dark:text-slate-400">
+                        <td colSpan={8} className="text-center py-8 text-[hsl(var(--text-muted))]">
                           No creators found
                         </td>
                       </tr>
@@ -164,7 +241,7 @@ export function CreatorTable({
                       paginatedCreators.map((creator) => (
                         <tr
                           key={creator.id}
-                          className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition"
+                          className="border-b border-[hsl(var(--surface-border))] hover:bg-[hsl(var(--surface-hover))] dark:hover:bg-[hsl(var(--surface-hover)/0.7)] transition-colors"
                         >
                           <td className="py-4 px-4">
                             <div className="flex items-center gap-3">

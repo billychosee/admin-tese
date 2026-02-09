@@ -50,7 +50,12 @@ export function VideoPlayer({
   // Handle direct video files with native video element
   if (videoType === "direct") {
     return (
-      <div className={cn("relative aspect-video bg-slate-900 rounded-xl overflow-hidden", className)}>
+      <div
+        className={cn(
+          "relative aspect-video bg-[hsl(var(--background))] rounded-xl overflow-hidden",
+          className,
+        )}
+      >
         <video
           ref={videoRef}
           src={src}
@@ -65,8 +70,8 @@ export function VideoPlayer({
           }}
         />
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
-            <div className="text-center text-slate-400">
+          <div className="absolute inset-0 flex items-center justify-center bg-[hsl(var(--background))]">
+            <div className="text-center text-[hsl(var(--text-muted))]">
               <Icons.Video size={48} className="mx-auto mb-2" />
               <p>{error}</p>
             </div>
@@ -77,12 +82,21 @@ export function VideoPlayer({
   }
 
   // Handle YouTube, Vimeo, Dailymotion embeds
-  if (videoType === "youtube" || videoType === "vimeo" || videoType === "dailymotion") {
+  if (
+    videoType === "youtube" ||
+    videoType === "vimeo" ||
+    videoType === "dailymotion"
+  ) {
     return (
-      <div className={cn("relative aspect-video bg-slate-900 rounded-xl overflow-hidden", className)}>
+      <div
+        className={cn(
+          "relative aspect-video bg-[hsl(var(--background))] rounded-xl overflow-hidden",
+          className,
+        )}
+      >
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-900">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+          <div className="absolute inset-0 flex items-center justify-center bg-[hsl(var(--background))]">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[hsl(var(--primary))]"></div>
           </div>
         )}
         {embedUrl && (
@@ -101,7 +115,12 @@ export function VideoPlayer({
 
   // Fallback for unknown formats - show thumbnail with play button
   return (
-    <div className={cn("relative aspect-video bg-slate-900 rounded-xl overflow-hidden", className)}>
+    <div
+      className={cn(
+        "relative aspect-video bg-[hsl(var(--background))] rounded-xl overflow-hidden",
+        className,
+      )}
+    >
       {poster ? (
         <>
           <img
@@ -111,7 +130,10 @@ export function VideoPlayer({
           />
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-              <Icons.Play size={32} className="text-slate-900 ml-1" />
+              <Icons.Play
+                size={32}
+                className="text-[hsl(var(--primary))] ml-1"
+              />
             </div>
           </div>
           {title && (
@@ -122,12 +144,12 @@ export function VideoPlayer({
         </>
       ) : (
         <div className="w-full h-full flex items-center justify-center">
-          <Icons.Video size={48} className="text-slate-600" />
+          <Icons.Video size={48} className="text-[hsl(var(--text-muted))]" />
         </div>
       )}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80">
-          <div className="text-center text-slate-400">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+          <div className="text-center text-[hsl(var(--text-muted))]">
             <Icons.AlertCircle size={48} className="mx-auto mb-2" />
             <p>{error}</p>
           </div>

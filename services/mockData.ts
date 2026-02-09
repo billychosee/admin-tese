@@ -232,9 +232,13 @@ export const mockCreators: Creator[] = [
 
     status: "active",
     onlineStatus: "online",
+    kycStatus: "approved",
     lastSeen: new Date(),
     createdAt: new Date("2023-06-15"),
     updatedAt: new Date("2024-01-01"),
+    weeklyEarnings: 0,
+    monthlyEarnings: 0,
+    yearlyEarnings: 0
   },
   {
     id: "cr_002",
@@ -313,9 +317,13 @@ export const mockCreators: Creator[] = [
 
     status: "active",
     onlineStatus: "away",
+    kycStatus: "pending_approval",
     lastSeen: new Date(Date.now() - 3600000),
     createdAt: new Date("2023-08-20"),
     updatedAt: new Date("2024-01-02"),
+    weeklyEarnings: 0,
+    monthlyEarnings: 0,
+    yearlyEarnings: 0
   },
   {
     id: "cr_003",
@@ -397,9 +405,13 @@ export const mockCreators: Creator[] = [
 
     status: "active",
     onlineStatus: "offline",
+    kycStatus: "declined",
     lastSeen: new Date(Date.now() - 86400000),
     createdAt: new Date("2023-03-10"),
     updatedAt: new Date("2023-12-28"),
+    weeklyEarnings: 0,
+    monthlyEarnings: 0,
+    yearlyEarnings: 0
   },
   {
     id: "cr_004",
@@ -458,9 +470,13 @@ export const mockCreators: Creator[] = [
 
     status: "suspended",
     onlineStatus: "offline",
+    kycStatus: "pending",
     lastSeen: new Date(Date.now() - 172800000),
     createdAt: new Date("2023-01-05"),
     updatedAt: new Date("2024-01-03"),
+    weeklyEarnings: 0,
+    monthlyEarnings: 0,
+    yearlyEarnings: 0
   },
 ];
 
@@ -471,8 +487,10 @@ export const mockVideos: Video[] = [
     description: "A sample video for testing",
     videoName: "Big Buck Bunny",
     videoDescription: "Big Buck Bunny sample video",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    thumbnail: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+    videoUrl:
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    thumbnail:
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
     videoTrailer: "https://www.w3schools.com/html/mov_bbb.mp4",
     duration: 596,
     creatorId: "cr_001",
@@ -540,7 +558,8 @@ export const mockVideos: Video[] = [
     videoName: "Elephant Dream",
     videoDescription: "Elephant Dream open movie",
     videoUrl: "https://www.youtube.com/watch?v=18-x-2Sva4Q",
-    thumbnail: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
+    thumbnail:
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
     videoTrailer: "https://www.w3schools.com/html/movie.mp4",
     duration: 653,
     creatorId: "cr_001",
@@ -609,8 +628,10 @@ export const mockVideos: Video[] = [
     description: "Another amazing open movie",
     videoName: "Sintel",
     videoDescription: "Sintel open movie",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-    thumbnail: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/Sintel.jpg",
+    videoUrl:
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+    thumbnail:
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/Sintel.jpg",
     duration: 888,
     creatorId: "cr_002",
     creatorName: "Cooking Expert",
@@ -640,8 +661,10 @@ export const mockVideos: Video[] = [
     description: "Sci-fi short film",
     videoName: "Tears of Steel",
     videoDescription: "Tears of Steel sci-fi short",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    thumbnail: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/TearsOfSteel.jpg",
+    videoUrl:
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+    thumbnail:
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/TearsOfSteel.jpg",
     duration: 734,
     creatorId: "cr_004",
     creatorName: "Fitness Coach",
@@ -669,8 +692,10 @@ export const mockVideos: Video[] = [
     description: "Google Chrome promotional video",
     videoName: "For Bigger Blazes",
     videoDescription: "For Bigger Blazes sample",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    thumbnail: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg",
+    videoUrl:
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    thumbnail:
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg",
     duration: 15,
     creatorId: "cr_003",
     creatorName: "Digital Marketing Pro",
@@ -1332,16 +1357,54 @@ export const mockComments: Comment[] = [
     likes: 45,
     replies: 3,
     likedBy: [
-      { id: "like_001", name: "Alice Brown", avatar: "https://i.pravatar.cc/150?u=alice" },
-      { id: "like_002", name: "Charlie Davis", avatar: "https://i.pravatar.cc/150?u=charlie" },
-      { id: "like_003", name: "Diana Evans", avatar: "https://i.pravatar.cc/150?u=diana" },
-      { id: "like_004", name: "Edward Foster", avatar: "https://i.pravatar.cc/150?u=edward" },
-      { id: "like_005", name: "Fiona Green", avatar: "https://i.pravatar.cc/150?u=fiona" },
+      {
+        id: "like_001",
+        name: "Alice Brown",
+        avatar: "https://i.pravatar.cc/150?u=alice",
+      },
+      {
+        id: "like_002",
+        name: "Charlie Davis",
+        avatar: "https://i.pravatar.cc/150?u=charlie",
+      },
+      {
+        id: "like_003",
+        name: "Diana Evans",
+        avatar: "https://i.pravatar.cc/150?u=diana",
+      },
+      {
+        id: "like_004",
+        name: "Edward Foster",
+        avatar: "https://i.pravatar.cc/150?u=edward",
+      },
+      {
+        id: "like_005",
+        name: "Fiona Green",
+        avatar: "https://i.pravatar.cc/150?u=fiona",
+      },
     ],
     repliedBy: [
-      { id: "rep_001", name: "Jane Smith", avatar: "https://i.pravatar.cc/150?u=jane", content: "I agree! The animation is top notch.", createdAt: new Date("2024-01-10T15:00:00") },
-      { id: "rep_002", name: "Bob Wilson", avatar: "https://i.pravatar.cc/150?u=bob", content: "Agreed! Best animation I've seen.", createdAt: new Date("2024-01-10T16:00:00") },
-      { id: "rep_003", name: "George Harris", avatar: "https://i.pravatar.cc/150?u=george", content: "The attention to detail is amazing!", createdAt: new Date("2024-01-10T17:00:00") },
+      {
+        id: "rep_001",
+        name: "Jane Smith",
+        avatar: "https://i.pravatar.cc/150?u=jane",
+        content: "I agree! The animation is top notch.",
+        createdAt: new Date("2024-01-10T15:00:00"),
+      },
+      {
+        id: "rep_002",
+        name: "Bob Wilson",
+        avatar: "https://i.pravatar.cc/150?u=bob",
+        content: "Agreed! Best animation I've seen.",
+        createdAt: new Date("2024-01-10T16:00:00"),
+      },
+      {
+        id: "rep_003",
+        name: "George Harris",
+        avatar: "https://i.pravatar.cc/150?u=george",
+        content: "The attention to detail is amazing!",
+        createdAt: new Date("2024-01-10T17:00:00"),
+      },
     ],
     createdAt: new Date("2024-01-10T14:30:00"),
     updatedAt: new Date("2024-01-10T14:30:00"),
@@ -1362,12 +1425,30 @@ export const mockComments: Comment[] = [
     likes: 32,
     replies: 1,
     likedBy: [
-      { id: "like_006", name: "John Doe", avatar: "https://i.pravatar.cc/150?u=john" },
-      { id: "like_007", name: "Alice Brown", avatar: "https://i.pravatar.cc/150?u=alice" },
-      { id: "like_008", name: "Ian Thompson", avatar: "https://i.pravatar.cc/150?u=ian" },
+      {
+        id: "like_006",
+        name: "John Doe",
+        avatar: "https://i.pravatar.cc/150?u=john",
+      },
+      {
+        id: "like_007",
+        name: "Alice Brown",
+        avatar: "https://i.pravatar.cc/150?u=alice",
+      },
+      {
+        id: "like_008",
+        name: "Ian Thompson",
+        avatar: "https://i.pravatar.cc/150?u=ian",
+      },
     ],
     repliedBy: [
-      { id: "rep_004", name: "Hannah White", avatar: "https://i.pravatar.cc/150?u=hannah", content: "More content please!", createdAt: new Date("2024-01-10T16:00:00") },
+      {
+        id: "rep_004",
+        name: "Hannah White",
+        avatar: "https://i.pravatar.cc/150?u=hannah",
+        content: "More content please!",
+        createdAt: new Date("2024-01-10T16:00:00"),
+      },
     ],
     createdAt: new Date("2024-01-10T15:45:00"),
     updatedAt: new Date("2024-01-10T15:45:00"),
@@ -1380,7 +1461,8 @@ export const mockComments: Comment[] = [
     userAvatar: "https://i.pravatar.cc/150?u=bob",
     videoId: "vid_002",
     videoTitle: "Elephant Dream - YouTube Video",
-    content: "I think this video contains inappropriate content. Should be reviewed.",
+    content:
+      "I think this video contains inappropriate content. Should be reviewed.",
     status: "flagged",
     isFlagged: true,
     isHidden: false,
@@ -1388,8 +1470,16 @@ export const mockComments: Comment[] = [
     likes: 2,
     replies: 0,
     likedBy: [
-      { id: "like_009", name: "Julia Adams", avatar: "https://i.pravatar.cc/150?u=julia" },
-      { id: "like_010", name: "Fiona Green", avatar: "https://i.pravatar.cc/150?u=fiona" },
+      {
+        id: "like_009",
+        name: "Julia Adams",
+        avatar: "https://i.pravatar.cc/150?u=julia",
+      },
+      {
+        id: "like_010",
+        name: "Fiona Green",
+        avatar: "https://i.pravatar.cc/150?u=fiona",
+      },
     ],
     repliedBy: [],
     createdAt: new Date("2024-01-11T09:15:00"),
@@ -1411,13 +1501,37 @@ export const mockComments: Comment[] = [
     likes: 28,
     replies: 2,
     likedBy: [
-      { id: "like_011", name: "Jane Smith", avatar: "https://i.pravatar.cc/150?u=jane" },
-      { id: "like_012", name: "Charlie Davis", avatar: "https://i.pravatar.cc/150?u=charlie" },
-      { id: "like_013", name: "Edward Foster", avatar: "https://i.pravatar.cc/150?u=edward" },
+      {
+        id: "like_011",
+        name: "Jane Smith",
+        avatar: "https://i.pravatar.cc/150?u=jane",
+      },
+      {
+        id: "like_012",
+        name: "Charlie Davis",
+        avatar: "https://i.pravatar.cc/150?u=charlie",
+      },
+      {
+        id: "like_013",
+        name: "Edward Foster",
+        avatar: "https://i.pravatar.cc/150?u=edward",
+      },
     ],
     repliedBy: [
-      { id: "rep_005", name: "John Doe", avatar: "https://i.pravatar.cc/150?u=john", content: "The color grading is exceptional!", createdAt: new Date("2024-01-11T11:00:00") },
-      { id: "rep_006", name: "Diana Evans", avatar: "https://i.pravatar.cc/150?u=diana", content: "Absolutely stunning visuals!", createdAt: new Date("2024-01-11T12:00:00") },
+      {
+        id: "rep_005",
+        name: "John Doe",
+        avatar: "https://i.pravatar.cc/150?u=john",
+        content: "The color grading is exceptional!",
+        createdAt: new Date("2024-01-11T11:00:00"),
+      },
+      {
+        id: "rep_006",
+        name: "Diana Evans",
+        avatar: "https://i.pravatar.cc/150?u=diana",
+        content: "Absolutely stunning visuals!",
+        createdAt: new Date("2024-01-11T12:00:00"),
+      },
     ],
     createdAt: new Date("2024-01-11T10:30:00"),
     updatedAt: new Date("2024-01-11T10:30:00"),
@@ -1430,7 +1544,8 @@ export const mockComments: Comment[] = [
     userAvatar: "https://i.pravatar.cc/150?u=charlie",
     videoId: "vid_003",
     videoTitle: "Sintel - Sample Video",
-    content: "This comment contains spam content and should be hidden. Visit my channel for free gifts! $ SPAM $ ",
+    content:
+      "This comment contains spam content and should be hidden. Visit my channel for free gifts! $ SPAM $ ",
     status: "hidden",
     isFlagged: true,
     isHidden: true,
@@ -1458,17 +1573,59 @@ export const mockComments: Comment[] = [
     likes: 56,
     replies: 5,
     likedBy: [
-      { id: "like_014", name: "Alice Brown", avatar: "https://i.pravatar.cc/150?u=alice" },
-      { id: "like_015", name: "Bob Wilson", avatar: "https://i.pravatar.cc/150?u=bob" },
-      { id: "like_016", name: "Jane Smith", avatar: "https://i.pravatar.cc/150?u=jane" },
-      { id: "like_017", name: "George Harris", avatar: "https://i.pravatar.cc/150?u=george" },
-      { id: "like_018", name: "Hannah White", avatar: "https://i.pravatar.cc/150?u=hannah" },
-      { id: "like_019", name: "Ian Thompson", avatar: "https://i.pravatar.cc/150?u=ian" },
+      {
+        id: "like_014",
+        name: "Alice Brown",
+        avatar: "https://i.pravatar.cc/150?u=alice",
+      },
+      {
+        id: "like_015",
+        name: "Bob Wilson",
+        avatar: "https://i.pravatar.cc/150?u=bob",
+      },
+      {
+        id: "like_016",
+        name: "Jane Smith",
+        avatar: "https://i.pravatar.cc/150?u=jane",
+      },
+      {
+        id: "like_017",
+        name: "George Harris",
+        avatar: "https://i.pravatar.cc/150?u=george",
+      },
+      {
+        id: "like_018",
+        name: "Hannah White",
+        avatar: "https://i.pravatar.cc/150?u=hannah",
+      },
+      {
+        id: "like_019",
+        name: "Ian Thompson",
+        avatar: "https://i.pravatar.cc/150?u=ian",
+      },
     ],
     repliedBy: [
-      { id: "rep_007", name: "Fiona Green", avatar: "https://i.pravatar.cc/150?u=fiona", content: "Me too! The emotional depth is incredible.", createdAt: new Date("2024-01-11T13:00:00") },
-      { id: "rep_008", name: "Edward Foster", avatar: "https://i.pravatar.cc/150?u=edward", content: "The ending really got to me.", createdAt: new Date("2024-01-11T14:00:00") },
-      { id: "rep_009", name: "Julia Adams", avatar: "https://i.pravatar.cc/150?u=julia", content: "Such a beautiful story!", createdAt: new Date("2024-01-11T15:00:00") },
+      {
+        id: "rep_007",
+        name: "Fiona Green",
+        avatar: "https://i.pravatar.cc/150?u=fiona",
+        content: "Me too! The emotional depth is incredible.",
+        createdAt: new Date("2024-01-11T13:00:00"),
+      },
+      {
+        id: "rep_008",
+        name: "Edward Foster",
+        avatar: "https://i.pravatar.cc/150?u=edward",
+        content: "The ending really got to me.",
+        createdAt: new Date("2024-01-11T14:00:00"),
+      },
+      {
+        id: "rep_009",
+        name: "Julia Adams",
+        avatar: "https://i.pravatar.cc/150?u=julia",
+        content: "Such a beautiful story!",
+        createdAt: new Date("2024-01-11T15:00:00"),
+      },
     ],
     createdAt: new Date("2024-01-11T12:15:00"),
     updatedAt: new Date("2024-01-11T12:15:00"),
@@ -1489,7 +1646,11 @@ export const mockComments: Comment[] = [
     likes: 1,
     replies: 0,
     likedBy: [
-      { id: "like_020", name: "Charlie Davis", avatar: "https://i.pravatar.cc/150?u=charlie" },
+      {
+        id: "like_020",
+        name: "Charlie Davis",
+        avatar: "https://i.pravatar.cc/150?u=charlie",
+      },
     ],
     repliedBy: [],
     createdAt: new Date("2024-01-12T08:45:00"),
@@ -1511,14 +1672,42 @@ export const mockComments: Comment[] = [
     likes: 38,
     replies: 4,
     likedBy: [
-      { id: "like_021", name: "Diana Evans", avatar: "https://i.pravatar.cc/150?u=diana" },
-      { id: "like_022", name: "John Doe", avatar: "https://i.pravatar.cc/150?u=john" },
-      { id: "like_023", name: "Alice Brown", avatar: "https://i.pravatar.cc/150?u=alice" },
-      { id: "like_024", name: "Ian Thompson", avatar: "https://i.pravatar.cc/150?u=ian" },
+      {
+        id: "like_021",
+        name: "Diana Evans",
+        avatar: "https://i.pravatar.cc/150?u=diana",
+      },
+      {
+        id: "like_022",
+        name: "John Doe",
+        avatar: "https://i.pravatar.cc/150?u=john",
+      },
+      {
+        id: "like_023",
+        name: "Alice Brown",
+        avatar: "https://i.pravatar.cc/150?u=alice",
+      },
+      {
+        id: "like_024",
+        name: "Ian Thompson",
+        avatar: "https://i.pravatar.cc/150?u=ian",
+      },
     ],
     repliedBy: [
-      { id: "rep_010", name: "Jane Smith", avatar: "https://i.pravatar.cc/150?u=jane", content: "The VFX team did an amazing job!", createdAt: new Date("2024-01-12T10:00:00") },
-      { id: "rep_011", name: "Bob Wilson", avatar: "https://i.pravatar.cc/150?u=bob", content: "Really impressive work!", createdAt: new Date("2024-01-12T11:00:00") },
+      {
+        id: "rep_010",
+        name: "Jane Smith",
+        avatar: "https://i.pravatar.cc/150?u=jane",
+        content: "The VFX team did an amazing job!",
+        createdAt: new Date("2024-01-12T10:00:00"),
+      },
+      {
+        id: "rep_011",
+        name: "Bob Wilson",
+        avatar: "https://i.pravatar.cc/150?u=bob",
+        content: "Really impressive work!",
+        createdAt: new Date("2024-01-12T11:00:00"),
+      },
     ],
     createdAt: new Date("2024-01-12T09:30:00"),
     updatedAt: new Date("2024-01-12T09:30:00"),
@@ -1539,11 +1728,25 @@ export const mockComments: Comment[] = [
     likes: 22,
     replies: 2,
     likedBy: [
-      { id: "like_025", name: "Hannah White", avatar: "https://i.pravatar.cc/150?u=hannah" },
-      { id: "like_026", name: "Fiona Green", avatar: "https://i.pravatar.cc/150?u=fiona" },
+      {
+        id: "like_025",
+        name: "Hannah White",
+        avatar: "https://i.pravatar.cc/150?u=hannah",
+      },
+      {
+        id: "like_026",
+        name: "Fiona Green",
+        avatar: "https://i.pravatar.cc/150?u=fiona",
+      },
     ],
     repliedBy: [
-      { id: "rep_012", name: "Charlie Davis", avatar: "https://i.pravatar.cc/150?u=charlie", content: "I would love to see more tutorials too!", createdAt: new Date("2024-01-12T11:00:00") },
+      {
+        id: "rep_012",
+        name: "Charlie Davis",
+        avatar: "https://i.pravatar.cc/150?u=charlie",
+        content: "I would love to see more tutorials too!",
+        createdAt: new Date("2024-01-12T11:00:00"),
+      },
     ],
     createdAt: new Date("2024-01-12T10:00:00"),
     updatedAt: new Date("2024-01-12T10:00:00"),
@@ -1584,15 +1787,47 @@ export const mockComments: Comment[] = [
     likes: 41,
     replies: 3,
     likedBy: [
-      { id: "like_027", name: "Julia Adams", avatar: "https://i.pravatar.cc/150?u=julia" },
-      { id: "like_028", name: "George Harris", avatar: "https://i.pravatar.cc/150?u=george" },
-      { id: "like_029", name: "Edward Foster", avatar: "https://i.pravatar.cc/150?u=edward" },
-      { id: "like_030", name: "Diana Evans", avatar: "https://i.pravatar.cc/150?u=diana" },
-      { id: "like_031", name: "Jane Smith", avatar: "https://i.pravatar.cc/150?u=jane" },
+      {
+        id: "like_027",
+        name: "Julia Adams",
+        avatar: "https://i.pravatar.cc/150?u=julia",
+      },
+      {
+        id: "like_028",
+        name: "George Harris",
+        avatar: "https://i.pravatar.cc/150?u=george",
+      },
+      {
+        id: "like_029",
+        name: "Edward Foster",
+        avatar: "https://i.pravatar.cc/150?u=edward",
+      },
+      {
+        id: "like_030",
+        name: "Diana Evans",
+        avatar: "https://i.pravatar.cc/150?u=diana",
+      },
+      {
+        id: "like_031",
+        name: "Jane Smith",
+        avatar: "https://i.pravatar.cc/150?u=jane",
+      },
     ],
     repliedBy: [
-      { id: "rep_013", name: "Alice Brown", avatar: "https://i.pravatar.cc/150?u=alice", content: "The character arcs are so well written!", createdAt: new Date("2024-01-12T14:00:00") },
-      { id: "rep_014", name: "John Doe", avatar: "https://i.pravatar.cc/150?u=john", content: "One of the best storylines I've seen!", createdAt: new Date("2024-01-12T15:00:00") },
+      {
+        id: "rep_013",
+        name: "Alice Brown",
+        avatar: "https://i.pravatar.cc/150?u=alice",
+        content: "The character arcs are so well written!",
+        createdAt: new Date("2024-01-12T14:00:00"),
+      },
+      {
+        id: "rep_014",
+        name: "John Doe",
+        avatar: "https://i.pravatar.cc/150?u=john",
+        content: "One of the best storylines I've seen!",
+        createdAt: new Date("2024-01-12T15:00:00"),
+      },
     ],
     createdAt: new Date("2024-01-12T13:00:00"),
     updatedAt: new Date("2024-01-12T13:00:00"),
@@ -1918,7 +2153,8 @@ export const mockActivityLogs: ActivityLog[] = [
     targetName: "General Settings",
     details: "Updated site title and description",
     ipAddress: "192.168.1.102",
-    userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/17.0",
+    userAgent:
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/17.0",
     createdAt: new Date("2024-01-11T13:25:00"),
   },
   {
@@ -1933,7 +2169,6 @@ export const mockActivityLogs: ActivityLog[] = [
     details: "Bulk activated 5 deactivated users",
     ipAddress: "192.168.1.100",
     userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
-    createdAt: new Date("2024-01-10T10:00:00")
-  }
+    createdAt: new Date("2024-01-10T10:00:00"),
+  },
 ];
-

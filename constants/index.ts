@@ -57,6 +57,12 @@ export const SIDEBAR_ITEMS = [
     icon: "Users",
   },
   {
+    id: "kyc",
+    label: "KYC Verification",
+    href: "/kyc",
+    icon: "ShieldCheck",
+  },
+  {
     id: "channels",
     label: "Channels",
     href: "/channels",

@@ -20,6 +20,10 @@ import type {
   Comment,
   UserProfile,
   ActivityLog,
+  CreatorEarnings,
+  ContentAuditLog,
+  CreatorMessage,
+  SendMessagePayload,
 } from "@/types";
 import {
   mockTransactions,
@@ -190,6 +194,7 @@ export const api = {
       page: number = 1,
       pageSize: number = 10,
       status?: string,
+      kycStatus?: string | string[],
       search?: string,
     ): Promise<PaginatedResponse<Creator>> {
       await simulateApiDelay();
@@ -197,6 +202,13 @@ export const api = {
       let filtered = [...mockCreators];
       if (status && status !== "all") {
         filtered = filtered.filter((c) => c.status === status);
+      }
+      if (kycStatus && kycStatus !== "all") {
+        if (Array.isArray(kycStatus)) {
+          filtered = filtered.filter((c) => kycStatus.includes(c.kycStatus));
+        } else {
+          filtered = filtered.filter((c) => c.kycStatus === kycStatus);
+        }
       }
       if (search) {
         const s = search.toLowerCase();
@@ -292,6 +304,93 @@ export const api = {
           processedAt: new Date(),
         },
       };
+    },
+
+    async ban(id: string, reason: string): Promise<Creator> {
+      await simulateApiDelay();
+      const creator = mockCreators.find((c) => c.id === id);
+      if (!creator) throw new Error("Creator not found");
+      return { ...creator, status: "banned" };
+    },
+
+    async unban(id: string): Promise<Creator> {
+      await simulateApiDelay();
+      const creator = mockCreators.find((c) => c.id === id);
+      if (!creator) throw new Error("Creator not found");
+      return { ...creator, status: "active" };
+    },
+
+    async getEarnings(id: string): Promise<CreatorEarnings> {
+      await simulateApiDelay();
+      const creator = mockCreators.find((c) => c.id === id);
+      if (!creator) throw new Error("Creator not found");
+      const weekly = creator.totalRevenue * 0.1;
+      const monthly = creator.totalRevenue * 0.35;
+      const yearly = creator.totalRevenue;
+      return {
+        weekly: { amount: weekly, period: "Current Week" },
+        monthly: { amount: monthly, period: "Current Month" },
+        yearly: { amount: yearly, period: "Current Year" },
+        breakdown: {
+          week: "Week 1-4",
+          month: "Jan-Dec",
+          year: "2024",
+          weeklyData: [
+            { week: "Week 1", amount: weekly * 0.25 },
+            { week: "Week 2", amount: weekly * 0.3 },
+            { week: "Week 3", amount: weekly * 0.2 },
+            { week: "Week 4", amount: weekly * 0.25 },
+          ],
+          monthlyData: [
+            { month: "Jan", amount: monthly * 0.08 },
+            { month: "Feb", amount: monthly * 0.09 },
+            { month: "Mar", amount: monthly * 0.1 },
+            { month: "Apr", amount: monthly * 0.08 },
+            { month: "May", amount: monthly * 0.09 },
+            { month: "Jun", amount: monthly * 0.1 },
+            { month: "Jul", amount: monthly * 0.08 },
+            { month: "Aug", amount: monthly * 0.07 },
+            { month: "Sep", amount: monthly * 0.08 },
+            { month: "Oct", amount: monthly * 0.09 },
+            { month: "Nov", amount: monthly * 0.07 },
+            { month: "Dec", amount: monthly * 0.07 },
+          ],
+        },
+      };
+    },
+
+    async sendMessage(payload: SendMessagePayload): Promise<CreatorMessage> {
+      await simulateApiDelay();
+      const creator = mockCreators.find((c) => c.id === payload.creatorId);
+      if (!creator) throw new Error("Creator not found");
+      return {
+        id: "msg_" + generateId(),
+        creatorId: payload.creatorId,
+        creatorName: creator.creatorFullName,
+        subject: payload.subject,
+        content: payload.content,
+        type: payload.type,
+        isRead: false,
+        sentBy: "Admin",
+        sentAt: new Date(),
+      };
+    },
+
+    async getMessages(creatorId: string): Promise<CreatorMessage[]> {
+      await simulateApiDelay();
+      return [
+        {
+          id: "msg_001",
+          creatorId,
+          creatorName: "Creator",
+          subject: "Welcome to TESE",
+          content: "Welcome message for new creators",
+          type: "general",
+          isRead: true,
+          sentBy: "Admin",
+          sentAt: new Date("2024-01-01"),
+        },
+      ];
     },
   },
 
@@ -784,6 +883,72 @@ export const api = {
       return mockActivityLogs.filter(
         (log) => log.targetType === targetType && log.targetId === targetId
       );
+    },
+  },
+
+  // Content Audit Log
+  contentAudit: {
+    async getAll(): Promise<ContentAuditLog[]> {
+      await simulateApiDelay();
+      return [
+        {
+          id: "cal_001",
+          creatorId: "cr_001",
+          creatorName: "Tech Master",
+          action: "video_suspended",
+          targetType: "video",
+          targetId: "vid_001",
+          targetName: "Sample Video",
+          reason: "Community guideline violation",
+          details: "Video contained inappropriate content",
+          performedBy: "Admin User",
+          performedByRole: "super_admin",
+          createdAt: new Date("2024-01-10"),
+        },
+        {
+          id: "cal_002",
+          creatorId: "cr_004",
+          creatorName: "Fitness Coach",
+          action: "channel_suspended",
+          targetType: "channel",
+          targetId: "ch_004",
+          targetName: "FitLife Training",
+          reason: "Multiple guideline violations",
+          details: "Channel suspended due to repeated violations",
+          performedBy: "Moderator",
+          performedByRole: "admin",
+          createdAt: new Date("2024-01-05"),
+        },
+      ];
+    },
+
+    async getByCreatorId(creatorId: string): Promise<ContentAuditLog[]> {
+      await simulateApiDelay();
+      return [
+        {
+          id: "cal_001",
+          creatorId,
+          creatorName: "Creator",
+          action: "warning_issued",
+          targetType: "account",
+          targetId: creatorId,
+          targetName: "Creator Account",
+          reason: "Content review",
+          details: "Warning issued for content policy",
+          performedBy: "Admin User",
+          performedByRole: "super_admin",
+          createdAt: new Date("2024-01-10"),
+        },
+      ];
+    },
+
+    async logAction(data: Omit<ContentAuditLog, "id" | "createdAt">): Promise<ContentAuditLog> {
+      await simulateApiDelay();
+      return {
+        ...data,
+        id: "cal_" + generateId(),
+        createdAt: new Date(),
+      };
     },
   },
 

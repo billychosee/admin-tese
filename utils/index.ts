@@ -190,6 +190,43 @@ export function downloadBlob(blob: Blob, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
+export function exportToCSV<T extends Record<string, unknown>>(
+  data: T[],
+  filename: string,
+  columns: { key: keyof T; header: string }[],
+): void {
+  if (data.length === 0) {
+    const emptyBlob = new Blob(["No data available"], { type: "text/csv" });
+    downloadBlob(emptyBlob, `${filename}_empty.csv`);
+    return;
+  }
+
+  const headers = columns.map((col) => col.header).join(",");
+  const rows = data.map((row) =>
+    columns
+      .map((col) => {
+        const value = row[col.key];
+        if (value === null || value === undefined) {
+          return "";
+        }
+        const stringValue = String(value);
+        if (
+          stringValue.includes(",") ||
+          stringValue.includes('"') ||
+          stringValue.includes("\n")
+        ) {
+          return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+        return stringValue;
+      })
+      .join(","),
+  );
+
+  const csvContent = [headers, ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  downloadBlob(blob, `${filename}.csv`);
+}
+
 export function copyToClipboard(text: string): Promise<void> {
   return navigator.clipboard.writeText(text);
 }

@@ -83,6 +83,9 @@ export interface Creator {
   totalRevenue: number;
   totalPaidOut: number;
   currentBalance: number;
+  weeklyEarnings: number;
+  monthlyEarnings: number;
+  yearlyEarnings: number;
   withdrawRequest?: WithdrawRequest;
 
   // Address Information
@@ -99,7 +102,10 @@ export interface Creator {
   // Content Categories
   contentCategories: ContentCategory[];
 
-  status: "active" | "pending" | "suspended";
+  // KYC Verification Status
+  kycStatus: KYCStatus;
+
+  status: "active" | "pending" | "suspended" | "banned";
   onlineStatus: "online" | "away" | "offline";
   lastSeen?: Date;
   createdAt: Date;
@@ -477,4 +483,60 @@ export interface UserProfile {
   joinedAt: Date;
   lastActive?: Date;
   status: "active" | "suspended" | "banned";
+}
+
+export interface CreatorEarnings {
+  weekly: {
+    amount: number;
+    period: string;
+  };
+  monthly: {
+    amount: number;
+    period: string;
+  };
+  yearly: {
+    amount: number;
+    period: string;
+  };
+  breakdown: {
+    week: string;
+    month: string;
+    year: string;
+    weeklyData: { week: string; amount: number }[];
+    monthlyData: { month: string; amount: number }[];
+  };
+}
+
+export interface ContentAuditLog {
+  id: string;
+  creatorId: string;
+  creatorName: string;
+  action: "video_removed" | "video_suspended" | "channel_suspended" | "channel_banned" | "warning_issued" | "content_review";
+  targetType: "video" | "channel" | "account";
+  targetId: string;
+  targetName: string;
+  reason: string;
+  details?: string;
+  performedBy: string;
+  performedByRole: string;
+  createdAt: Date;
+}
+
+export interface CreatorMessage {
+  id: string;
+  creatorId: string;
+  creatorName: string;
+  subject: string;
+  content: string;
+  type: "general" | "warning" | "important" | "payout" | "kyc";
+  isRead: boolean;
+  sentBy: string;
+  sentAt: Date;
+}
+
+export interface SendMessagePayload {
+  creatorId: string;
+  subject: string;
+  content: string;
+  type: CreatorMessage["type"];
 }

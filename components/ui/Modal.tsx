@@ -66,17 +66,17 @@ export function Modal({
           aria-modal="true"
           aria-labelledby="modal-title"
         >
-          <div className="flex items-center justify-between px-4 lg:px-6 py-3 lg:py-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+          <div className="flex items-center justify-between px-4 lg:px-6 py-3 lg:py-4 border-b border-[hsl(var(--surface-border))] flex-shrink-0">
             <h2
               id="modal-title"
-              className="text-base lg:text-lg font-semibold text-slate-900 dark:text-white"
+              className="text-base lg:text-lg font-semibold text-[hsl(var(--text-primary))]"
             >
               {title}
             </h2>
             {showClose && (
               <button
                 onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
+                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[hsl(var(--surface-hover))] text-[hsl(var(--text-secondary))]"
                 aria-label="Close modal"
               >
                 <Icons.X size={20} />
@@ -123,12 +123,12 @@ export function ConfirmModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
       <div className="space-y-4 lg:space-y-6">
-        <p className="text-sm text-slate-500 dark:text-slate-400">{message}</p>
+        <p className="text-sm text-[hsl(var(--text-muted))]">{message}</p>
         <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50"
+            className="px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-[hsl(var(--surface-border))] text-[hsl(var(--text-secondary))] hover:bg-[hsl(var(--surface-hover))]"
           >
             {cancelText}
           </button>
@@ -137,10 +137,10 @@ export function ConfirmModal({
             disabled={isLoading}
             className={
               variant === "danger"
-                ? "px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+                ? "px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-[hsl(var(--danger))] text-[hsl(var(--danger))] hover:bg-[hsl(var(--danger)/0.1)]"
                 : variant === "warning"
-                  ? "px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-amber-500 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-                  : "px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-emerald-500 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                  ? "px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-[hsl(var(--warning))] text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.1)]"
+                  : "px-4 py-2 rounded-xl text-sm font-medium transition-colors border border-[hsl(var(--success))] text-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.1)]"
             }
           >
             {isLoading ? "Loading..." : confirmText}

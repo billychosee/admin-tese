@@ -14,6 +14,7 @@ interface DashboardLayoutProps {
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
+  "/channels": "Channels",
   "/payouts": "Payouts",
   "/categories": "Categories",
   "/creators": "Content Creators",
@@ -22,6 +23,8 @@ const pageTitles: Record<string, string> = {
   "/transactions": "Transactions",
   "/devices": "Devices & Sessions",
   "/notifications": "Notifications",
+  "/profile": "Profile",
+  "/playlists": "Playlists",
   "/settings": "Settings",
 };
 
@@ -46,9 +49,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   // CSS Variables
   const sidebarBg = "bg-[hsl(var(--surface-muted))]";
   const skeletonBg = "bg-[hsl(var(--surface-muted))]";
-  const collapseBtnBg = "bg-[hsl(var(--surface))]";
-  const collapseBtnBorder = "border-[hsl(var(--surface-border))]";
-  const collapseBtnHover = "hover:bg-[hsl(var(--surface-hover))]";
 
   if (!mounted) {
     return (
@@ -111,25 +111,27 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </footer>
       </div>
 
-      {/* Desktop collapse button - hidden on mobile */}
-      <button
-        onClick={toggleSidebar}
+      {/* Rounded collapse button on the fine line between sidebar and main content */}
+      <div
         className={cn(
-          "hidden lg:fixed lg:top-5 lg:z-40 lg:rounded-full lg:p-2 lg:transition-all lg:duration-300 lg:border-2",
+          "hidden lg:block lg:fixed lg:top-[3.5%] lg:-translate-y-1/2 lg:z-50 lg:rounded-full lg:p-1.5 lg:transition-all lg:duration-300 lg:shadow-lg",
+          // Position exactly on the sidebar edge: 260px expanded, 80px collapsed
           isCollapsed ? "lg:left-[64px]" : "lg:left-[244px]",
-          collapseBtnBg,
-          collapseBtnBorder,
-          collapseBtnHover,
+          "bg-[hsl(var(--primary))] text-white hover:opacity-90",
         )}
-        style={{ color: "hsl(var(--text-secondary))" }}
-        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
-        {isCollapsed ? (
-          <Icons.ChevronRight size={18} />
-        ) : (
-          <Icons.ChevronLeft size={18} />
-        )}
-      </button>
+        <button
+          onClick={toggleSidebar}
+          className="w-full h-full flex items-center justify-center rounded-full transition-opacity"
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <Icons.ChevronRight size={20} />
+          ) : (
+            <Icons.ChevronLeft size={20} />
+          )}
+        </button>
+      </div>
     </div>
   );
 }
